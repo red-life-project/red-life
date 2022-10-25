@@ -1,4 +1,6 @@
 [workspace]
+# Necessary to avoid compilation error
+resolver = "2"
 members = [
     "game"
 ]
