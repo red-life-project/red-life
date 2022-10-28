@@ -14,7 +14,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [windows-2019, ubuntu-20.04]
+        os: [windows-2019, ubuntu-latest]
         toolchain: [stable, beta]
     runs-on: ${{ matrix.os }}
     steps:
@@ -36,6 +36,10 @@ jobs:
       - name: Install udev
         if: ${{ runner.os == 'Linux' }}
         run: sudo apt-get update; sudo apt-get install --no-install-recommends libudev-dev
+
+      - name: Use Rust Cache
+        if: ${{ runner.os == 'Linux' }}
+        uses: Swatinem/rust-cache@v2.0.1
 
       - name: Run cargo check --all-targets w/ -D warnings
         run: cargo check --all-targets
