@@ -1,17 +1,23 @@
+mod gamestate;
+mod screen;
+mod error;
+
+use std::time::Duration;
 use ggez::{
     event,
     glam::*,
     graphics::{self, Color},
     Context, GameResult,
 };
+use crate::gamestate::GameState;
 
-struct MainState {
+struct GuiState {
     pos_x: f32,
     circle: graphics::Mesh,
 }
 
-impl MainState {
-    fn new(ctx: &mut Context) -> GameResult<MainState> {
+impl GuiState {
+    fn new(ctx: &mut Context) -> GameResult<GuiState> {
         let circle = graphics::Mesh::new_circle(
             ctx,
             graphics::DrawMode::fill(),
@@ -21,11 +27,11 @@ impl MainState {
             Color::WHITE,
         )?;
 
-        Ok(MainState { pos_x: 0.0, circle })
+        Ok(GuiState { pos_x: 0.0, circle })
     }
 }
 
-impl event::EventHandler<ggez::GameError> for MainState {
+impl event::EventHandler<ggez::GameError> for GuiState {
     fn update(&mut self, _ctx: &mut Context) -> GameResult {
         self.pos_x = self.pos_x % 800.0 + 1.0;
         Ok(())
@@ -43,9 +49,9 @@ impl event::EventHandler<ggez::GameError> for MainState {
     }
 }
 
-pub fn main() -> GameResult {
+pub fn main() {
     let cb = ggez::ContextBuilder::new("super_simple", "ggez");
-    let (mut ctx, event_loop) = cb.build()?;
-    let state = MainState::new(&mut ctx)?;
-    event::run(ctx, event_loop, state)
+    let (mut ctx, event_loop) = cb.build().unwrap();
+    let state = GuiState::new(&mut ctx).unwrap();
+    event::run(ctx, event_loop, state);
 }
