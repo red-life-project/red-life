@@ -1,15 +1,15 @@
+mod error;
 mod gamestate;
 mod screen;
-mod error;
 
-use std::time::Duration;
+use crate::gamestate::GameState;
 use ggez::{
     event,
     glam::*,
     graphics::{self, Color},
     Context, GameResult,
 };
-use crate::gamestate::GameState;
+use std::time::Duration;
 
 struct GuiState {
     pos_x: f32,

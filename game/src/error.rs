@@ -1,6 +1,5 @@
-
 #[derive(Debug)]
-pub enum RedError{
+pub enum RedError {
     UiError,
     DeserializeError,
     IOError,

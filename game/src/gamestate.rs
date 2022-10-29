@@ -1,5 +1,5 @@
+use serde::{Deserialize, Serialize};
 use std::time::Duration;
-use serde::{Serialize, Deserialize};
 
 #[derive(Clone, Eq, PartialEq, Serialize, Deserialize)]
 struct Item;

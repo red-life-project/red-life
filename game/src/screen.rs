@@ -1,5 +1,5 @@
-use std::fmt::Debug;
 use crate::error;
+use std::fmt::Debug;
 type RedResult<T = ()> = Result<T, error::RedError>;
 /// A screen is every drawable object in the game, so the main menu is a screen too
 pub trait Screen: Debug {
