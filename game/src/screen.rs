@@ -9,7 +9,7 @@ pub trait Screen: Debug {
     fn draw(&self, ctx: &mut Context) -> RedResult;
 }
 
-/// Now we can use this trait to make for example a scene
+/// A Screenstack contains multiple screens, the first one of which is the current screen
 pub struct Screenstack {
     screens: Vec<Box<dyn Screen>>,
 }

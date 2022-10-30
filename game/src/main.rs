@@ -1,6 +1,7 @@
 mod error;
 mod gamestate;
 mod screen;
+mod mainmenu;
 
 use crate::gamestate::GameState;
 use ggez::{
