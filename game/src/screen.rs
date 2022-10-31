@@ -2,7 +2,9 @@ use ggez::{Context, event};
 
 use crate::error::{self, RedError};
 use std::fmt::Debug;
-type RedResult<T = ()> = Result<T, error::RedError>;
+use crate::mainmenu::MainMenu;
+use crate::RedResult;
+
 /// A screen is every drawable object in the game, so the main menu is a screen too
 pub trait Screen: Debug {
     fn update(&mut self, ctx: &mut Context) -> RedResult;
@@ -15,11 +17,19 @@ pub struct Screenstack {
 }
 impl event::EventHandler<RedError> for Screenstack{
     fn update(&mut self, ctx: &mut Context) -> Result<(), RedError> {
-        self.screens.first()?.update(ctx)?;
+        self.screens.first_mut().expect("Failed to get a screen").update(ctx)?;
         Ok(())
     }
     fn draw(&mut self, ctx: &mut Context) -> Result<(), RedError> {
-        self.screens.first()?.draw(ctx)?;
+        self.screens.first().expect("Failed to get a screen").draw(ctx)?;
         Ok(())
+    }
+}
+
+impl Default for Screenstack{
+    fn default() -> Self {
+        Self {
+            screens: vec![Box::new(MainMenu::default())],
+        }
     }
 }
