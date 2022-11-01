@@ -2,11 +2,11 @@ mod error;
 mod gamestate;
 mod mainmenu;
 mod screen;
+mod utils;
 
 use crate::screen::Screenstack;
-use ggez::{
-    event,
-};
+use ggez::{Context, event};
+use ggez::conf::FullscreenType;
 
 type RedResult<T = ()> = Result<T, error::RedError>;
 
@@ -16,7 +16,18 @@ pub fn main() {
             .title("Red Life")
             .vsync(true),
     );
-    let (ctx, event_loop) = cb.build().unwrap();
+    let (mut ctx, event_loop) = cb.build().unwrap();
+    window_setup(&mut ctx);
     let screen_stack = Screenstack::default();
     event::run(ctx, event_loop, screen_stack);
+}
+
+
+fn window_setup(ctx: &mut Context) -> RedResult{
+    ctx.gfx.set_resizable(true)?;
+    ctx.gfx.set_drawable_size(1920., 1080.)?;
+    // If we're in a release build set fullscreen to true
+    #[cfg(not(debug_assertions))]
+    ctx.gfx.set_fullscreen(FullscreenType::True)?;
+    Ok(())
 }
