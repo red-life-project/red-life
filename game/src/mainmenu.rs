@@ -31,7 +31,6 @@ impl Screen for MainMenu {
         let background =
             graphics::Image::from_bytes(ctx, include_bytes!("../../assets/mainmenu.png"))?;
         canvas.draw(&background, graphics::DrawParam::default());
-        // TODO: Replace with ? once error.rs is implemented
         canvas.finish(ctx)?;
         Ok(())
     }

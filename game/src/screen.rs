@@ -15,6 +15,7 @@ pub trait Screen: Debug {
 pub struct Screenstack {
     screens: Vec<Box<dyn Screen>>,
 }
+
 impl event::EventHandler<RedError> for Screenstack {
     fn update(&mut self, ctx: &mut Context) -> Result<(), RedError> {
         self.screens
