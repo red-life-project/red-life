@@ -40,3 +40,15 @@ impl Default for Screenstack {
         }
     }
 }
+
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_screenstack() {
+        let screenstack = Screenstack::default();
+        assert_eq!(1, screenstack.screens.len());
+    }
+}
