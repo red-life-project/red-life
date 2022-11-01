@@ -1,8 +1,8 @@
-use ggez::{Context, graphics};
-use crate::RedResult;
 use crate::screen::Screen;
+use crate::RedResult;
+use ggez::{graphics, Context};
 #[derive(Debug)]
-struct Button{
+struct Button {
     text: String,
     img: ggez::graphics::Image,
     // TODO: Add these:
@@ -16,9 +16,7 @@ pub struct MainMenu {
 
 impl Default for MainMenu {
     fn default() -> Self {
-        Self {
-            buttons: vec![],
-        }
+        Self { buttons: vec![] }
     }
 }
 
@@ -28,12 +26,11 @@ impl Screen for MainMenu {
     }
 
     fn draw(&self, ctx: &mut Context) -> RedResult {
-        let mut canvas = graphics::Canvas::from_frame(
-            ctx,
-            graphics::Color::from([0.1, 0.2, 0.3, 1.0]),
-        );
-        let text = graphics::Text::new("Hello world");
-        canvas.draw(&text, graphics::DrawParam::default());
+        let mut canvas =
+            graphics::Canvas::from_frame(ctx, graphics::Color::from([0.1, 0.2, 0.3, 1.0]));
+        let background =
+            graphics::Image::from_bytes(ctx, include_bytes!("../../assets/mainmenu.png"))?;
+        canvas.draw(&background, graphics::DrawParam::default());
         // TODO: Replace with ? once error.rs is implemented
         canvas.finish(ctx)?;
         Ok(())

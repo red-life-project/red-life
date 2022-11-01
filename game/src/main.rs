@@ -1,14 +1,12 @@
 mod error;
 mod gamestate;
-mod screen;
 mod mainmenu;
+mod screen;
 
-use crate::gamestate::GameState;
+use crate::screen::Screenstack;
 use ggez::{
     event,
-    graphics::{self, Color},
 };
-use crate::screen::Screenstack;
 
 type RedResult<T = ()> = Result<T, error::RedError>;
 
@@ -18,7 +16,7 @@ pub fn main() {
             .title("Red Life")
             .vsync(true),
     );
-    let (mut ctx, event_loop) = cb.build().unwrap();
+    let (ctx, event_loop) = cb.build().unwrap();
     let screen_stack = Screenstack::default();
     event::run(ctx, event_loop, screen_stack);
 }

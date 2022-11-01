@@ -1,14 +1,15 @@
+use std::io;
 use ggez::GameError;
-
+#[warn(clippy::enum_variant_names)]
 #[derive(Debug)]
 pub enum RedError {
-    UiError,
-    DeserializeError,
-    IOError,
+    UiError(GameError),
+    DeserializeError(serde_yaml::Error),
+    IOError(io::Error),
 }
 
 impl From<GameError> for RedError {
-    fn from(_error: GameError) -> Self {
-        RedError::UiError
+    fn from(e: GameError) -> Self {
+        RedError::UiError(e)
     }
 }
