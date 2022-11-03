@@ -8,16 +8,16 @@ use crate::screen::Screenstack;
 use ggez::{Context, event};
 use ggez::conf::FullscreenType;
 
-type RedResult<T = ()> = Result<T, error::RedError>;
+pub type RedResult<T = ()> = Result<T, error::RedError>;
 
-pub fn main() {
+pub fn main() -> RedResult {
     let cb = ggez::ContextBuilder::new("red-life", "red-life-project").window_setup(
         ggez::conf::WindowSetup::default()
             .title("Red Life")
             .vsync(true),
     );
-    let (mut ctx, event_loop) = cb.build().unwrap();
-    window_setup(&mut ctx);
+    let (mut ctx, event_loop) = cb.build()?;
+    window_setup(&mut ctx)?;
     let screen_stack = Screenstack::default();
     event::run(ctx, event_loop, screen_stack);
 }

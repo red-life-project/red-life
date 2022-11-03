@@ -1,13 +1,13 @@
 use ggez::{event, Context};
 
 use crate::error::RedError;
-use crate::mainmenu::MainMenu;
+use crate::mainmenu::{MainMenu, Message};
 use crate::RedResult;
 use std::fmt::Debug;
 
 /// A screen is every drawable object in the game, so the main menu is a screen too
 pub trait Screen: Debug {
-    fn update(&mut self, ctx: &mut Context) -> RedResult;
+    fn update(&mut self, ctx: &mut Context) -> RedResult<StackCommand>;
     fn draw(&self, ctx: &mut Context) -> RedResult;
 }
 
@@ -16,15 +16,25 @@ pub struct Screenstack {
     screens: Vec<Box<dyn Screen>>,
 }
 
+/// The StackCommand is necessary in order to send commands back to the screenstack
+/// from the screen. We can for example tell the screenstack to push the gamestate screen onto the
+/// screenstack
+pub enum StackCommand {
+    None,
+    Push(Box<dyn Screen>),
+    Pop,
+}
+
 impl event::EventHandler<RedError> for Screenstack {
-    fn update(&mut self, ctx: &mut Context) -> Result<(), RedError> {
-        self.screens
+    fn update(&mut self, ctx: &mut Context) -> RedResult {
+        let command = self.screens
             .first_mut()
             .expect("Failed to get a screen")
             .update(ctx)?;
+        // TODO: Match the returned command
         Ok(())
     }
-    fn draw(&mut self, ctx: &mut Context) -> Result<(), RedError> {
+    fn draw(&mut self, ctx: &mut Context) -> RedResult {
         self.screens
             .first()
             .expect("Failed to get a screen")
@@ -36,7 +46,7 @@ impl event::EventHandler<RedError> for Screenstack {
 impl Default for Screenstack {
     fn default() -> Self {
         Self {
-            screens: vec![Box::<MainMenu>::default()],
+            screens: vec![Box::<MainMenu<Message>>::default()],
         }
     }
 }

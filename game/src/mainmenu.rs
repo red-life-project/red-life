@@ -1,30 +1,44 @@
-use crate::screen::Screen;
+use std::sync::mpsc::{channel, Receiver, Sender};
+use crate::screen::{Screen, StackCommand};
 use crate::RedResult;
 use ggez::{graphics, Context};
 use crate::utils::get_scale;
 
-#[derive(Debug)]
-struct Button {
-    text: String,
-    img: ggez::graphics::Image,
-    // TODO: Add these:
-    // message: Message,
-    // sender: Sender<Message>
-}
-#[derive(Debug)]
-pub struct MainMenu {
-    buttons: Vec<Button>,
+#[derive(Copy, Clone, Debug)]
+pub enum Message {
+    Exit,
+    NewGame,
+    Start
 }
 
-impl Default for MainMenu {
+#[derive(Debug)]
+struct Button<Message: Clone> {
+    text: String,
+    img: graphics::Image,
+    message: Message,
+    sender: Sender<Message>
+}
+#[derive(Debug)]
+pub struct MainMenu<Message: Clone> {
+    buttons: Vec<Button<Message>>,
+    receiver: Receiver<Message>,
+    sender: Sender<Message>
+}
+
+impl<Message: Clone> Default for MainMenu<Message> {
     fn default() -> Self {
-        Self { buttons: vec![] }
+        let (sender, receiver) = channel();
+        Self{
+            buttons: vec![],
+            receiver,
+            sender
+        }
     }
 }
 
-impl Screen for MainMenu {
-    fn update(&mut self, ctx: &mut Context) -> RedResult {
-        Ok(())
+impl Screen for MainMenu<Message> {
+    fn update(&mut self, ctx: &mut Context) -> RedResult<StackCommand> {
+        Ok(StackCommand::None)
     }
 
     fn draw(&self, ctx: &mut Context) -> RedResult {
@@ -38,3 +52,4 @@ impl Screen for MainMenu {
         Ok(())
     }
 }
+
