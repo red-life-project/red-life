@@ -24,10 +24,6 @@ impl GameState {
 impl Screen for GameState {
     fn update(&mut self, ctx: &mut Context) -> RedResult<StackCommand> {
         self.tick();
-        // TODO: Replace with if buttons are clicked
-        if self.milestone > 10 {
-            return Ok(StackCommand::Push(Box::new(GameState::default())));
-        }
         Ok(StackCommand::None)
     }
     fn draw(&self, ctx: &mut Context) -> RedResult {
