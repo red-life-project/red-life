@@ -1,9 +1,8 @@
-use crate::{RedResult, screen::Screen};
-use ggez::{Context, graphics};
-use serde::{Deserialize, Serialize};
 use crate::screen::StackCommand;
 use crate::utils::get_scale;
-
+use crate::{screen::Screen, RedResult};
+use ggez::{graphics, Context};
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Eq, Debug, PartialEq, Serialize, Deserialize)]
 struct Item;
@@ -38,7 +37,6 @@ impl Screen for GameState {
     }
 }
 
-
 #[cfg(test)]
 mod test {
     use super::*;
@@ -46,6 +44,5 @@ mod test {
     #[test]
     fn test_gamestate() {
         let mut gamestate = GameState::default();
-
     }
 }

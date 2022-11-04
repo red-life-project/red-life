@@ -1,5 +1,5 @@
-use std::io;
 use ggez::GameError;
+use std::io;
 #[warn(clippy::enum_variant_names)]
 #[derive(Debug)]
 pub enum RedError {

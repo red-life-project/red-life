@@ -27,7 +27,8 @@ pub enum StackCommand {
 
 impl event::EventHandler<RedError> for Screenstack {
     fn update(&mut self, ctx: &mut Context) -> RedResult {
-        let command = self.screens
+        let command = self
+            .screens
             .first_mut()
             .expect("Failed to get a screen")
             .update(ctx)?;
@@ -60,7 +61,6 @@ impl Default for Screenstack {
         }
     }
 }
-
 
 #[cfg(test)]
 mod test {

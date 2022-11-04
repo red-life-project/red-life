@@ -1,16 +1,16 @@
-use std::sync::mpsc::{channel, Receiver, Sender};
-use crate::screen::{Screen, StackCommand};
-use crate::RedResult;
-use ggez::{graphics, Context};
-use ggez::event::MouseButton;
 use crate::gamestate::GameState;
+use crate::screen::{Screen, StackCommand};
 use crate::utils::get_scale;
+use crate::RedResult;
+use ggez::event::MouseButton;
+use ggez::{graphics, Context};
+use std::sync::mpsc::{channel, Receiver, Sender};
 
 #[derive(Copy, Clone, Debug)]
 pub enum Message {
     Exit,
     NewGame,
-    Start
+    Start,
 }
 
 #[derive(Debug)]
@@ -18,22 +18,22 @@ struct Button<Message: Clone> {
     text: String,
     img: graphics::Image,
     message: Message,
-    sender: Sender<Message>
+    sender: Sender<Message>,
 }
 #[derive(Debug)]
 pub struct MainMenu<Message: Clone> {
     buttons: Vec<Button<Message>>,
     receiver: Receiver<Message>,
-    sender: Sender<Message>
+    sender: Sender<Message>,
 }
 
 impl<Message: Clone> Default for MainMenu<Message> {
     fn default() -> Self {
         let (sender, receiver) = channel();
-        Self{
+        Self {
             buttons: vec![],
             receiver,
-            sender
+            sender,
         }
     }
 }
@@ -58,4 +58,3 @@ impl Screen for MainMenu<Message> {
         Ok(())
     }
 }
-
