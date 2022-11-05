@@ -13,3 +13,15 @@ impl From<GameError> for RedError {
         RedError::UiError(e)
     }
 }
+
+impl From<serde_yaml::Error> for RedError {
+    fn from(e: serde_yaml::Error) -> Self {
+        RedError::DeserializeError(e)
+    }
+}
+
+impl From<std::io::Error> for RedError {
+    fn from(e: std::io::Error) -> Self {
+        RedError::IOError(e)
+    }
+}

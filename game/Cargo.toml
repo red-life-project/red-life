@@ -10,6 +10,7 @@ serde = "1.0.145"
 serde_yaml = "0.9.13"
 ggez = "0.8.1"
 oorandom = "11.1.3"
+yaml-rust = "0.4"
 
 # For faster executeables we compile our dependencies in dev mode
 [profile.dev.package.'*']
