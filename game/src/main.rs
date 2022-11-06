@@ -4,7 +4,8 @@ mod mainmenu;
 mod screen;
 mod utils;
 
-use crate::screen::Screenstack
+
+use crate::screen::Screenstack;
 use ggez::conf::FullscreenType;
 use ggez::{event, Context};
 
