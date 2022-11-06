@@ -18,6 +18,18 @@ impl GameState {
         // do stuff
         self.milestone += 1;
     }
+
+    fn save_game_state(game_state: &GameState) -> RedResult {
+        let save_data = serde_yaml::to_string(game_state)?;
+        std::fs::write("../saves/savegame.yaml", save_data)?;
+        Ok(())
+    }
+
+    fn load_game_state() -> RedResult<GameState> {
+        let save_data = std::fs::read_to_string("../saves/savegame.yaml")?;
+        let game_state = serde_yaml::from_str(&save_data)?;
+        Ok(game_state)
+    }
 }
 
 impl Screen for GameState {
@@ -37,17 +49,6 @@ impl Screen for GameState {
     }
 }
 
-fn save_game_state_yaml(game_state: &GameState) -> RedResult {
-    let save_data = serde_yaml::to_string(game_state)?;
-    std::fs::write("../saves/savegame.yaml", save_data)?;
-    Ok(())
-}
-
-fn load_game_state_yaml() -> RedResult<GameState> {
-    let save_data = std::fs::read_to_string("../saves/savegame.yaml")?;
-    let game_state = serde_yaml::from_str(&save_data)?;
-    Ok(game_state)
-}
 
 #[cfg(test)]
 mod test {
@@ -61,11 +62,11 @@ mod test {
     #[test]
     fn test_save_game_state_yaml() {
         let gamestate = GameState::default();
-        save_game_state_yaml(&gamestate);
+        GameState::save_game_state(&gamestate);
     }
 
     #[test]
     fn test_load_game_state_yaml() {
-        let gamestate = load_game_state_yaml().unwrap();
+        let gamestate = GameState::load_game_state().unwrap();
     }
 }
