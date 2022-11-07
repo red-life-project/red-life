@@ -29,7 +29,7 @@ impl event::EventHandler<RedError> for Screenstack {
     fn update(&mut self, ctx: &mut Context) -> RedResult {
         let command = self
             .screens
-            .first_mut()
+            .last_mut()
             .expect("Failed to get a screen")
             .update(ctx)?;
         // Match the command given back by the screen
@@ -38,7 +38,9 @@ impl event::EventHandler<RedError> for Screenstack {
             StackCommand::Push(screen) => self.screens.push(screen),
             StackCommand::Pop => {
                 match self.screens.len() {
-                    1 => std::process::exit(0),
+                    1 => {
+                        std::process::exit(0)
+                    }
                     _ => self.screens.pop(),
                 };
             }
