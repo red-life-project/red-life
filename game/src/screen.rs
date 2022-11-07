@@ -27,16 +27,27 @@ pub enum StackCommand {
 
 impl event::EventHandler<RedError> for Screenstack {
     fn update(&mut self, ctx: &mut Context) -> RedResult {
-        let command = self.screens
-            .first_mut()
+        let command = self
+            .screens
+            .last_mut()
             .expect("Failed to get a screen")
             .update(ctx)?;
-        // TODO: Match the returned command
+        // Match the command given back by the screen
+        match command {
+            StackCommand::None => {}
+            StackCommand::Push(screen) => self.screens.push(screen),
+            StackCommand::Pop => {
+                match self.screens.len() {
+                    1 => std::process::exit(0),
+                    _ => self.screens.pop(),
+                };
+            }
+        }
         Ok(())
     }
     fn draw(&mut self, ctx: &mut Context) -> RedResult {
         self.screens
-            .first()
+            .last()
             .expect("Failed to get a screen")
             .draw(ctx)?;
         Ok(())
@@ -50,7 +61,6 @@ impl Default for Screenstack {
         }
     }
 }
-
 
 #[cfg(test)]
 mod test {

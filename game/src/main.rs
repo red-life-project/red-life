@@ -5,8 +5,8 @@ mod screen;
 mod utils;
 
 use crate::screen::Screenstack;
-use ggez::{Context, event};
 use ggez::conf::FullscreenType;
+use ggez::{event, Context};
 
 pub type RedResult<T = ()> = Result<T, error::RedError>;
 
@@ -22,8 +22,7 @@ pub fn main() -> RedResult {
     event::run(ctx, event_loop, screen_stack);
 }
 
-
-fn window_setup(ctx: &mut Context) -> RedResult{
+fn window_setup(ctx: &mut Context) -> RedResult {
     ctx.gfx.set_resizable(true)?;
     ctx.gfx.set_drawable_size(1920., 1080.)?;
     // If we're in a release build set fullscreen to true

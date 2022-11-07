@@ -1,10 +1,8 @@
 use std::sync::mpsc::{channel, Receiver, Sender};
 use crate::screen::{Screen, StackCommand};
 use crate::RedResult;
-use ggez::{graphics, Context, GameResult};
+use ggez::{graphics, Context};
 use ggez::event::MouseButton;
-use ggez::glam::Vec2;
-use ggez::graphics::Color;
 use crate::gamestate::GameState;
 use crate::utils::get_scale;
 
@@ -18,14 +16,9 @@ pub enum Message {
 #[derive(Debug)]
 struct Button<Message: Clone> {
     text: String,
-    img: Option<graphics::Image>,
-    message: self::Message,
-    sender: Option<Sender<Message>>,
-    // position of button on screen: (x, y)
-    pos: Vec2,
-    // size of button: (width, height)
-    size: Vec2,
-    color: Color,
+    img: graphics::Image,
+    message: Message,
+    sender: Sender<Message>
 }
 
 impl Button<Message> {
