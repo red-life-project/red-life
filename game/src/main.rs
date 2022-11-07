@@ -14,11 +14,12 @@ pub fn main() -> RedResult {
     let cb = ggez::ContextBuilder::new("red-life", "red-life-project")
         .resources_dir_name("assets")
         .window_setup(
-        ggez::conf::WindowSetup::default()
-            .icon("icon.png").to_owned()
-            .title("Red Life")
-            .vsync(true),
-    );
+            ggez::conf::WindowSetup::default()
+                .icon("/icon.png")
+                .to_owned()
+                .title("Red Life")
+                .vsync(true),
+        );
     let (mut ctx, event_loop) = cb.build()?;
     window_setup(&mut ctx)?;
     let screen_stack = Screenstack::default();
