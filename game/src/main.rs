@@ -11,8 +11,11 @@ use ggez::{event, Context};
 pub type RedResult<T = ()> = Result<T, error::RedError>;
 
 pub fn main() -> RedResult {
-    let cb = ggez::ContextBuilder::new("red-life", "red-life-project").window_setup(
+    let cb = ggez::ContextBuilder::new("red-life", "red-life-project")
+        .resources_dir_name("assets")
+        .window_setup(
         ggez::conf::WindowSetup::default()
+            .icon("icon.png").to_owned()
             .title("Red Life")
             .vsync(true),
     );
