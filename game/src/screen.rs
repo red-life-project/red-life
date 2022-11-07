@@ -38,9 +38,7 @@ impl event::EventHandler<RedError> for Screenstack {
             StackCommand::Push(screen) => self.screens.push(screen),
             StackCommand::Pop => {
                 match self.screens.len() {
-                    1 => {
-                        std::process::exit(0)
-                    }
+                    1 => std::process::exit(0),
                     _ => self.screens.pop(),
                 };
             }
