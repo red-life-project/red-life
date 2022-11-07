@@ -86,7 +86,6 @@ impl Screen for GameState {
     }
 }
 
-
 #[cfg(test)]
 mod test {
     use super::*;
