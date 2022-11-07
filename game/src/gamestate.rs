@@ -97,13 +97,13 @@ mod test {
     }
 
     #[test]
-    fn test_save_game_state_yaml() {
+    fn test_save_game_state() {
         let gamestate = GameState::default();
         GameState::save_game_state(&gamestate);
     }
 
     #[test]
-    fn test_load_game_state_yaml() {
+    fn test_load_game_state() {
         let gamestate = GameState::load_game_state().unwrap();
     }
 }
