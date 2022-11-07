@@ -4,13 +4,14 @@ mod mainmenu;
 mod screen;
 mod utils;
 
-use crate::screen::Screenstack
+use crate::screen::Screenstack;
 use ggez::conf::FullscreenType;
 use ggez::{event, Context};
 
 pub type RedResult<T = ()> = Result<T, error::RedError>;
 
 pub fn main() -> RedResult {
+
     let cb = ggez::ContextBuilder::new("red-life", "red-life-project").window_setup(
         ggez::conf::WindowSetup::default()
             .title("Red Life")
