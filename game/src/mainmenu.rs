@@ -1,5 +1,5 @@
 use crate::gamestate::GameState;
-use crate::mainmenu::Message::{Exit, Start};
+use crate::mainmenu::Message::{Exit, NewGame, Start};
 use crate::screen::{Screen, StackCommand};
 use crate::utils::get_scale;
 use crate::RedResult;
@@ -18,11 +18,11 @@ pub enum Message {
 }
 
 #[derive(Debug)]
-struct Button<Message: Clone> {
+struct Button<T: Clone> {
     text: String,
     img: Option<graphics::Image>,
-    message: self::Message,
-    sender: Sender<Message>,
+    message: Message,
+    sender: Sender<T>,
     size: Vec2,
     pos: Vec2,
     color: Color,
@@ -42,27 +42,6 @@ impl Button<Message> {
         let y2 = self.pos.y + self.size.y;
         x > x1 && x < x2 && y > y1 && y < y2
     }
-
-    //TODO: handle different types of buttons -> Message as type parameter
-    pub fn new(
-        text: String,
-        img: Option<graphics::Image>,
-        message: Message,
-        sender: Sender<Message>,
-        size: Vec2,
-        pos: Vec2,
-        color: Color,
-    ) -> Self {
-        Button {
-            text,
-            img,
-            message,
-            sender,
-            size,
-            pos,
-            color,
-        }
-    }
 }
 
 #[derive(Debug)]
@@ -79,7 +58,7 @@ fn draw_button(ctx: &mut Context, btn: &Button<Message>) -> GameResult<graphics:
 
     mb.rectangle(
         graphics::DrawMode::fill(),
-        graphics::Rect::new(btn.pos[0], btn.pos[1], btn.size[0], btn.size[1]),
+        graphics::Rect::new(btn.pos.x, btn.pos.y, btn.size[0], btn.size[1]),
         btn.color,
     )?;
 
@@ -91,13 +70,13 @@ impl<Message: Clone> Default for MainMenu<Message> {
         let (sender, receiver) = channel();
 
         let start_button = Button {
-            text: "Default Button".to_string(),
+            text: "Start".to_string(),
             img: None,
             message: Start,
             sender: sender.clone(),
             pos: Vec2::new(650.0, 180.0),
             size: Vec2::new(350.0, 120.0),
-            color: Color::from_rgba(0, 0, 0, 50),
+            color: Color::from_rgba(0, 0, 0, 0),
         };
         let exit_button = Button {
             text: "Exit".to_string(),
@@ -106,11 +85,20 @@ impl<Message: Clone> Default for MainMenu<Message> {
             sender: sender.clone(),
             pos: Vec2::new(650.0, 420.0),
             size: Vec2::new(350.0, 120.0),
-            color: Color::from_rgba(0, 0, 0, 50),
+            color: Color::from_rgba(0, 0, 0, 0),
+        };
+        let new_game_button = Button {
+            text: "New Game".to_string(),
+            img: None,
+            message: NewGame,
+            sender: sender.clone(),
+            pos: Vec2::new(650.0, 300.0),
+            size: Vec2::new(350.0, 120.0),
+            color: Color::from_rgba(0, 0, 0, 0),
         };
 
         Self {
-            buttons: vec![start_button, exit_button],
+            buttons: vec![start_button, new_game_button, exit_button],
             receiver,
             sender,
         }
@@ -127,12 +115,12 @@ impl Screen for MainMenu<Message> {
             for mut btn in &mut self.buttons {
                 if btn.is_clicked(current_position) {
                     btn.pressed();
-                    //TODO: handle different types of buttons -> type parameter (Message) determines action?
-                    if btn.message == Exit {
-                        ctx.request_quit();
-                    }
-                    return Ok(StackCommand::Push(Box::new(GameState::default())));
-                    //self.sender.send(btn.message.clone()).unwrap();
+
+                    return match btn.message {
+                        Exit => Ok(StackCommand::Pop),
+                        NewGame => Ok(StackCommand::Push(Box::new(GameState::default()))),
+                        Start => Ok(StackCommand::Push(Box::new(GameState::default()))),
+                    };
                 }
             }
         }
