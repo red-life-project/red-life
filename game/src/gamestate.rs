@@ -27,11 +27,13 @@ impl GameState {
 
     fn save_game_state(&self) -> RedResult {
         let save_data = serde_yaml::to_string(self)?;
+        // Create the folder if it doesn't exist
+        std::fs::create_dir_all("../saves")?;
         std::fs::write("../saves/savegame.yaml", save_data)?;
         Ok(())
     }
 
-    fn load_game_state() -> RedResult<GameState> {
+    pub fn load_game_state() -> RedResult<GameState> {
         let save_data = std::fs::read_to_string("../saves/savegame.yaml")?;
         let game_state = serde_yaml::from_str(&save_data)?;
         Ok(game_state)
@@ -45,7 +47,7 @@ impl Screen for GameState {
         for key in keys.iter() {
             match key {
                 VirtualKeyCode::Escape => {
-                    // TODO: Save the game
+                    self.save_game_state()?;
                     return Ok(StackCommand::Pop);
                 }
                 VirtualKeyCode::W => {
