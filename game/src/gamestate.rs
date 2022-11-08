@@ -25,8 +25,8 @@ impl GameState {
         self.milestone += 1;
     }
 
-    fn save_game_state(game_state: &GameState) -> RedResult {
-        let save_data = serde_yaml::to_string(game_state)?;
+    fn save_game_state(&self) -> RedResult {
+        let save_data = serde_yaml::to_string(self)?;
         std::fs::write("../saves/savegame.yaml", save_data)?;
         Ok(())
     }
@@ -86,7 +86,6 @@ impl Screen for GameState {
     }
 }
 
-
 #[cfg(test)]
 mod test {
     use super::*;
@@ -99,7 +98,7 @@ mod test {
     #[test]
     fn test_save_game_state() {
         let gamestate = GameState::default();
-        GameState::save_game_state(&gamestate);
+        gamestate.save_game_state().unwrap();
     }
 
     #[test]
