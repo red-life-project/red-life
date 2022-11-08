@@ -1,38 +1,75 @@
-use std::sync::mpsc::{channel, Receiver, Sender};
-use crate::screen::{Screen, StackCommand};
-use crate::RedResult;
-use ggez::{graphics, Context};
-use ggez::event::MouseButton;
 use crate::gamestate::GameState;
+use crate::mainmenu::Message::{Exit, Start};
+use crate::screen::{Screen, StackCommand};
 use crate::utils::get_scale;
+use crate::RedResult;
+use ggez::event::MouseButton;
+use ggez::glam::Vec2;
+use ggez::graphics::Color;
+use ggez::mint::Point2;
+use ggez::{graphics, Context, GameResult};
+use std::sync::mpsc::{channel, Receiver, Sender};
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum Message {
     Exit,
     NewGame,
-    Start
+    Start,
 }
 
 #[derive(Debug)]
 struct Button<Message: Clone> {
     text: String,
-    img: graphics::Image,
-    message: Message,
-    sender: Sender<Message>
+    img: Option<graphics::Image>,
+    message: self::Message,
+    sender: Sender<Message>,
+    size: Vec2,
+    pos: Vec2,
+    color: Color,
 }
 
 impl Button<Message> {
-    fn pressed(&mut self) {
-        self.color = Color::GREEN;
+    fn pressed(&self) {
+        println!("Pressed {:?}", self.message);
+    }
+
+    fn is_clicked(&self, mouse_pos: Point2<f32>) -> bool {
+        let x = mouse_pos.x;
+        let y = mouse_pos.y;
+        let x1 = self.pos.x;
+        let y1 = self.pos.y;
+        let x2 = self.pos.x + self.size.x;
+        let y2 = self.pos.y + self.size.y;
+        x > x1 && x < x2 && y > y1 && y < y2
+    }
+
+    //TODO: handle different types of buttons -> Message as type parameter
+    pub fn new(
+        text: String,
+        img: Option<graphics::Image>,
+        message: Message,
+        sender: Sender<Message>,
+        size: Vec2,
+        pos: Vec2,
+        color: Color,
+    ) -> Self {
+        Button {
+            text,
+            img,
+            message,
+            sender,
+            size,
+            pos,
+            color,
+        }
     }
 }
-
 
 #[derive(Debug)]
 pub struct MainMenu<Message: Clone> {
     buttons: Vec<Button<Message>>,
     receiver: Receiver<Message>,
-    sender: Sender<Message>
+    sender: Sender<Message>,
 }
 
 //TODO: pos in struct for buttons
@@ -51,44 +88,53 @@ fn draw_button(ctx: &mut Context, btn: &Button<Message>) -> GameResult<graphics:
 
 impl<Message: Clone> Default for MainMenu<Message> {
     fn default() -> Self {
+        let (sender, receiver) = channel();
 
-        let default_button = Button {
+        let start_button = Button {
             text: "Default Button".to_string(),
             img: None,
-            message: self::Message::NewGame,
-            sender: None,
-            pos: Vec2::new(200.0, 100.0),
-            size: Vec2::new(350.0, 100.0),
-            color: Color::CYAN
+            message: Start,
+            sender: sender.clone(),
+            pos: Vec2::new(650.0, 180.0),
+            size: Vec2::new(350.0, 120.0),
+            color: Color::from_rgba(0, 0, 0, 50),
+        };
+        let exit_button = Button {
+            text: "Exit".to_string(),
+            img: None,
+            message: Exit,
+            sender: sender.clone(),
+            pos: Vec2::new(650.0, 420.0),
+            size: Vec2::new(350.0, 120.0),
+            color: Color::from_rgba(0, 0, 0, 50),
         };
 
-        let (sender, receiver) = channel();
-        Self{
-            buttons: vec![
-                default_button
-            ],
+        Self {
+            buttons: vec![start_button, exit_button],
             receiver,
-            sender
+            sender,
         }
     }
 }
 
 impl Screen for MainMenu<Message> {
     fn update(&mut self, ctx: &mut Context) -> RedResult<StackCommand> {
-        // TODO: Replace with if buttons are clicked
+        //handle buttons
         if ctx.mouse.button_pressed(MouseButton::Left) {
             println!("Left mouse button pressed");
+            println!("Mouse position: {:?}", ctx.mouse.position());
             let current_position = ctx.mouse.position();
             for mut btn in &mut self.buttons {
-                if current_position.x > btn.pos[0] && current_position.x < btn.pos[0] + btn.size[0] {
-                    if current_position.y > btn.pos[1] && current_position.y < btn.pos[1] + btn.size[1] {
-                        btn.pressed();
-                        println!("Button clicked");
-                        //self.sender.send(btn.message.clone()).unwrap();
+                if btn.is_clicked(current_position) {
+                    btn.pressed();
+                    //TODO: handle different types of buttons -> type parameter (Message) determines action?
+                    if btn.message == Exit {
+                        ctx.request_quit();
                     }
+                    return Ok(StackCommand::Push(Box::new(GameState::default())));
+                    //self.sender.send(btn.message.clone()).unwrap();
                 }
             }
-            //return Ok(StackCommand::Push(Box::new(GameState::default())));
         }
         Ok(StackCommand::None)
     }
@@ -100,8 +146,9 @@ impl Screen for MainMenu<Message> {
         let background =
             graphics::Image::from_bytes(ctx, include_bytes!("../../assets/mainmenu.png"))?;
         canvas.draw(&background, graphics::DrawParam::default().scale(scale));
-        let mut btn_meshes = Vec::new();
 
+        //draw buttons
+        let mut btn_meshes = Vec::new();
         for btn in self.buttons.iter() {
             btn_meshes.push(draw_button(ctx, btn)?);
         }
@@ -110,8 +157,6 @@ impl Screen for MainMenu<Message> {
         }
         canvas.finish(ctx)?;
 
-
         Ok(())
     }
 }
-
