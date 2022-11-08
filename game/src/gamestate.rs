@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::fs::read_dir;
 use crate::screen::StackCommand;
 use crate::utils::get_scale;
 use crate::{screen::Screen, RedResult};
@@ -15,28 +16,33 @@ struct Item;
 struct Player {
     position: (usize, usize),
 }
+
 #[derive(Clone, Default, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct GameState {
     inventory: Vec<Item>,
     player: Player,
     milestone: usize,
 }
-struct Resources{
-    Assets: HashMap<String,graphics::Image>,
-    Sounds: HashMap<String,audio::Source>
+
+struct Resources {
+    Assets: HashMap<String, graphics::Image>,
+    Sounds: HashMap<String, audio::Source>,
 }
+
 impl Resources {
-    fn new(ctx: &mut Context) -> GameResult<Resources> {
+    fn load_all_assets(ctx: &mut Context) -> GameResult<Resources> {
         let mut assets = HashMap::new();
-        
-        assets.insert("basis".to_string(),graphics::Image::from_path(ctx,"basis.png")?);
+        for entry in read_dir("assets")? {
+            let dir = entry?;
 
-
+            assets.insert(dir.file_name().into_string().unwrap(), graphics::Image::from_path(ctx, dir.path())?);
+            dbg!("{successfully loaded :?}", dir.file_name());
+        }
         let mut sounds = HashMap::new();
 
         Ok(Resources {
             Assets: assets,
-            Sounds: sounds
+            Sounds: sounds,
         })
     }
 }
