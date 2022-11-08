@@ -1,8 +1,9 @@
+use std::collections::HashMap;
 use crate::screen::StackCommand;
 use crate::utils::get_scale;
 use crate::{screen::Screen, RedResult};
 use ggez::winit::event::VirtualKeyCode;
-use ggez::{graphics, Context};
+use ggez::{graphics, Context, audio, GameResult};
 use serde::{Deserialize, Serialize};
 
 const MOVEMENT_SPEED: usize = 5;
@@ -19,6 +20,25 @@ pub struct GameState {
     inventory: Vec<Item>,
     player: Player,
     milestone: usize,
+}
+struct Resources{
+    Assets: HashMap<String,graphics::Image>,
+    Sounds: HashMap<String,audio::Source>
+}
+impl Resources {
+    fn new(ctx: &mut Context) -> GameResult<Resources> {
+        let mut assets = HashMap::new();
+        
+        assets.insert("basis".to_string(),graphics::Image::from_path(ctx,"basis.png")?);
+
+
+        let mut sounds = HashMap::new();
+
+        Ok(Resources {
+            Assets: assets,
+            Sounds: sounds
+        })
+    }
 }
 
 impl GameState {
