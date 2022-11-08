@@ -7,6 +7,7 @@ mod utils;
 use crate::screen::Screenstack;
 use ggez::conf::FullscreenType;
 use ggez::{event, Context};
+use crate::gamestate::Resources;
 
 pub type RedResult<T = ()> = Result<T, error::RedError>;
 
@@ -21,6 +22,7 @@ pub fn main() -> RedResult {
                 .vsync(true),
         );
     let (mut ctx, event_loop) = cb.build()?;
+    Resources::load_all_assets(&mut ctx).expect("Load Ressources");
     window_setup(&mut ctx)?;
     let screen_stack = Screenstack::default();
     event::run(ctx, event_loop, screen_stack);

@@ -24,25 +24,28 @@ pub struct GameState {
     milestone: usize,
 }
 
-struct Resources {
-    Assets: HashMap<String, graphics::Image>,
-    Sounds: HashMap<String, audio::Source>,
+pub struct Resources {
+    assets: HashMap<String, graphics::Image>,
+    sounds: HashMap<String, audio::Source>,
 }
 
 impl Resources {
-    fn load_all_assets(ctx: &mut Context) -> GameResult<Resources> {
+    pub fn load_all_assets(ctx: &mut Context) -> GameResult<Resources> {
         let mut assets = HashMap::new();
+        assets.insert("basis".to_string(),graphics::Image::from_path(ctx, "/basis.png")?);
         for entry in read_dir("assets")? {
             let dir = entry?;
 
-            assets.insert(dir.file_name().into_string().unwrap(), graphics::Image::from_path(ctx, dir.path())?);
-            dbg!("{successfully loaded :?}", dir.file_name());
+            let asset_path="/".to_string() + &dir.path().file_name().unwrap().to_os_string().into_string().unwrap() ;
+            dbg!("try loading with path {}", &asset_path);
+            assets.insert(dir.file_name().into_string().unwrap(), graphics::Image::from_path(ctx, asset_path)?);
+            dbg!("successfully loaded {:?}", dir.file_name());
         }
         let mut sounds = HashMap::new();
 
         Ok(Resources {
-            Assets: assets,
-            Sounds: sounds,
+            assets,
+            sounds,
         })
     }
 }
