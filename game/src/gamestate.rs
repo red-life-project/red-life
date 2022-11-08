@@ -32,13 +32,14 @@ pub struct Resources {
 impl Resources {
     pub fn load_all_assets(ctx: &mut Context) -> GameResult<Resources> {
         let mut assets = HashMap::new();
-        assets.insert("basis".to_string(),graphics::Image::from_path(ctx, "/basis.png")?);
+
         for entry in read_dir("assets")? {
             let dir = entry?;
+            let asset_name = dir.file_name().into_string().unwrap().split('.').next().unwrap().to_string();
+            let asset_path = "/".to_string() + &dir.path().file_name().unwrap().to_os_string().into_string().unwrap();
 
-            let asset_path="/".to_string() + &dir.path().file_name().unwrap().to_os_string().into_string().unwrap() ;
             dbg!("try loading with path {}", &asset_path);
-            assets.insert(dir.file_name().into_string().unwrap(), graphics::Image::from_path(ctx, asset_path)?);
+            assets.insert(asset_name, graphics::Image::from_path(ctx, asset_path)?);
             dbg!("successfully loaded {:?}", dir.file_name());
         }
         let mut sounds = HashMap::new();
