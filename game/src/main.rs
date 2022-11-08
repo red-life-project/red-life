@@ -22,7 +22,8 @@ pub fn main() -> RedResult {
                 .vsync(true),
         );
     let (mut ctx, event_loop) = cb.build()?;
-    Resources::load_all_assets(&mut ctx).expect("Load Ressources");
+    let mut resources = Resources::default();
+    Resources::load_all_assets(&mut resources, &mut ctx).expect("Load Ressources");
     window_setup(&mut ctx)?;
     let screen_stack = Screenstack::default();
     event::run(ctx, event_loop, screen_stack);

@@ -1,11 +1,12 @@
 use std::collections::HashMap;
 use std::fs::read_dir;
-use crate::screen::StackCommand;
+use crate::screen::{Screenstack, StackCommand};
 use crate::utils::get_scale;
 use crate::{screen::Screen, RedResult};
 use ggez::winit::event::VirtualKeyCode;
 use ggez::{graphics, Context, audio, GameResult};
 use serde::{Deserialize, Serialize};
+use crate::mainmenu::{MainMenu, Message};
 
 const MOVEMENT_SPEED: usize = 5;
 
@@ -29,8 +30,17 @@ pub struct Resources {
     sounds: HashMap<String, audio::Source>,
 }
 
+impl Default for Resources {
+    fn default() -> Self {
+        Self {
+            assets: HashMap::new(),
+            sounds: HashMap::new(),
+        }
+    }
+}
+
 impl Resources {
-    pub fn load_all_assets(ctx: &mut Context) -> GameResult<Resources> {
+    pub fn load_all_assets(&mut self, ctx: &mut Context) -> GameResult<Resources> {
         let mut assets = HashMap::new();
 
         for entry in read_dir("assets")? {
@@ -39,7 +49,7 @@ impl Resources {
             let asset_path = "/".to_string() + &dir.path().file_name().unwrap().to_os_string().into_string().unwrap();
 
             dbg!("try loading with path {}", &asset_path);
-            assets.insert(asset_name, graphics::Image::from_path(ctx, asset_path)?);
+            self.assets.insert(asset_name, graphics::Image::from_path(ctx, asset_path)?);
             dbg!("successfully loaded {:?}", dir.file_name());
         }
         let mut sounds = HashMap::new();
@@ -48,6 +58,9 @@ impl Resources {
             assets,
             sounds,
         })
+    }
+    pub fn get_asset(&self, asset_name: String) -> graphics::Image {
+        return self.assets.get(&asset_name).unwrap().clone();
     }
 }
 
