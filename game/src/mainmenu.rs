@@ -1,7 +1,7 @@
 use crate::gamestate::GameState;
 use crate::screen::{Screen, StackCommand};
 use crate::utils::get_scale;
-use crate::RedResult;
+use crate::RLResult;
 use ggez::event::MouseButton;
 use ggez::{graphics, Context};
 use std::sync::mpsc::{channel, Receiver, Sender};
@@ -39,7 +39,7 @@ impl<Message: Clone> Default for MainMenu<Message> {
 }
 
 impl Screen for MainMenu<Message> {
-    fn update(&mut self, ctx: &mut Context) -> RedResult<StackCommand> {
+    fn update(&mut self, ctx: &mut Context) -> RLResult<StackCommand> {
         // TODO: Replace with if buttons are clicked
         if ctx.mouse.button_pressed(MouseButton::Left) {
             return Ok(StackCommand::Push(Box::new(
@@ -49,7 +49,7 @@ impl Screen for MainMenu<Message> {
         Ok(StackCommand::None)
     }
 
-    fn draw(&self, ctx: &mut Context) -> RedResult {
+    fn draw(&self, ctx: &mut Context) -> RLResult {
         let scale = get_scale(ctx);
         let mut canvas =
             graphics::Canvas::from_frame(ctx, graphics::Color::from([0.1, 0.2, 0.3, 1.0]));

@@ -1,14 +1,14 @@
 use ggez::{event, Context};
 
-use crate::error::RedError;
+use crate::error::RLError;
 use crate::mainmenu::{MainMenu, Message};
-use crate::RedResult;
+use crate::RLResult;
 use std::fmt::Debug;
 
 /// A screen is every drawable object in the game, so the main menu is a screen too
 pub trait Screen: Debug {
-    fn update(&mut self, ctx: &mut Context) -> RedResult<StackCommand>;
-    fn draw(&self, ctx: &mut Context) -> RedResult;
+    fn update(&mut self, ctx: &mut Context) -> RLResult<StackCommand>;
+    fn draw(&self, ctx: &mut Context) -> RLResult;
 }
 
 /// A Screenstack contains multiple screens, the first one of which is the current screen
@@ -25,8 +25,8 @@ pub enum StackCommand {
     Pop,
 }
 
-impl event::EventHandler<RedError> for Screenstack {
-    fn update(&mut self, ctx: &mut Context) -> RedResult {
+impl event::EventHandler<RLError> for Screenstack {
+    fn update(&mut self, ctx: &mut Context) -> RLResult {
         let command = self
             .screens
             .last_mut()
@@ -46,11 +46,11 @@ impl event::EventHandler<RedError> for Screenstack {
         Ok(())
     }
     /// Override the quit event so we don't actually quit the game.
-    fn quit_event(&mut self, ctx: &mut Context) -> RedResult<bool> {
+    fn quit_event(&mut self, ctx: &mut Context) -> RLResult<bool> {
         self.screens.last_mut().unwrap().update(ctx)?;
         Ok(true)
     }
-    fn draw(&mut self, ctx: &mut Context) -> RedResult {
+    fn draw(&mut self, ctx: &mut Context) -> RLResult {
         self.screens
             .last()
             .expect("Failed to get a screen")

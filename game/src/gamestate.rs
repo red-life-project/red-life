@@ -1,6 +1,6 @@
 use crate::screen::StackCommand;
 use crate::utils::get_scale;
-use crate::{screen::Screen, RedResult};
+use crate::{screen::Screen, RLResult};
 use ggez::glam::Vec2;
 use ggez::graphics::{Canvas, Transform};
 use ggez::winit::event::VirtualKeyCode;
@@ -27,12 +27,13 @@ impl Default for Player {
         }
     }
 }
+/// This is the game state. It contains all the data that is needed to run the game.
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct GameState {
     inventory: Vec<Item>,
     player: Player,
     milestone: usize,
-    multiplier: u16,
+    modifier: u16,
 }
 impl Default for GameState {
     fn default() -> Self {
@@ -40,45 +41,45 @@ impl Default for GameState {
             inventory: vec![],
             player: Player::default(),
             milestone: 0,
-            multiplier: 20,
+            modifier: 20,
         }
     }
 }
 
 impl GameState {
     pub fn tick(&mut self) {
-        self.player.air = self.player.air.saturating_sub(self.multiplier);
-        self.player.energy = self.player.energy.saturating_sub(self.multiplier);
+        self.player.air = self.player.air.saturating_sub(self.modifier);
+        self.player.energy = self.player.energy.saturating_sub(self.modifier);
         if self.player.air == 0 || self.player.energy == 0 {
+            // TODO: Load last game state
             // Remove a milestone if the player is dead
-            self.milestone = self.milestone.saturating_sub(1);
+            self.milestone = dbg!(self.milestone.saturating_sub(1));
             self.player.air = u16::MAX;
             self.player.energy = u16::MAX;
-            dbg!("Player died, resetting to milestone: {}", self.milestone);
         } else {
             self.milestone += 1;
         }
     }
 
-    fn draw_resources(&self, canvas: &mut Canvas, scale: Vec2) -> RedResult {
+    fn draw_resources(&self, canvas: &mut Canvas, scale: Vec2) -> RLResult {
         let mut text = graphics::Text::new(format!("Air: {}", self.player.air));
         canvas.draw(
             &text,
             graphics::DrawParam::default()
-                .dest([100. * scale.x, 1000. * scale.y])
+                .dest([50. * scale.x, 1000. * scale.y])
                 .scale(scale),
         );
         text = graphics::Text::new(format!("Energy: {}", self.player.energy));
         canvas.draw(
             &text,
             graphics::DrawParam::default()
-                .dest([100. * scale.x, 1050. * scale.y])
+                .dest([50. * scale.x, 1050. * scale.y])
                 .scale(scale),
         );
         Ok(())
     }
 
-    fn save_game_state(&self) -> RedResult {
+    fn save_game_state(&self) -> RLResult {
         let save_data = serde_yaml::to_string(self)?;
         // Create the folder if it doesn't exist
         std::fs::create_dir_all("../saves")?;
@@ -86,7 +87,7 @@ impl GameState {
         Ok(())
     }
 
-    pub fn load_game_state() -> RedResult<GameState> {
+    pub fn load_game_state() -> RLResult<GameState> {
         let save_data = std::fs::read_to_string("../saves/savegame.yaml")?;
         let game_state = serde_yaml::from_str(&save_data)?;
         Ok(game_state)
@@ -94,7 +95,7 @@ impl GameState {
 }
 
 impl Screen for GameState {
-    fn update(&mut self, ctx: &mut Context) -> RedResult<StackCommand> {
+    fn update(&mut self, ctx: &mut Context) -> RLResult<StackCommand> {
         self.tick();
         let keys = ctx.keyboard.pressed_keys();
         for key in keys.iter() {
@@ -116,14 +117,14 @@ impl Screen for GameState {
                     self.player.position.0 = self.player.position.0.saturating_add(MOVEMENT_SPEED);
                 }
                 key => {
-                    dbg!("{:?}", key);
+                    dbg!(key);
                 }
             }
         }
         Ok(StackCommand::None)
     }
 
-    fn draw(&self, ctx: &mut Context) -> RedResult {
+    fn draw(&self, ctx: &mut Context) -> RLResult {
         let scale = get_scale(ctx);
         let mut canvas =
             graphics::Canvas::from_frame(ctx, graphics::Color::from([0.1, 0.2, 0.3, 1.0]));
