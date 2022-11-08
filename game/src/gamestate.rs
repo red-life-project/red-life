@@ -25,19 +25,12 @@ pub struct GameState {
     milestone: usize,
 }
 
+#[derive(Default)]
 pub struct Resources {
     assets: HashMap<String, graphics::Image>,
     sounds: HashMap<String, audio::Source>,
 }
 
-impl Default for Resources {
-    fn default() -> Self {
-        Self {
-            assets: HashMap::new(),
-            sounds: HashMap::new(),
-        }
-    }
-}
 
 impl Resources {
     pub fn load_all_assets(&mut self, ctx: &mut Context) -> GameResult<Resources> {
@@ -59,6 +52,7 @@ impl Resources {
             sounds,
         })
     }
+
     pub fn get_asset(&self, asset_name: String) -> graphics::Image {
         return self.assets.get(&asset_name).unwrap().clone();
     }
