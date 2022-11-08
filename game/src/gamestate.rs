@@ -27,7 +27,7 @@ impl GameState {
         // do stuff
         self.milestone += 1;
     }
-
+    /// Saves the active game state to a file. The boolean value "milestone" determines whether this is a milestone or an autosave. If the file already exists, it will be overwritten.
     fn save(&self, milestone: bool) -> RedResult {
         let save_data = serde_yaml::to_string(self)?;
         // Create the folder if it doesn't exist
@@ -39,13 +39,13 @@ impl GameState {
         }
         Ok(())
     }
-
+    /// Loads a game state from a file. The boolean value "milestone" determines whether this is a milestone or an autosave. If the file doesn't exist, it will return a default game state.
     pub fn load(milestone: bool) -> RedResult<GameState> {
         let save_data = if milestone {
-            std::fs::read_to_string("./saves/milestone.yaml")?
+            std::fs::read_to_string("./saves/milestone.yaml")
         } else {
-            std::fs::read_to_string("./saves/autosave.yaml")?
-        };
+            std::fs::read_to_string("./saves/autosave.yaml")
+        }?;
         let game_state = serde_yaml::from_str(&save_data)?;
         Ok(game_state)
     }
