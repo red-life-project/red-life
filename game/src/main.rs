@@ -16,7 +16,6 @@ pub fn main() -> RedResult {
         .window_setup(
             ggez::conf::WindowSetup::default()
                 .icon("/icon.png")
-                .to_owned()
                 .title("Red Life")
                 .vsync(true),
         );

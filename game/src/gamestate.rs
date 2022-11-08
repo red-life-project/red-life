@@ -1,6 +1,8 @@
 use crate::screen::StackCommand;
 use crate::utils::get_scale;
 use crate::{screen::Screen, RedResult};
+use ggez::glam::Vec2;
+use ggez::graphics::{Canvas, Transform};
 use ggez::winit::event::VirtualKeyCode;
 use ggez::{graphics, Context};
 use serde::{Deserialize, Serialize};
@@ -10,21 +12,70 @@ const MOVEMENT_SPEED: usize = 5;
 #[derive(Clone, Eq, Debug, PartialEq, Serialize, Deserialize)]
 struct Item;
 
-#[derive(Clone, Default, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 struct Player {
     position: (usize, usize),
+    air: u16,
+    energy: u16,
 }
-#[derive(Clone, Default, Debug, Eq, PartialEq, Serialize, Deserialize)]
+impl Default for Player {
+    fn default() -> Self {
+        Self {
+            position: (0, 0),
+            air: u16::MAX,
+            energy: u16::MAX,
+        }
+    }
+}
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct GameState {
     inventory: Vec<Item>,
     player: Player,
     milestone: usize,
+    multiplier: u16,
+}
+impl Default for GameState {
+    fn default() -> Self {
+        Self {
+            inventory: vec![],
+            player: Player::default(),
+            milestone: 0,
+            multiplier: 20,
+        }
+    }
 }
 
 impl GameState {
     pub fn tick(&mut self) {
-        // do stuff
-        self.milestone += 1;
+        self.player.air = self.player.air.saturating_sub(self.multiplier);
+        self.player.energy = self.player.energy.saturating_sub(self.multiplier);
+        if self.player.air == 0 || self.player.energy == 0 {
+            // Remove a milestone if the player is dead
+            self.milestone = self.milestone.saturating_sub(1);
+            self.player.air = u16::MAX;
+            self.player.energy = u16::MAX;
+            dbg!("Player died, resetting to milestone: {}", self.milestone);
+        } else {
+            self.milestone += 1;
+        }
+    }
+
+    fn draw_resources(&self, canvas: &mut Canvas, scale: Vec2) -> RedResult {
+        let mut text = graphics::Text::new(format!("Air: {}", self.player.air));
+        canvas.draw(
+            &text,
+            graphics::DrawParam::default()
+                .dest([100. * scale.x, 1000. * scale.y])
+                .scale(scale),
+        );
+        text = graphics::Text::new(format!("Energy: {}", self.player.energy));
+        canvas.draw(
+            &text,
+            graphics::DrawParam::default()
+                .dest([100. * scale.x, 1050. * scale.y])
+                .scale(scale),
+        );
+        Ok(())
     }
 
     fn save_game_state(&self) -> RedResult {
@@ -85,6 +136,7 @@ impl Screen for GameState {
                 .scale(scale)
                 .dest([self.player.position.0 as f32, self.player.position.1 as f32]),
         );
+        self.draw_resources(&mut canvas, get_scale(ctx))?;
         canvas.finish(ctx)?;
         Ok(())
     }
