@@ -10,5 +10,10 @@ fn main() {
     // Copy our resources directory to OUT_DIR
     let mut options = CopyOptions::new();
     options.overwrite = true;
-    copy("../assets/", out_dir.to_str().unwrap().split("build").next().unwrap(), &options).unwrap();
+    copy(
+        "../assets/",
+        out_dir.to_str().unwrap().split("build").next().unwrap(),
+        &options,
+    )
+    .unwrap();
 }
