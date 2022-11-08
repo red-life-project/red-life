@@ -43,7 +43,7 @@ impl Screen for MainMenu<Message> {
         // TODO: Replace with if buttons are clicked
         if ctx.mouse.button_pressed(MouseButton::Left) {
             return Ok(StackCommand::Push(Box::new(
-                GameState::load_game_state().unwrap_or_default(),
+                GameState::load(false).unwrap_or_default(),
             )));
         }
         Ok(StackCommand::None)
