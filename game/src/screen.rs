@@ -45,6 +45,11 @@ impl event::EventHandler<RedError> for Screenstack {
         }
         Ok(())
     }
+    /// Override the quit event so we don't actually quit the game.
+    fn quit_event(&mut self, ctx: &mut Context) -> RedResult<bool> {
+        self.screens.last_mut().unwrap().update(ctx)?;
+        Ok(true)
+    }
     fn draw(&mut self, ctx: &mut Context) -> RedResult {
         self.screens
             .last()
