@@ -1,22 +1,40 @@
 use crate::screen::StackCommand;
 use crate::utils::get_scale;
 use crate::{screen::Screen, RedResult};
+use ggez::graphics::Rect;
 use ggez::winit::event::VirtualKeyCode;
 use ggez::{graphics, Context};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Eq, Debug, PartialEq, Serialize, Deserialize)]
-struct Item;
+struct Item {
+    name: String,
+    info_text: String,
+    //image should be a texture, didnt work yet
+    img: String,
+}
 
 #[derive(Clone, Default, Debug, Eq, PartialEq, Serialize, Deserialize)]
 struct Player {
     position: (usize, usize),
-}
-#[derive(Clone, Default, Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct GameState {
     inventory: Vec<Item>,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct GameState {
     player: Player,
     milestone: usize,
+    machines: Vec<(Rect)>,
+}
+
+impl Default for GameState {
+    fn default() -> Self {
+        Self {
+            player: Player::default(),
+            milestone: 0,
+            machines: vec![],
+        }
+    }
 }
 
 impl GameState {
@@ -36,6 +54,25 @@ impl GameState {
         let game_state = serde_yaml::from_str(&save_data)?;
         Ok(game_state)
     }
+    // Game collision detection
+    fn machine_collision_detection(&self, next_player_pos: (usize, usize)) -> bool {
+        for machine in &self.machines {
+            if (machine.x as usize..=(machine.x as usize + machine.w as usize))
+                .contains(&next_player_pos.0)
+                && (machine.y as usize..=(machine.y as usize + machine.h as usize))
+                    .contains(&next_player_pos.1)
+            {
+                return true;
+            }
+        }
+        false
+    }
+    fn border_collision_detection(next_player_pos: (usize, usize)) -> bool {
+        next_player_pos.0 >= 1879 ||next_player_pos.1 >= 1030
+    }
+    fn collision_detection(&self, next_player_pos: (usize, usize)) -> bool {
+        self.machine_collision_detection(next_player_pos) || Self::border_collision_detection(next_player_pos)
+    }
 }
 
 impl Screen for GameState {
@@ -49,16 +86,26 @@ impl Screen for GameState {
                     return Ok(StackCommand::Pop);
                 }
                 VirtualKeyCode::W => {
-                    self.player.position.1 = self.player.position.1.saturating_sub(5);
+                    if !self.collision_detection((self.player.position.0, self.player.position.1.saturating_sub(5))) {
+                        self.player.position.1 = self.player.position.1.saturating_sub(5);
+                    }
                 }
                 VirtualKeyCode::A => {
-                    self.player.position.0 = self.player.position.0.saturating_sub(5);
+                    if !self.collision_detection((self.player.position.0.saturating_sub(5), self.player.position.1)) {
+                        self.player.position.0 = self.player.position.0.saturating_sub(5);
+                    }
                 }
                 VirtualKeyCode::S => {
-                    self.player.position.1 = self.player.position.1.saturating_add(5);
+                    if !self.collision_detection((self.player.position.0, self.player.position.1.saturating_add(5)))
+                    {
+                        self.player.position.1 = self.player.position.1.saturating_add(5);
+                    }
                 }
-                VirtualKeyCode::D | VirtualKeyCode::Right => {
-                    self.player.position.0 = self.player.position.0.saturating_add(5);
+                VirtualKeyCode::D => {
+                    if !self.collision_detection((self.player.position.0.saturating_add(5), self.player.position.1))
+                    {
+                        self.player.position.0 = self.player.position.0.saturating_add(5);
+                    }
                 }
                 key => {
                     dbg!("{:?}", key);
@@ -85,7 +132,6 @@ impl Screen for GameState {
         Ok(())
     }
 }
-
 
 #[cfg(test)]
 mod test {
