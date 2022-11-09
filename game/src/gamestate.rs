@@ -14,6 +14,7 @@ struct Item;
 struct Player {
     position: (usize, usize),
 }
+
 #[derive(Clone, Default, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct GameState {
     inventory: Vec<Item>,
@@ -26,17 +27,25 @@ impl GameState {
         // do stuff
         self.milestone += 1;
     }
-
-    fn save_game_state(&self) -> RedResult {
+    /// Saves the active game state to a file. The boolean value "milestone" determines whether this is a milestone or an autosave. If the file already exists, it will be overwritten.
+    fn save(&self, milestone: bool) -> RedResult {
         let save_data = serde_yaml::to_string(self)?;
         // Create the folder if it doesn't exist
-        std::fs::create_dir_all("../saves")?;
-        std::fs::write("../saves/savegame.yaml", save_data)?;
+        std::fs::create_dir_all("./saves")?;
+        if milestone {
+            std::fs::write("./saves/milestone.yaml", save_data)?;
+        } else {
+            std::fs::write("./saves/autosave.yaml", save_data)?;
+        }
         Ok(())
     }
-
-    pub fn load_game_state() -> RedResult<GameState> {
-        let save_data = std::fs::read_to_string("../saves/savegame.yaml")?;
+    /// Loads a game state from a file. The boolean value "milestone" determines whether this is a milestone or an autosave. If the file doesn't exist, it will return a default game state.
+    pub fn load(milestone: bool) -> RedResult<GameState> {
+        let save_data = if milestone {
+            std::fs::read_to_string("./saves/milestone.yaml")
+        } else {
+            std::fs::read_to_string("./saves/autosave.yaml")
+        }?;
         let game_state = serde_yaml::from_str(&save_data)?;
         Ok(game_state)
     }
@@ -49,7 +58,7 @@ impl Screen for GameState {
         for key in keys.iter() {
             match key {
                 VirtualKeyCode::Escape => {
-                    self.save_game_state()?;
+                    self.save(false)?;
                     return Ok(StackCommand::Pop);
                 }
                 VirtualKeyCode::W => {
@@ -100,13 +109,24 @@ mod test {
     }
 
     #[test]
-    fn test_save_game_state() {
+    fn test_save_autosave() {
         let gamestate = GameState::default();
-        gamestate.save_game_state().unwrap();
+        gamestate.save(false).unwrap();
     }
 
     #[test]
-    fn test_load_game_state() {
-        let gamestate = GameState::load_game_state().unwrap();
+    fn test_save_milestone() {
+        let gamestate = GameState::default();
+        gamestate.save(true).unwrap();
+    }
+
+    #[test]
+    fn test_load_autosave() {
+        let gamestate = GameState::load(false).unwrap();
+    }
+
+    #[test]
+    fn test_load_milestone() {
+        let gamestate = GameState::load(true).unwrap();
     }
 }
