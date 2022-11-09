@@ -14,42 +14,40 @@ struct Item;
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 struct Player {
+    /// The current items of the player.
+    inventory: Vec<Item>,
     position: (usize, usize),
     air: u16,
     energy: u16,
+    air_cr: i16,
+    energy_cr: i16,
 }
 impl Default for Player {
     fn default() -> Self {
         Self {
+            inventory: vec![],
             position: (0, 0),
             air: u16::MAX,
             energy: u16::MAX,
+            air_cr: -10,
+            energy_cr: -10
         }
     }
 }
 /// This is the game state. It contains all the data that is needed to run the game.
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct GameState {
-    inventory: Vec<Item>,
+    /// Contains the current player position, air and energy
     player: Player,
+    /// The current milestone the player has reached.
     milestone: usize,
-    modifier: u16,
 }
-impl Default for GameState {
-    fn default() -> Self {
-        Self {
-            inventory: vec![],
-            player: Player::default(),
-            milestone: 0,
-            modifier: 20,
-        }
-    }
-}
+
 
 impl GameState {
     pub fn tick(&mut self) {
-        self.player.air = self.player.air.saturating_sub(self.modifier);
-        self.player.energy = self.player.energy.saturating_sub(self.modifier);
+        self.player.air = self.player.air.saturating_add_signed(self.player.energy_cr);
+        self.player.energy = self.player.energy.saturating_add_signed(self.player.air_cr);
         if self.player.air == 0 || self.player.energy == 0 {
             // TODO: Load last game state
             // Remove a milestone if the player is dead
