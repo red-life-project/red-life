@@ -30,7 +30,7 @@ struct Button<T: Clone> {
 
 impl Button<Message> {
     fn pressed(&self) {
-        println!("Pressed {:?}", self.message);
+        dbg!("Pressed {:?}", self.message);
     }
 
     fn is_clicked(&self, mouse_pos: Point2<f32>) -> bool {
@@ -109,8 +109,7 @@ impl Screen for MainMenu<Message> {
     fn update(&mut self, ctx: &mut Context) -> RedResult<StackCommand> {
         //handle buttons
         if ctx.mouse.button_pressed(MouseButton::Left) {
-            println!("Left mouse button pressed");
-            println!("Mouse position: {:?}", ctx.mouse.position());
+            dbg!(ctx.mouse.position());
             let current_position = ctx.mouse.position();
             for mut btn in &mut self.buttons {
                 if btn.is_clicked(current_position) {
@@ -123,6 +122,9 @@ impl Screen for MainMenu<Message> {
                     };
                 }
             }
+            return Ok(StackCommand::Push(Box::new(
+                GameState::load(false).unwrap_or_default(),
+            )));
         }
         Ok(StackCommand::None)
     }
