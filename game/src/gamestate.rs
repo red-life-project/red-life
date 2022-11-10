@@ -30,7 +30,7 @@ impl Default for Player {
             air: u16::MAX,
             energy: u16::MAX,
             air_cr: -10,
-            energy_cr: -10
+            energy_cr: -10,
         }
     }
 }
@@ -42,7 +42,6 @@ pub struct GameState {
     /// The current milestone the player has reached.
     milestone: usize,
 }
-
 
 impl GameState {
     pub fn tick(&mut self) {
@@ -59,6 +58,8 @@ impl GameState {
         }
     }
 
+    /// Draws the current resources to the screen.
+    /// TODO: Make them Bars with counters only displayed in debug configurations.
     fn draw_resources(&self, canvas: &mut Canvas, scale: Vec2) -> RLResult {
         let mut text = graphics::Text::new(format!("Air: {}", self.player.air));
         canvas.draw(
@@ -93,6 +94,7 @@ impl GameState {
 }
 
 impl Screen for GameState {
+    /// Updates the game and handles input. Returns StackCommand::Pop when Escape is pressed.
     fn update(&mut self, ctx: &mut Context) -> RLResult<StackCommand> {
         self.tick();
         let keys = ctx.keyboard.pressed_keys();
@@ -121,7 +123,7 @@ impl Screen for GameState {
         }
         Ok(StackCommand::None)
     }
-
+    /// Draws the game state to the screen.
     fn draw(&self, ctx: &mut Context) -> RLResult {
         let scale = get_scale(ctx);
         let mut canvas =

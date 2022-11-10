@@ -7,7 +7,10 @@ use std::fmt::Debug;
 
 /// A screen is every drawable object in the game, so the main menu is a screen too
 pub trait Screen: Debug {
+    /// Used for updating the screen. Returns a StackCommand used to either push a new screen or pop
+    /// the current one.
     fn update(&mut self, ctx: &mut Context) -> RLResult<StackCommand>;
+    /// Used for drawing the last screen in the game.
     fn draw(&self, ctx: &mut Context) -> RLResult;
 }
 
@@ -26,6 +29,7 @@ pub enum StackCommand {
 }
 
 impl event::EventHandler<RLError> for Screenstack {
+    // Redirect the update function to the last screen and handle the returned StackCommand
     fn update(&mut self, ctx: &mut Context) -> RLResult {
         let command = self
             .screens
@@ -45,17 +49,18 @@ impl event::EventHandler<RLError> for Screenstack {
         }
         Ok(())
     }
-    /// Override the quit event so we don't actually quit the game.
-    fn quit_event(&mut self, ctx: &mut Context) -> RLResult<bool> {
-        self.screens.last_mut().unwrap().update(ctx)?;
-        Ok(true)
-    }
+    /// Redirect the draw command to the last screen
     fn draw(&mut self, ctx: &mut Context) -> RLResult {
         self.screens
             .last()
             .expect("Failed to get a screen")
             .draw(ctx)?;
         Ok(())
+    }
+    /// Override the quit event so we don't actually quit the game.
+    fn quit_event(&mut self, ctx: &mut Context) -> RLResult<bool> {
+        self.screens.last_mut().unwrap().update(ctx)?;
+        Ok(true)
     }
 }
 
