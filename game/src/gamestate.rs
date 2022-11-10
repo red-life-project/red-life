@@ -5,6 +5,7 @@ use ggez::graphics::Rect;
 use ggez::winit::event::VirtualKeyCode;
 use ggez::{graphics, Context};
 use serde::{Deserialize, Serialize};
+use std::cmp::{max, min};
 
 #[derive(Clone, Eq, Debug, PartialEq, Serialize, Deserialize)]
 struct Item {
@@ -32,7 +33,7 @@ impl Default for GameState {
         Self {
             player: Player::default(),
             milestone: 0,
-            machines: vec![],
+            machines: vec![(Rect::new(100., 500., 900., 780.))],
         }
     }
 }
@@ -57,10 +58,10 @@ impl GameState {
     // Game collision detection
     fn machine_collision_detection(&self, next_player_pos: (usize, usize)) -> bool {
         for machine in &self.machines {
-            if (machine.x as usize..=(machine.x as usize + machine.w as usize))
-                .contains(&next_player_pos.0)
-                && (machine.y as usize..=(machine.y as usize + machine.h as usize))
-                    .contains(&next_player_pos.1)
+            if max(machine.x as usize, next_player_pos.0)
+                <= min((machine.x + machine.w) as usize, (next_player_pos.0 + 41))
+                && max(machine.y as usize, next_player_pos.1)
+                    <= min((machine.y + machine.h) as usize, (next_player_pos.1 + 50))
             {
                 return true;
             }
@@ -68,10 +69,11 @@ impl GameState {
         false
     }
     fn border_collision_detection(next_player_pos: (usize, usize)) -> bool {
-        next_player_pos.0 >= 1879 ||next_player_pos.1 >= 1030
+        next_player_pos.0 >= 1879 || next_player_pos.1 >= 1030
     }
     fn collision_detection(&self, next_player_pos: (usize, usize)) -> bool {
-        self.machine_collision_detection(next_player_pos) || Self::border_collision_detection(next_player_pos)
+        self.machine_collision_detection(next_player_pos)
+            || Self::border_collision_detection(next_player_pos)
     }
 }
 
@@ -86,24 +88,34 @@ impl Screen for GameState {
                     return Ok(StackCommand::Pop);
                 }
                 VirtualKeyCode::W => {
-                    if !self.collision_detection((self.player.position.0, self.player.position.1.saturating_sub(5))) {
+                    if !self.collision_detection((
+                        self.player.position.0,
+                        self.player.position.1.saturating_sub(5),
+                    )) {
                         self.player.position.1 = self.player.position.1.saturating_sub(5);
                     }
                 }
                 VirtualKeyCode::A => {
-                    if !self.collision_detection((self.player.position.0.saturating_sub(5), self.player.position.1)) {
+                    if !self.collision_detection((
+                        self.player.position.0.saturating_sub(5),
+                        self.player.position.1,
+                    )) {
                         self.player.position.0 = self.player.position.0.saturating_sub(5);
                     }
                 }
                 VirtualKeyCode::S => {
-                    if !self.collision_detection((self.player.position.0, self.player.position.1.saturating_add(5)))
-                    {
+                    if !self.collision_detection((
+                        self.player.position.0,
+                        self.player.position.1.saturating_add(5),
+                    )) {
                         self.player.position.1 = self.player.position.1.saturating_add(5);
                     }
                 }
                 VirtualKeyCode::D => {
-                    if !self.collision_detection((self.player.position.0.saturating_add(5), self.player.position.1))
-                    {
+                    if !self.collision_detection((
+                        self.player.position.0.saturating_add(5),
+                        self.player.position.1,
+                    )) {
                         self.player.position.0 = self.player.position.0.saturating_add(5);
                     }
                 }
