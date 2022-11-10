@@ -8,7 +8,8 @@ use serde::{Deserialize, Serialize};
 use std::cmp::{max, min};
 
 const MOVEMENT_SPEED: usize = 5;
-
+/// Defines an item in the inventory of the player
+/// Contains the name of the item, information about the item and the image
 #[derive(Clone, Eq, Debug, PartialEq, Serialize, Deserialize)]
 struct Item {
     name: String,
@@ -67,7 +68,8 @@ impl GameState {
         let game_state = serde_yaml::from_str(&save_data)?;
         Ok(game_state)
     }
-    // Game collision detection
+
+    /// Returns if the player would collide with a machine if they moved in the given direction
     fn machine_collision_detection(&self, next_player_pos: (usize, usize)) -> bool {
         for machine in &self.machines {
             if max(machine.x as usize, next_player_pos.0)
@@ -80,9 +82,15 @@ impl GameState {
         }
         false
     }
+
+    /// Returns if the player would collide with a border if they moved in the given direction
     fn border_collision_detection(next_player_pos: (usize, usize)) -> bool {
         next_player_pos.0 >= 1879 || next_player_pos.1 >= 1030
     }
+    /// Returns a boolean indicating whether the player would collide with a machine or border if they moved in the given direction
+    ///
+    /// # Arguments
+    /// * `next_player_pos` - A tuple containing the next position of the player
     fn collision_detection(&self, next_player_pos: (usize, usize)) -> bool {
         self.machine_collision_detection(next_player_pos)
             || Self::border_collision_detection(next_player_pos)
