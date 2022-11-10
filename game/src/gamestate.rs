@@ -2,15 +2,23 @@ use crate::screen::StackCommand;
 use crate::utils::get_scale;
 use crate::{screen::Screen, RLResult};
 use ggez::glam::Vec2;
+use ggez::graphics::Rect;
 use ggez::graphics::Canvas;
 use ggez::winit::event::VirtualKeyCode;
 use ggez::{graphics, Context};
 use serde::{Deserialize, Serialize};
+use std::cmp::{max, min};
 
 const MOVEMENT_SPEED: usize = 5;
-
+/// Defines an item in the inventory of the player
+/// Contains the name of the item, information about the item and the image
 #[derive(Clone, Eq, Debug, PartialEq, Serialize, Deserialize)]
-struct Item;
+struct Item {
+    name: String,
+    info_text: String,
+    //image should be a texture, didnt work yet
+    img: String,
+}
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 struct Player {
@@ -37,10 +45,12 @@ impl Default for Player {
 /// This is the game state. It contains all the data that is needed to run the game.
 #[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 pub struct GameState {
+    inventory: Vec<Item>,
     /// Contains the current player position, air and energy
     player: Player,
     /// The current milestone the player has reached.
     milestone: usize,
+    machines: Vec<(Rect)>,
 }
 
 impl GameState {
@@ -57,6 +67,8 @@ impl GameState {
             self.milestone += 1;
         }
     }
+    /// Saves the active game state to a file. The boolean value "milestone" determines whether this is a milestone or an autosave. If the file already exists, it will be overwritten.
+    fn save(&self, milestone: bool) -> RedResult {
 
     /// Draws the current resources to the screen.
     /// TODO: Make them Bars with counters only displayed in debug configurations.
@@ -81,15 +93,50 @@ impl GameState {
     fn save_game_state(&self) -> RLResult {
         let save_data = serde_yaml::to_string(self)?;
         // Create the folder if it doesn't exist
-        std::fs::create_dir_all("../saves")?;
-        std::fs::write("../saves/savegame.yaml", save_data)?;
+        std::fs::create_dir_all("./saves")?;
+        if milestone {
+            std::fs::write("./saves/milestone.yaml", save_data)?;
+        } else {
+            std::fs::write("./saves/autosave.yaml", save_data)?;
+        }
         Ok(())
     }
-
-    pub fn load_game_state() -> RLResult<GameState> {
-        let save_data = std::fs::read_to_string("../saves/savegame.yaml")?;
+    /// Loads a game state from a file. The boolean value "milestone" determines whether this is a milestone or an autosave. If the file doesn't exist, it will return a default game state.
+    pub fn load(milestone: bool) -> RLResult<GameState> {
+        let save_data = if milestone {
+            std::fs::read_to_string("./saves/milestone.yaml")
+        } else {
+            std::fs::read_to_string("./saves/autosave.yaml")
+        }?;
         let game_state = serde_yaml::from_str(&save_data)?;
         Ok(game_state)
+    }
+
+    /// Returns if the player would collide with a machine if they moved in the given direction
+    fn machine_collision_detection(&self, next_player_pos: (usize, usize)) -> bool {
+        for machine in &self.machines {
+            if max(machine.x as usize, next_player_pos.0)
+                <= min((machine.x + machine.w) as usize, (next_player_pos.0 + 41))
+                && max(machine.y as usize, next_player_pos.1)
+                    <= min((machine.y + machine.h) as usize, (next_player_pos.1 + 50))
+            {
+                return true;
+            }
+        }
+        false
+    }
+
+    /// Returns if the player would collide with a border if they moved in the given direction
+    fn border_collision_detection(next_player_pos: (usize, usize)) -> bool {
+        next_player_pos.0 >= 1879 || next_player_pos.1 >= 1030
+    }
+    /// Returns a boolean indicating whether the player would collide with a machine or border if they moved in the given direction
+    ///
+    /// # Arguments
+    /// * `next_player_pos` - A tuple containing the next position of the player
+    fn collision_detection(&self, next_player_pos: (usize, usize)) -> bool {
+        self.machine_collision_detection(next_player_pos)
+            || Self::border_collision_detection(next_player_pos)
     }
 }
 
@@ -101,20 +148,44 @@ impl Screen for GameState {
         for key in keys.iter() {
             match key {
                 VirtualKeyCode::Escape => {
-                    self.save_game_state()?;
+                    self.save(false)?;
                     return Ok(StackCommand::Pop);
                 }
                 VirtualKeyCode::W => {
-                    self.player.position.1 = self.player.position.1.saturating_sub(MOVEMENT_SPEED);
+                    if !self.collision_detection((
+                        self.player.position.0,
+                        self.player.position.1.saturating_sub(MOVEMENT_SPEED),
+                    )) {
+                        self.player.position.1 =
+                            self.player.position.1.saturating_sub(MOVEMENT_SPEED);
+                    }
                 }
                 VirtualKeyCode::A => {
-                    self.player.position.0 = self.player.position.0.saturating_sub(MOVEMENT_SPEED);
+                    if !self.collision_detection((
+                        self.player.position.0.saturating_sub(MOVEMENT_SPEED),
+                        self.player.position.1,
+                    )) {
+                        self.player.position.0 =
+                            self.player.position.0.saturating_sub(MOVEMENT_SPEED);
+                    }
                 }
                 VirtualKeyCode::S => {
-                    self.player.position.1 = self.player.position.1.saturating_add(MOVEMENT_SPEED);
+                    if !self.collision_detection((
+                        self.player.position.0,
+                        self.player.position.1.saturating_add(MOVEMENT_SPEED),
+                    )) {
+                        self.player.position.1 =
+                            self.player.position.1.saturating_add(MOVEMENT_SPEED);
+                    }
                 }
-                VirtualKeyCode::D | VirtualKeyCode::Right => {
-                    self.player.position.0 = self.player.position.0.saturating_add(MOVEMENT_SPEED);
+                VirtualKeyCode::D => {
+                    if !self.collision_detection((
+                        self.player.position.0.saturating_add(MOVEMENT_SPEED),
+                        self.player.position.1,
+                    )) {
+                        self.player.position.0 =
+                            self.player.position.0.saturating_add(MOVEMENT_SPEED);
+                    }
                 }
                 key => {
                     dbg!(key);
@@ -137,7 +208,6 @@ impl Screen for GameState {
                 .scale(scale)
                 .dest([self.player.position.0 as f32, self.player.position.1 as f32]),
         );
-        self.draw_resources(&mut canvas, get_scale(ctx))?;
         canvas.finish(ctx)?;
         Ok(())
     }
@@ -153,13 +223,24 @@ mod test {
     }
 
     #[test]
-    fn test_save_game_state() {
+    fn test_save_autosave() {
         let gamestate = GameState::default();
-        gamestate.save_game_state().unwrap();
+        gamestate.save(false).unwrap();
     }
 
     #[test]
-    fn test_load_game_state() {
-        let gamestate = GameState::load_game_state().unwrap();
+    fn test_save_milestone() {
+        let gamestate = GameState::default();
+        gamestate.save(true).unwrap();
+    }
+
+    #[test]
+    fn test_load_autosave() {
+        let gamestate = GameState::load(false).unwrap();
+    }
+
+    #[test]
+    fn test_load_milestone() {
+        let gamestate = GameState::load(true).unwrap();
     }
 }
