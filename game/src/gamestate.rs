@@ -7,6 +7,8 @@ use ggez::{graphics, Context};
 use serde::{Deserialize, Serialize};
 use std::cmp::{max, min};
 
+const MOVEMENT_SPEED: usize = 5;
+
 #[derive(Clone, Eq, Debug, PartialEq, Serialize, Deserialize)]
 struct Item {
     name: String,
@@ -33,7 +35,7 @@ impl Default for GameState {
         Self {
             player: Player::default(),
             milestone: 0,
-            machines: vec![(Rect::new(100., 500., 900., 780.))],
+            machines: vec![],
         }
     }
 }
@@ -43,15 +45,25 @@ impl GameState {
         // do stuff
         self.milestone += 1;
     }
-
-    fn save_game_state(game_state: &GameState) -> RedResult {
-        let save_data = serde_yaml::to_string(game_state)?;
-        std::fs::write("../saves/savegame.yaml", save_data)?;
+    /// Saves the active game state to a file. The boolean value "milestone" determines whether this is a milestone or an autosave. If the file already exists, it will be overwritten.
+    fn save(&self, milestone: bool) -> RedResult {
+        let save_data = serde_yaml::to_string(self)?;
+        // Create the folder if it doesn't exist
+        std::fs::create_dir_all("./saves")?;
+        if milestone {
+            std::fs::write("./saves/milestone.yaml", save_data)?;
+        } else {
+            std::fs::write("./saves/autosave.yaml", save_data)?;
+        }
         Ok(())
     }
-
-    fn load_game_state() -> RedResult<GameState> {
-        let save_data = std::fs::read_to_string("../saves/savegame.yaml")?;
+    /// Loads a game state from a file. The boolean value "milestone" determines whether this is a milestone or an autosave. If the file doesn't exist, it will return a default game state.
+    pub fn load(milestone: bool) -> RedResult<GameState> {
+        let save_data = if milestone {
+            std::fs::read_to_string("./saves/milestone.yaml")
+        } else {
+            std::fs::read_to_string("./saves/autosave.yaml")
+        }?;
         let game_state = serde_yaml::from_str(&save_data)?;
         Ok(game_state)
     }
@@ -84,39 +96,39 @@ impl Screen for GameState {
         for key in keys.iter() {
             match key {
                 VirtualKeyCode::Escape => {
-                    // TODO: Save the game
+                    self.save(false)?;
                     return Ok(StackCommand::Pop);
                 }
                 VirtualKeyCode::W => {
                     if !self.collision_detection((
                         self.player.position.0,
-                        self.player.position.1.saturating_sub(5),
+                        self.player.position.1.saturating_sub(MOVEMENT_SPEED),
                     )) {
-                        self.player.position.1 = self.player.position.1.saturating_sub(5);
+                        self.player.position.1 = self.player.position.1.saturating_sub(MOVEMENT_SPEED);
                     }
                 }
                 VirtualKeyCode::A => {
                     if !self.collision_detection((
-                        self.player.position.0.saturating_sub(5),
+                        self.player.position.0.saturating_sub(MOVEMENT_SPEED),
                         self.player.position.1,
                     )) {
-                        self.player.position.0 = self.player.position.0.saturating_sub(5);
+                        self.player.position.0 = self.player.position.0.saturating_sub(MOVEMENT_SPEED);
                     }
                 }
                 VirtualKeyCode::S => {
                     if !self.collision_detection((
                         self.player.position.0,
-                        self.player.position.1.saturating_add(5),
+                        self.player.position.1.saturating_add(MOVEMENT_SPEED),
                     )) {
-                        self.player.position.1 = self.player.position.1.saturating_add(5);
+                        self.player.position.1 = self.player.position.1.saturating_add(MOVEMENT_SPEED);
                     }
                 }
                 VirtualKeyCode::D => {
                     if !self.collision_detection((
-                        self.player.position.0.saturating_add(5),
+                        self.player.position.0.saturating_add(MOVEMENT_SPEED),
                         self.player.position.1,
                     )) {
-                        self.player.position.0 = self.player.position.0.saturating_add(5);
+                        self.player.position.0 = self.player.position.0.saturating_add(MOVEMENT_SPEED);
                     }
                 }
                 key => {
@@ -131,7 +143,7 @@ impl Screen for GameState {
         let scale = get_scale(ctx);
         let mut canvas =
             graphics::Canvas::from_frame(ctx, graphics::Color::from([0.1, 0.2, 0.3, 1.0]));
-        // TODO: After asset loading we can do this again: let background = graphics::Image::from_bytes(ctx, include_bytes!("../../assets/basis.png"))?;
+        // TODO: After asset loading we can load this from a hashmap: let background = graphics::Image::from_bytes(ctx, include_bytes!("../../assets/basis.png"))?;
         //canvas.draw(&background, graphics::DrawParam::default().scale(scale));
         let player = graphics::Image::from_bytes(ctx, include_bytes!("../../assets/player.png"))?;
         canvas.draw(
@@ -155,13 +167,24 @@ mod test {
     }
 
     #[test]
-    fn test_save_game_state() {
+    fn test_save_autosave() {
         let gamestate = GameState::default();
-        GameState::save_game_state(&gamestate);
+        gamestate.save(false).unwrap();
     }
 
     #[test]
-    fn test_load_game_state() {
-        let gamestate = GameState::load_game_state().unwrap();
+    fn test_save_milestone() {
+        let gamestate = GameState::default();
+        gamestate.save(true).unwrap();
+    }
+
+    #[test]
+    fn test_load_autosave() {
+        let gamestate = GameState::load(false).unwrap();
+    }
+
+    #[test]
+    fn test_load_milestone() {
+        let gamestate = GameState::load(true).unwrap();
     }
 }

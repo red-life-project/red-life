@@ -42,7 +42,9 @@ impl Screen for MainMenu<Message> {
     fn update(&mut self, ctx: &mut Context) -> RedResult<StackCommand> {
         // TODO: Replace with if buttons are clicked
         if ctx.mouse.button_pressed(MouseButton::Left) {
-            return Ok(StackCommand::Push(Box::new(GameState::default())));
+            return Ok(StackCommand::Push(Box::new(
+                GameState::load(false).unwrap_or_default(),
+            )));
         }
         Ok(StackCommand::None)
     }
