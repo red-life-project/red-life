@@ -2,8 +2,8 @@ use crate::screen::StackCommand;
 use crate::utils::get_scale;
 use crate::{screen::Screen, RLResult};
 use ggez::glam::Vec2;
-use ggez::graphics::Rect;
 use ggez::graphics::Canvas;
+use ggez::graphics::Rect;
 use ggez::winit::event::VirtualKeyCode;
 use ggez::{graphics, Context};
 use serde::{Deserialize, Serialize};
@@ -43,7 +43,7 @@ impl Default for Player {
     }
 }
 /// This is the game state. It contains all the data that is needed to run the game.
-#[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct GameState {
     inventory: Vec<Item>,
     /// Contains the current player position, air and energy
@@ -67,8 +67,6 @@ impl GameState {
             self.milestone += 1;
         }
     }
-    /// Saves the active game state to a file. The boolean value "milestone" determines whether this is a milestone or an autosave. If the file already exists, it will be overwritten.
-    fn save(&self, milestone: bool) -> RedResult {
 
     /// Draws the current resources to the screen.
     /// TODO: Make them Bars with counters only displayed in debug configurations.
@@ -90,7 +88,8 @@ impl GameState {
         Ok(())
     }
 
-    fn save_game_state(&self) -> RLResult {
+    /// Saves the active game state to a file. The boolean value "milestone" determines whether this is a milestone or an autosave. If the file already exists, it will be overwritten.
+    fn save(&self, milestone: bool) -> RLResult {
         let save_data = serde_yaml::to_string(self)?;
         // Create the folder if it doesn't exist
         std::fs::create_dir_all("./saves")?;
