@@ -104,7 +104,8 @@ impl Screen for GameState {
                         self.player.position.0,
                         self.player.position.1.saturating_sub(MOVEMENT_SPEED),
                     )) {
-                        self.player.position.1 = self.player.position.1.saturating_sub(MOVEMENT_SPEED);
+                        self.player.position.1 =
+                            self.player.position.1.saturating_sub(MOVEMENT_SPEED);
                     }
                 }
                 VirtualKeyCode::A => {
@@ -112,7 +113,8 @@ impl Screen for GameState {
                         self.player.position.0.saturating_sub(MOVEMENT_SPEED),
                         self.player.position.1,
                     )) {
-                        self.player.position.0 = self.player.position.0.saturating_sub(MOVEMENT_SPEED);
+                        self.player.position.0 =
+                            self.player.position.0.saturating_sub(MOVEMENT_SPEED);
                     }
                 }
                 VirtualKeyCode::S => {
@@ -120,7 +122,8 @@ impl Screen for GameState {
                         self.player.position.0,
                         self.player.position.1.saturating_add(MOVEMENT_SPEED),
                     )) {
-                        self.player.position.1 = self.player.position.1.saturating_add(MOVEMENT_SPEED);
+                        self.player.position.1 =
+                            self.player.position.1.saturating_add(MOVEMENT_SPEED);
                     }
                 }
                 VirtualKeyCode::D => {
@@ -128,7 +131,8 @@ impl Screen for GameState {
                         self.player.position.0.saturating_add(MOVEMENT_SPEED),
                         self.player.position.1,
                     )) {
-                        self.player.position.0 = self.player.position.0.saturating_add(MOVEMENT_SPEED);
+                        self.player.position.0 =
+                            self.player.position.0.saturating_add(MOVEMENT_SPEED);
                     }
                 }
                 key => {
