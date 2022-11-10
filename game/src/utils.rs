@@ -7,7 +7,7 @@ use ggez::Context;
 /// let scale = get_scale(ctx);
 /// graphics::draw(ctx, &self.img, graphics::DrawParam::default().scale(scale))?;
 /// ```
-pub fn get_scale(ctx: &mut Context) -> Vec2 {
+pub fn get_scale(ctx: &Context) -> Vec2 {
     let (width, height) = ctx.gfx.drawable_size();
     Vec2::new(width / 1920., height / 1080.)
 }

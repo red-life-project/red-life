@@ -1,25 +1,44 @@
 use crate::screen::StackCommand;
 use crate::utils::get_scale;
 use crate::{screen::Screen, RedResult};
+use ggez::graphics::Rect;
 use ggez::winit::event::VirtualKeyCode;
 use ggez::{graphics, Context};
 use serde::{Deserialize, Serialize};
+use std::cmp::{max, min};
 
 const MOVEMENT_SPEED: usize = 5;
-
+/// Defines an item in the inventory of the player
+/// Contains the name of the item, information about the item and the image
 #[derive(Clone, Eq, Debug, PartialEq, Serialize, Deserialize)]
-struct Item;
+struct Item {
+    name: String,
+    info_text: String,
+    //image should be a texture, didnt work yet
+    img: String,
+}
 
 #[derive(Clone, Default, Debug, Eq, PartialEq, Serialize, Deserialize)]
 struct Player {
     position: (usize, usize),
+    inventory: Vec<Item>,
 }
 
-#[derive(Clone, Default, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct GameState {
-    inventory: Vec<Item>,
     player: Player,
     milestone: usize,
+    machines: Vec<(Rect)>,
+}
+
+impl Default for GameState {
+    fn default() -> Self {
+        Self {
+            player: Player::default(),
+            milestone: 0,
+            machines: vec![],
+        }
+    }
 }
 
 impl GameState {
@@ -49,6 +68,33 @@ impl GameState {
         let game_state = serde_yaml::from_str(&save_data)?;
         Ok(game_state)
     }
+
+    /// Returns if the player would collide with a machine if they moved in the given direction
+    fn machine_collision_detection(&self, next_player_pos: (usize, usize)) -> bool {
+        for machine in &self.machines {
+            if max(machine.x as usize, next_player_pos.0)
+                <= min((machine.x + machine.w) as usize, (next_player_pos.0 + 41))
+                && max(machine.y as usize, next_player_pos.1)
+                    <= min((machine.y + machine.h) as usize, (next_player_pos.1 + 50))
+            {
+                return true;
+            }
+        }
+        false
+    }
+
+    /// Returns if the player would collide with a border if they moved in the given direction
+    fn border_collision_detection(next_player_pos: (usize, usize)) -> bool {
+        next_player_pos.0 >= 1879 || next_player_pos.1 >= 1030
+    }
+    /// Returns a boolean indicating whether the player would collide with a machine or border if they moved in the given direction
+    ///
+    /// # Arguments
+    /// * `next_player_pos` - A tuple containing the next position of the player
+    fn collision_detection(&self, next_player_pos: (usize, usize)) -> bool {
+        self.machine_collision_detection(next_player_pos)
+            || Self::border_collision_detection(next_player_pos)
+    }
 }
 
 impl Screen for GameState {
@@ -62,16 +108,40 @@ impl Screen for GameState {
                     return Ok(StackCommand::Pop);
                 }
                 VirtualKeyCode::W => {
-                    self.player.position.1 = self.player.position.1.saturating_sub(MOVEMENT_SPEED);
+                    if !self.collision_detection((
+                        self.player.position.0,
+                        self.player.position.1.saturating_sub(MOVEMENT_SPEED),
+                    )) {
+                        self.player.position.1 =
+                            self.player.position.1.saturating_sub(MOVEMENT_SPEED);
+                    }
                 }
                 VirtualKeyCode::A => {
-                    self.player.position.0 = self.player.position.0.saturating_sub(MOVEMENT_SPEED);
+                    if !self.collision_detection((
+                        self.player.position.0.saturating_sub(MOVEMENT_SPEED),
+                        self.player.position.1,
+                    )) {
+                        self.player.position.0 =
+                            self.player.position.0.saturating_sub(MOVEMENT_SPEED);
+                    }
                 }
                 VirtualKeyCode::S => {
-                    self.player.position.1 = self.player.position.1.saturating_add(MOVEMENT_SPEED);
+                    if !self.collision_detection((
+                        self.player.position.0,
+                        self.player.position.1.saturating_add(MOVEMENT_SPEED),
+                    )) {
+                        self.player.position.1 =
+                            self.player.position.1.saturating_add(MOVEMENT_SPEED);
+                    }
                 }
-                VirtualKeyCode::D | VirtualKeyCode::Right => {
-                    self.player.position.0 = self.player.position.0.saturating_add(MOVEMENT_SPEED);
+                VirtualKeyCode::D => {
+                    if !self.collision_detection((
+                        self.player.position.0.saturating_add(MOVEMENT_SPEED),
+                        self.player.position.1,
+                    )) {
+                        self.player.position.0 =
+                            self.player.position.0.saturating_add(MOVEMENT_SPEED);
+                    }
                 }
                 key => {
                     dbg!("{:?}", key);
