@@ -35,7 +35,7 @@ impl Default for Player {
     }
 }
 /// This is the game state. It contains all the data that is needed to run the game.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 pub struct GameState {
     /// Contains the current player position, air and energy
     player: Player,
