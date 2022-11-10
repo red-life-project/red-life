@@ -1,8 +1,6 @@
 // build.rs
 
 use std::env;
-use std::fs;
-use std::path::Path;
 extern crate fs_extra;
 use fs_extra::dir::{copy, CopyOptions};
 fn main() {

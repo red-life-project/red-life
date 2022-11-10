@@ -2,7 +2,7 @@ use crate::screen::StackCommand;
 use crate::utils::get_scale;
 use crate::{screen::Screen, RLResult};
 use ggez::glam::Vec2;
-use ggez::graphics::{Canvas, Transform};
+use ggez::graphics::Canvas;
 use ggez::winit::event::VirtualKeyCode;
 use ggez::{graphics, Context};
 use serde::{Deserialize, Serialize};
