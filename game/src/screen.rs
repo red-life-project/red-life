@@ -18,7 +18,7 @@ pub struct Screenstack {
     screens: Vec<Box<dyn Screen>>,
     popup: Vec<Popup>,
 }
-/// Popups are used to display ingame information/notification on screen
+/// Popups are used to display ingame information/notification on screen (toplevel)
 #[derive(Debug, PartialEq, Clone)]
 pub struct Popup {
     color: Color,
