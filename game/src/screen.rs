@@ -1,11 +1,11 @@
-use ggez::{event, Context, graphics};
 use crate::error::RedError;
 use crate::mainmenu::{MainMenu, Message};
+use crate::utils::get_scale;
 use crate::RedResult;
+use ggez::graphics::{Color, Image};
+use ggez::{event, graphics, Context};
 use std::fmt::Debug;
 use std::time::Instant;
-use ggez::graphics::{Color, Image};
-use crate::utils::get_scale;
 
 /// A screen is every drawable object in the game, so the main menu is a screen too
 pub trait Screen: Debug {
@@ -18,6 +18,8 @@ pub struct Screenstack {
     screens: Vec<Box<dyn Screen>>,
     popup: Vec<Popup>,
 }
+
+#[derive(Debug, PartialEq, Clone)]
 pub struct Popup {
     color: Color,
     text: String,
@@ -34,18 +36,25 @@ impl Popup {
     }
 }
 impl Screenstack {
-
     fn draw_popup(&mut self, ctx: &mut Context) -> RedResult {
+        let mut canvas = graphics::Canvas::from_frame(ctx, None);
         for (pos, popup) in self.popup.iter().enumerate() {
             let scale = get_scale(ctx);
-            let mut canvas =
-                graphics::Canvas::from_frame(ctx, None);
             let text = graphics::Text::new(popup.text.clone());
-            dbg!(canvas.draw(&text, graphics::DrawParam::default().dest([100.,200.])));
+            canvas.draw(
+                &text,
+                graphics::DrawParam::default()
+                    .scale(scale)
+                    .dest([0., pos as f32 * 100. * scale.y])
+                    .color(popup.color),
+            );
         }
+        canvas.finish(ctx)?;
         Ok(())
     }
-
+    fn remove_popups(&mut self) {
+        self.popup.retain(|popup| popup.expiration > Instant::now());
+    }
 }
 /// The StackCommand is necessary in order to send commands back to the screenstack
 /// from the screen. We can for example tell the screenstack to push the gamestate screen onto the
@@ -58,6 +67,7 @@ pub enum StackCommand {
 
 impl event::EventHandler<RedError> for Screenstack {
     fn update(&mut self, ctx: &mut Context) -> RedResult {
+        self.remove_popups();
         let command = self
             .screens
             .last_mut()
@@ -75,7 +85,6 @@ impl event::EventHandler<RedError> for Screenstack {
             }
         }
         Ok(())
-
     }
 
     /// Override the quit event so we don't actually quit the game.
@@ -84,10 +93,12 @@ impl event::EventHandler<RedError> for Screenstack {
         Ok(true)
     }
     fn draw(&mut self, ctx: &mut Context) -> RedResult {
+        self.screens
+            .last()
+            .expect("Failed to get a screen")
+            .draw(ctx)?;
         self.draw_popup(ctx)?;
         Ok(())
-
-
     }
 }
 
@@ -95,8 +106,7 @@ impl Default for Screenstack {
     fn default() -> Self {
         Self {
             screens: vec![Box::<MainMenu<Message>>::default()],
-            popup: vec![Popup::new( graphics::Color::YELLOW, "Dangernoodle".to_string(), 10)],
-
+            popup: vec![],
         }
     }
 }
