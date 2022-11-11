@@ -35,6 +35,12 @@ impl Button<Message> {
     fn is_clicked(&self, mouse_pos: Point2<f32>) -> bool {
         self.rect.contains(mouse_pos)
     }
+    fn click(&mut self, mouse_pos: Point2<f32>) {
+        if self.is_clicked(mouse_pos) {
+            self.pressed();
+            self.sender.send(self.message).unwrap();
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -97,24 +103,19 @@ impl Screen for MainMenu<Message> {
     fn update(&mut self, ctx: &mut Context) -> RLResult<StackCommand> {
         //handle buttons
         if ctx.mouse.button_pressed(MouseButton::Left) {
-            dbg!(ctx.mouse.position());
             let current_position = ctx.mouse.position();
-            for mut btn in &mut self.buttons {
-                if btn.is_clicked(current_position) {
-                    btn.pressed();
-
-                    return match btn.message {
-                        Exit => Ok(StackCommand::Pop),
-                        NewGame => Ok(StackCommand::Push(Box::new(GameState::default()))),
-                        Start => Ok(StackCommand::Push(Box::new(GameState::default()))),
-                    };
-                }
-            }
-            return Ok(StackCommand::Push(Box::new(
-                GameState::load(false).unwrap_or_default(),
-            )));
+            self.buttons.iter_mut().for_each(|btn| btn.click(current_position));
         }
-        Ok(StackCommand::None)
+        if let Ok(msg) = self.receiver.try_recv() {
+            match msg {
+                Exit => Ok(StackCommand::Pop),
+                NewGame => Ok(StackCommand::Push(Box::new(GameState::default()))),
+                Start => Ok(StackCommand::Push(Box::new(GameState::default()))),
+            }
+        }
+        else {
+            Ok(StackCommand::None)
+        }
     }
 
     fn draw(&self, ctx: &mut Context) -> RLResult {
