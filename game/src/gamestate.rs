@@ -5,9 +5,12 @@ use ggez::glam::Vec2;
 use ggez::graphics::Canvas;
 use ggez::graphics::Rect;
 use ggez::winit::event::VirtualKeyCode;
-use ggez::{graphics, Context};
+use ggez::{graphics, Context, GameError};
 use serde::{Deserialize, Serialize};
 use std::cmp::{max, min};
+use std::collections::HashMap;
+use std::fs;
+use crate::error::RLError;
 
 const MOVEMENT_SPEED: usize = 5;
 /// Defines an item in the inventory of the player
@@ -43,7 +46,7 @@ impl Default for Player {
     }
 }
 /// This is the game state. It contains all the data that is needed to run the game.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct GameState {
     inventory: Vec<Item>,
     /// Contains the current player position, air and energy
@@ -51,8 +54,16 @@ pub struct GameState {
     /// The current milestone the player has reached.
     milestone: usize,
     machines: Vec<(Rect)>,
+    #[serde(skip)]
+    assets: HashMap<String, graphics::Image>,
 }
-
+impl PartialEq for GameState {
+    fn eq(&self, other: &Self) -> bool {
+        self.player == other.player
+            && self.milestone == other.milestone
+            && self.machines == other.machines
+    }
+}
 impl GameState {
     pub fn tick(&mut self) {
         self.player.air = self.player.air.saturating_add_signed(self.player.energy_cr);
@@ -87,6 +98,12 @@ impl GameState {
         );
         Ok(())
     }
+    fn load_assets(&mut self, ctx: &mut Context) -> RLResult {
+        fs::read_dir("assets").unwrap().into_iter().for_each(|asset|{
+            self.assets.insert(asset.as_ref().unwrap().file_name().into_string().unwrap(), graphics::Image::from_path(ctx, asset.unwrap().path()).unwrap());
+        });
+        Ok(())
+    }
 
     /// Saves the active game state to a file. The boolean value "milestone" determines whether this is a milestone or an autosave. If the file already exists, it will be overwritten.
     fn save(&self, milestone: bool) -> RLResult {
@@ -101,13 +118,14 @@ impl GameState {
         Ok(())
     }
     /// Loads a game state from a file. The boolean value "milestone" determines whether this is a milestone or an autosave. If the file doesn't exist, it will return a default game state.
-    pub fn load(milestone: bool) -> RLResult<GameState> {
+    pub fn load(milestone: bool, ctx: &mut Context) -> RLResult<GameState> {
         let save_data = if milestone {
             std::fs::read_to_string("./saves/milestone.yaml")
         } else {
             std::fs::read_to_string("./saves/autosave.yaml")
         }?;
-        let game_state = serde_yaml::from_str(&save_data)?;
+        let mut game_state: GameState = serde_yaml::from_str(&save_data)?;
+        game_state.load_assets(ctx)?;
         Ok(game_state)
     }
 
@@ -200,7 +218,7 @@ impl Screen for GameState {
             graphics::Canvas::from_frame(ctx, graphics::Color::from([0.1, 0.2, 0.3, 1.0]));
         // TODO: After asset loading we can load this from a hashmap: let background = graphics::Image::from_bytes(ctx, include_bytes!("../../assets/basis.png"))?;
         //canvas.draw(&background, graphics::DrawParam::default().scale(scale));
-        let player = graphics::Image::from_bytes(ctx, include_bytes!("../../assets/player.png"))?;
+        let player = self.assets.get("player.png").unwrap().clone();
         canvas.draw(
             &player,
             graphics::DrawParam::default()
