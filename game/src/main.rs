@@ -4,6 +4,11 @@ mod mainmenu;
 mod movement;
 mod screen;
 mod utils;
+mod game_core;
+mod basis;
+mod maschienen;
+mod backend;
+mod MainMenu;
 
 use crate::screen::Screenstack;
 use ggez::conf::FullscreenType;

@@ -1,0 +1,1 @@
+mod asset_service;
