@@ -1,3 +1,5 @@
+#![feature(default_free_fn)]
+
 mod error;
 mod gamestate;
 mod mainmenu;
