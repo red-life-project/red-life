@@ -1,2 +1,2 @@
-mod main_menu;
-mod Button;
+pub(crate) mod main_menu;
+pub(crate) mod Button;

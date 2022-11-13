@@ -1,3 +1,3 @@
-mod player;
-mod item;
-mod event;
+pub(crate) mod player;
+pub(crate) mod item;
+pub(crate) mod event;
