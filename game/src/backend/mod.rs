@@ -1,1 +1,1 @@
-mod asset_service;
+pub(crate) mod asset_service;
