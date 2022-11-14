@@ -7,7 +7,7 @@ struct Trade {
     time_ms: usize,
     cost: HashMap<item, usize>,
     result: item,
-    amout_produced: usize,
+    amount_produced: usize,
 }
 
 impl Default for Trade {
@@ -16,8 +16,8 @@ impl Default for Trade {
         Self{
             time_ms:1000,
             cost:HashMap::default(),
-            result:Item::default(),
-
+            result:item,
+            amount_produced: 0
         }
     }
 }
