@@ -32,19 +32,14 @@ impl Default for Maschine
 }
 
 impl Maschine {
-    fn test()
-    {
 
-    }
     pub fn new(name: String, trades: Vec<Trade>) -> Self {
 
         let loadedSprite: MaschineSprite =  AssetService::get(name);
         let default = default():Maschine;
-
-
         Self { name, hitbox:default.hitbox, interaction_area, state, sprite: loadedSprite, trades }
-
     }
+
 
 
 
