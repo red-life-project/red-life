@@ -1,11 +1,15 @@
-use crate::backend::{screen::{Screen, StackCommand}, error,utils::get_scale,gamestate::GameState};
+use crate::backend::{
+    gamestate::GameState,
+    screen::{Screen, StackCommand},
+    utils::get_scale,
+};
+use crate::main_menu::mainmenu::Message::{Exit, NewGame, Start};
+use crate::RLResult;
 use ggez::event::MouseButton;
 use ggez::graphics::Color;
 use ggez::mint::Point2;
 use ggez::{graphics, Context, GameResult};
 use std::sync::mpsc::{channel, Receiver, Sender};
-use crate::main_menu::mainmenu::Message::{Exit, NewGame, Start};
-use crate::RLResult;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum Message {

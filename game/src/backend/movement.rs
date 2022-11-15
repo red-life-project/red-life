@@ -1,8 +1,8 @@
-use crate::backend::{gamestate::GameState, error};
-use crate::backend::screen::{Screenstack, StackCommand};
+use crate::backend::gamestate::GameState;
+use crate::backend::screen::StackCommand;
+use crate::RLResult;
 use ggez::winit::event::VirtualKeyCode;
 use ggez::Context;
-use crate::RLResult;
 
 const MOVEMENT_SPEED: usize = 5;
 
@@ -53,9 +53,8 @@ impl GameState {
                 }
 
                 key => {
-                    /*dbg!*/("{:?}", key);
+                    dbg!("{:?}", key);
                 }
-
             }
         }
 

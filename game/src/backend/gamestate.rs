@@ -1,17 +1,16 @@
-use crate::backend::{screen::Screen, error::RLError};
+use crate::backend::screen::StackCommand;
+use crate::backend::utils::get_scale;
+use crate::backend::{error::RLError, screen::Screen};
+use crate::RLResult;
 use ggez::glam::Vec2;
 use ggez::graphics::Rect;
 use ggez::graphics::{Canvas, Image};
-use ggez::winit::event::VirtualKeyCode;
 use ggez::{graphics, Context};
 use serde::{Deserialize, Serialize};
 use std::cmp::{max, min};
 use std::collections::HashMap;
 use std::fs;
 use std::fs::read_dir;
-use crate::backend::screen::StackCommand;
-use crate::backend::utils::get_scale;
-use crate::RLResult;
 
 /// Defines an item in the inventory of the player
 /// Contains the name of the item, information about the item and the image

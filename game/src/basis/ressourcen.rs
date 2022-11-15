@@ -1,10 +1,7 @@
-
-pub(crate) struct Ressourcen{
-    energy:usize,
-    oxygen:usize,
-    live:usize
+pub(crate) struct Ressourcen {
+    energy: usize,
+    oxygen: usize,
+    live: usize,
 }
 
-impl Ressourcen{
-
-}
+impl Ressourcen {}

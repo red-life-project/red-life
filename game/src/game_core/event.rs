@@ -1,3 +1,1 @@
-pub(crate) struct Event{
-
-}
+pub(crate) struct Event {}

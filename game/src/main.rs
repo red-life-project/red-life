@@ -1,14 +1,12 @@
-#![feature(default_free_fn)]
-
-mod game_core;
-mod basis;
-mod maschienen;
 mod backend;
+mod basis;
+mod game_core;
 mod main_menu;
+mod maschienen;
 
+use crate::backend::{error, screen::Screenstack};
 use ggez::conf::FullscreenType;
-use ggez::{Context, event};
-use crate::backend::{screen::Screenstack,error};
+use ggez::{event, Context};
 
 /// Our own Result Type for custom Error handling.
 pub type RLResult<T = ()> = Result<T, error::RLError>;
