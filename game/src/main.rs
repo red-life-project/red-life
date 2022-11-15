@@ -1,51 +1,36 @@
-use ggez::{
-    event,
-    glam::*,
-    graphics::{self, Color},
-    Context, GameResult,
-};
+mod error;
+mod gamestate;
+mod mainmenu;
+mod movement;
+mod screen;
+mod utils;
 
-struct MainState {
-    pos_x: f32,
-    circle: graphics::Mesh,
-}
+use crate::screen::Screenstack;
+use ggez::conf::FullscreenType;
+use ggez::{event, Context};
 
-impl MainState {
-    fn new(ctx: &mut Context) -> GameResult<MainState> {
-        let circle = graphics::Mesh::new_circle(
-            ctx,
-            graphics::DrawMode::fill(),
-            vec2(0., 0.),
-            100.0,
-            2.0,
-            Color::WHITE,
-        )?;
+/// Our own Result Type for custom Error handling.
+pub type RLResult<T = ()> = Result<T, error::RLError>;
 
-        Ok(MainState { pos_x: 0.0, circle })
-    }
-}
-
-impl event::EventHandler<ggez::GameError> for MainState {
-    fn update(&mut self, _ctx: &mut Context) -> GameResult {
-        self.pos_x = self.pos_x % 800.0 + 1.0;
-        Ok(())
-    }
-
-    fn draw(&mut self, ctx: &mut Context) -> GameResult {
-        let mut canvas =
-            graphics::Canvas::from_frame(ctx, graphics::Color::from([0.1, 0.2, 0.3, 1.0]));
-
-        canvas.draw(&self.circle, Vec2::new(self.pos_x, 380.0));
-
-        canvas.finish(ctx)?;
-
-        Ok(())
-    }
-}
-
-pub fn main() -> GameResult {
-    let cb = ggez::ContextBuilder::new("super_simple", "ggez");
+pub fn main() -> RLResult {
+    let cb = ggez::ContextBuilder::new("red-life", "red-life-project")
+        .resources_dir_name("assets")
+        .window_setup(
+            ggez::conf::WindowSetup::default()
+                .icon("/icon.png")
+                .title("Red Life"),
+        );
     let (mut ctx, event_loop) = cb.build()?;
-    let state = MainState::new(&mut ctx)?;
-    event::run(ctx, event_loop, state)
+    window_setup(&mut ctx)?;
+    let screen_stack = Screenstack::default();
+    event::run(ctx, event_loop, screen_stack);
+}
+
+fn window_setup(ctx: &mut Context) -> RLResult {
+    ctx.gfx.set_resizable(true)?;
+    ctx.gfx.set_drawable_size(1920., 1080.)?;
+    // If we're in a release build set fullscreen to true
+    #[cfg(not(debug_assertions))]
+    ctx.gfx.set_fullscreen(FullscreenType::True)?;
+    Ok(())
 }

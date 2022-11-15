@@ -14,8 +14,8 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [windows-2019, ubuntu-20.04]
-        toolchain: [stable, beta]
+        os: [windows-2019, ubuntu-latest]
+        toolchain: [nightly, beta]
     runs-on: ${{ matrix.os }}
     steps:
 
@@ -37,16 +37,20 @@ jobs:
         if: ${{ runner.os == 'Linux' }}
         run: sudo apt-get update; sudo apt-get install --no-install-recommends libudev-dev
 
+      - name: Use Rust Cache
+        if: ${{ runner.os == 'Linux' }}
+        uses: Swatinem/rust-cache@v2.0.1
+
       - name: Run cargo check --all-targets w/ -D warnings
         run: cargo check --all-targets
-        env:
-          RUSTFLAGS: "-D warnings"
+        # We should add this later: env:
+          #RUSTFLAGS: "-D warnings"
 
       - name: Run cargo test w/ -D warnings
         if: ${{ runner.os == 'Linux' }}
         run: cargo test headless -- --test-threads=1
-        env:
-          RUSTFLAGS: "-D warnings"
+        #env:
+          #RUSTFLAGS: "-D warnings"
 
   rustfmt:
     runs-on: ubuntu-20.04
@@ -73,11 +77,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Get stable Rust toolchain with clippy
+      - name: Get nightly Rust toolchain with clippy
         uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: stable
+          toolchain: nightly
           override: true
           components: clippy
 
@@ -88,4 +92,4 @@ jobs:
         run: sudo apt-get update; sudo apt-get install --no-install-recommends libudev-dev
 
       - name: Run cargo clippy --package game --all-targets -- -D warnings
-        run: cargo clippy --package game --all-targets -- -D warnings
+        run: cargo clippy --package game --all-targets #-- -D warnings
