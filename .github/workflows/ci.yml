@@ -15,7 +15,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-2019, ubuntu-latest]
-        toolchain: [1.67.0, beta]
+        toolchain: [nightly, beta]
     runs-on: ${{ matrix.os }}
     steps:
 
