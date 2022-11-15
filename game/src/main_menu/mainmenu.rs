@@ -3,14 +3,14 @@ use crate::backend::{
     screen::{Screen, StackCommand},
     utils::get_scale,
 };
+use crate::main_menu::button::Button;
 use crate::main_menu::mainmenu::Message::{Exit, NewGame, Start};
 use crate::RLResult;
-use crate::main_menu::button::Button;
+use ggez::event::MouseButton;
 use ggez::graphics::Color;
 use ggez::mint::Point2;
 use ggez::{graphics, Context, GameResult};
 use std::sync::mpsc::{channel, Receiver, Sender};
-use ggez::event::MouseButton;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum Message {
