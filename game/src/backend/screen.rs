@@ -108,7 +108,7 @@ impl event::EventHandler<RLError> for Screenstack {
 impl Default for Screenstack {
     fn default() -> Self {
         Self {
-            screens: vec![Box::<MainMenu<Message>>::default()],
+            screens: vec![Box::<MainMenu>::default()],
             popup: vec![],
         }
     }
