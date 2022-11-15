@@ -7,7 +7,6 @@ use ggez::{graphics, Context};
 use serde::{Deserialize, Serialize};
 use std::cmp::{max, min};
 
-const MOVEMENT_SPEED: usize = 5;
 /// Defines an item in the inventory of the player
 /// Contains the name of the item, information about the item and the image
 #[derive(Clone, Eq, Debug, PartialEq, Serialize, Deserialize)]
@@ -19,14 +18,14 @@ struct Item {
 }
 
 #[derive(Clone, Default, Debug, Eq, PartialEq, Serialize, Deserialize)]
-struct Player {
-    position: (usize, usize),
+pub struct Player {
+    pub(crate) position: (usize, usize),
     inventory: Vec<Item>,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct GameState {
-    player: Player,
+    pub(crate) player: Player,
     milestone: usize,
     machines: Vec<(Rect)>,
 }
@@ -47,7 +46,7 @@ impl GameState {
         self.milestone += 1;
     }
     /// Saves the active game state to a file. The boolean value "milestone" determines whether this is a milestone or an autosave. If the file already exists, it will be overwritten.
-    fn save(&self, milestone: bool) -> RedResult {
+    pub(crate) fn save(&self, milestone: bool) -> RedResult {
         let save_data = serde_yaml::to_string(self)?;
         // Create the folder if it doesn't exist
         std::fs::create_dir_all("./saves")?;
@@ -91,7 +90,7 @@ impl GameState {
     ///
     /// # Arguments
     /// * `next_player_pos` - A tuple containing the next position of the player
-    fn collision_detection(&self, next_player_pos: (usize, usize)) -> bool {
+    pub(crate) fn collision_detection(&self, next_player_pos: (usize, usize)) -> bool {
         self.machine_collision_detection(next_player_pos)
             || Self::border_collision_detection(next_player_pos)
     }
@@ -100,55 +99,7 @@ impl GameState {
 impl Screen for GameState {
     fn update(&mut self, ctx: &mut Context) -> RedResult<StackCommand> {
         self.tick();
-        let keys = ctx.keyboard.pressed_keys();
-        for key in keys.iter() {
-            match key {
-                VirtualKeyCode::Escape => {
-                    self.save(false)?;
-                    return Ok(StackCommand::Pop);
-                }
-                VirtualKeyCode::W => {
-                    if !self.collision_detection((
-                        self.player.position.0,
-                        self.player.position.1.saturating_sub(MOVEMENT_SPEED),
-                    )) {
-                        self.player.position.1 =
-                            self.player.position.1.saturating_sub(MOVEMENT_SPEED);
-                    }
-                }
-                VirtualKeyCode::A => {
-                    if !self.collision_detection((
-                        self.player.position.0.saturating_sub(MOVEMENT_SPEED),
-                        self.player.position.1,
-                    )) {
-                        self.player.position.0 =
-                            self.player.position.0.saturating_sub(MOVEMENT_SPEED);
-                    }
-                }
-                VirtualKeyCode::S => {
-                    if !self.collision_detection((
-                        self.player.position.0,
-                        self.player.position.1.saturating_add(MOVEMENT_SPEED),
-                    )) {
-                        self.player.position.1 =
-                            self.player.position.1.saturating_add(MOVEMENT_SPEED);
-                    }
-                }
-                VirtualKeyCode::D => {
-                    if !self.collision_detection((
-                        self.player.position.0.saturating_add(MOVEMENT_SPEED),
-                        self.player.position.1,
-                    )) {
-                        self.player.position.0 =
-                            self.player.position.0.saturating_add(MOVEMENT_SPEED);
-                    }
-                }
-                key => {
-                    dbg!("{:?}", key);
-                }
-            }
-        }
-        Ok(StackCommand::None)
+        return self.move_player(ctx);
     }
 
     fn draw(&self, ctx: &mut Context) -> RedResult {
