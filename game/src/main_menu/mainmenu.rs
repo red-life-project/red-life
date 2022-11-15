@@ -26,7 +26,7 @@ struct Button<T: Clone> {
 
 impl Button<Message> {
     fn pressed(&self) {
-        //dbg!("Pressed {:?}", self.message);
+        dbg!("Pressed {:?}", self.message);
     }
 
     fn is_clicked(&self, mouse_pos: Point2<f32>) -> bool {
