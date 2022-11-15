@@ -1,7 +1,4 @@
-use crate::error::RLError;
-use crate::screen::StackCommand;
-use crate::utils::get_scale;
-use crate::{screen::Screen, RLResult};
+use crate::backend::{screen::Screen, error::RLError};
 use ggez::glam::Vec2;
 use ggez::graphics::Rect;
 use ggez::graphics::{Canvas, Image};
@@ -12,6 +9,9 @@ use std::cmp::{max, min};
 use std::collections::HashMap;
 use std::fs;
 use std::fs::read_dir;
+use crate::backend::screen::StackCommand;
+use crate::backend::utils::get_scale;
+use crate::RLResult;
 
 /// Defines an item in the inventory of the player
 /// Contains the name of the item, information about the item and the image
@@ -78,7 +78,7 @@ impl GameState {
         if self.player.air == 0 || self.player.energy == 0 {
             // TODO: Load last game state
             // Remove a milestone if the player is dead
-            self.milestone = dbg!(self.milestone.saturating_sub(1));
+            self.milestone = /*dbg!*/(self.milestone.saturating_sub(1));
             self.player.air = u16::MAX;
             self.player.energy = u16::MAX;
         } else {

@@ -1,8 +1,8 @@
-use crate::gamestate::GameState;
-use crate::screen::StackCommand;
-use crate::RLResult;
+use crate::backend::{gamestate::GameState, error};
+use crate::backend::screen::{Screenstack, StackCommand};
 use ggez::winit::event::VirtualKeyCode;
 use ggez::Context;
+use crate::RLResult;
 
 const MOVEMENT_SPEED: usize = 5;
 
@@ -51,11 +51,14 @@ impl GameState {
                             self.player.position.0.saturating_add(MOVEMENT_SPEED);
                     }
                 }
+
                 key => {
-                    dbg!("{:?}", key);
+                    /*dbg!*/("{:?}", key);
                 }
+
             }
         }
+
         Ok(StackCommand::None)
     }
 }

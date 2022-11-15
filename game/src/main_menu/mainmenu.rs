@@ -1,13 +1,11 @@
-use crate::gamestate::GameState;
-use crate::mainmenu::Message::{Exit, NewGame, Start};
-use crate::screen::{Screen, StackCommand};
-use crate::utils::get_scale;
-use crate::RLResult;
+use crate::backend::{screen::{Screen, StackCommand}, error,utils::get_scale,gamestate::GameState};
 use ggez::event::MouseButton;
 use ggez::graphics::Color;
 use ggez::mint::Point2;
 use ggez::{graphics, Context, GameResult};
 use std::sync::mpsc::{channel, Receiver, Sender};
+use crate::main_menu::mainmenu::Message::{Exit, NewGame, Start};
+use crate::RLResult;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum Message {
@@ -28,7 +26,7 @@ struct Button<T: Clone> {
 
 impl Button<Message> {
     fn pressed(&self) {
-        dbg!("Pressed {:?}", self.message);
+        //dbg!("Pressed {:?}", self.message);
     }
 
     fn is_clicked(&self, mouse_pos: Point2<f32>) -> bool {
@@ -123,7 +121,7 @@ impl Screen for MainMenu<Message> {
         let mut canvas =
             graphics::Canvas::from_frame(ctx, graphics::Color::from([0.1, 0.2, 0.3, 1.0]));
         let background =
-            graphics::Image::from_bytes(ctx, include_bytes!("../../assets/mainmenu.png"))?;
+            graphics::Image::from_bytes(ctx, include_bytes!("../../../assets/mainmenu.png"))?;
         canvas.draw(&background, graphics::DrawParam::default().scale(scale));
 
         //draw buttons
