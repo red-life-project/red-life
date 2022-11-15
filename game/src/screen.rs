@@ -2,8 +2,7 @@ use crate::error::RLError;
 use crate::mainmenu::{MainMenu, Message};
 use crate::RLResult;
 use crate::utils::get_scale;
-use crate::RedResult;
-use ggez::graphics::{Color, Image};
+use ggez::graphics::Color;
 use ggez::{event, graphics, Context};
 use std::fmt::Debug;
 use std::time::Instant;
@@ -39,7 +38,7 @@ impl Popup {
     }
 }
 impl Screenstack {
-    fn draw_popup(&mut self, ctx: &mut Context) -> RedResult {
+    fn draw_popup(&mut self, ctx: &mut Context) -> RLResult {
         let mut canvas = graphics::Canvas::from_frame(ctx, None);
         for (pos, popup) in self.popup.iter().enumerate() {
             let scale = get_scale(ctx);

@@ -137,7 +137,7 @@ impl GameState {
         } else {
             std::fs::read_to_string("./saves/autosave.yaml")
         }?;
-        let mut game_state: GameState = serde_yaml::from_str(&save_data)?;
+        let game_state: GameState = serde_yaml::from_str(&save_data)?;
         Ok(game_state)
     }
 
