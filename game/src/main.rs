@@ -1,6 +1,7 @@
 mod error;
 mod gamestate;
 mod mainmenu;
+mod movement;
 mod screen;
 mod utils;
 

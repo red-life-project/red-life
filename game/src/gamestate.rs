@@ -13,7 +13,6 @@ use std::collections::HashMap;
 use std::fs;
 use std::fs::read_dir;
 
-const MOVEMENT_SPEED: usize = 5;
 /// Defines an item in the inventory of the player
 /// Contains the name of the item, information about the item and the image
 #[derive(Clone, Eq, Debug, PartialEq, Serialize, Deserialize)]
@@ -30,7 +29,7 @@ struct Item {
 struct Player {
     /// The current items of the player.
     inventory: Vec<Item>,
-    position: (usize, usize),
+    pub(crate) position: (usize, usize),
     air: u16,
     energy: u16,
     air_cr: i16,
@@ -53,7 +52,7 @@ impl Default for Player {
 pub struct GameState {
     inventory: Vec<Item>,
     /// Contains the current player position, air and energy
-    player: Player,
+    pub(crate) player: Player,
     /// The current milestone the player has reached.
     milestone: usize,
     machines: Vec<Rect>,
@@ -166,7 +165,7 @@ impl GameState {
     ///
     /// # Arguments
     /// * `next_player_pos` - A tuple containing the next position of the player
-    fn collision_detection(&self, next_player_pos: (usize, usize)) -> bool {
+    pub(crate) fn collision_detection(&self, next_player_pos: (usize, usize)) -> bool {
         self.machine_collision_detection(next_player_pos)
             || Self::border_collision_detection(next_player_pos)
     }
@@ -176,53 +175,7 @@ impl Screen for GameState {
     /// Updates the game and handles input. Returns StackCommand::Pop when Escape is pressed.
     fn update(&mut self, ctx: &mut Context) -> RLResult<StackCommand> {
         self.tick();
-        let keys = ctx.keyboard.pressed_keys();
-        for key in keys.iter() {
-            match key {
-                VirtualKeyCode::Escape => {
-                    self.save(false)?;
-                    return Ok(StackCommand::Pop);
-                }
-                VirtualKeyCode::W => {
-                    if !self.collision_detection((
-                        self.player.position.0,
-                        self.player.position.1.saturating_sub(MOVEMENT_SPEED),
-                    )) {
-                        self.player.position.1 =
-                            self.player.position.1.saturating_sub(MOVEMENT_SPEED);
-                    }
-                }
-                VirtualKeyCode::A => {
-                    if !self.collision_detection((
-                        self.player.position.0.saturating_sub(MOVEMENT_SPEED),
-                        self.player.position.1,
-                    )) {
-                        self.player.position.0 =
-                            self.player.position.0.saturating_sub(MOVEMENT_SPEED);
-                    }
-                }
-                VirtualKeyCode::S => {
-                    if !self.collision_detection((
-                        self.player.position.0,
-                        self.player.position.1.saturating_add(MOVEMENT_SPEED),
-                    )) {
-                        self.player.position.1 =
-                            self.player.position.1.saturating_add(MOVEMENT_SPEED);
-                    }
-                }
-                VirtualKeyCode::D => {
-                    if !self.collision_detection((
-                        self.player.position.0.saturating_add(MOVEMENT_SPEED),
-                        self.player.position.1,
-                    )) {
-                        self.player.position.0 =
-                            self.player.position.0.saturating_add(MOVEMENT_SPEED);
-                    }
-                }
-                _ => {}
-            }
-        }
-        Ok(StackCommand::None)
+        return self.move_player(ctx);
     }
     /// Draws the game state to the screen.
     fn draw(&self, ctx: &mut Context) -> RLResult {
