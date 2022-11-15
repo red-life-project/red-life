@@ -77,11 +77,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Get stable Rust toolchain with clippy
+      - name: Get nightly Rust toolchain with clippy
         uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: stable
+          toolchain: nightly
           override: true
           components: clippy
 
