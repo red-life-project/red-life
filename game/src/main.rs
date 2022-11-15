@@ -9,17 +9,16 @@ use crate::screen::Screenstack;
 use ggez::conf::FullscreenType;
 use ggez::{event, Context};
 
-pub type RedResult<T = ()> = Result<T, error::RedError>;
+/// Our own Result Type for custom Error handling.
+pub type RLResult<T = ()> = Result<T, error::RLError>;
 
-pub fn main() -> RedResult {
+pub fn main() -> RLResult {
     let cb = ggez::ContextBuilder::new("red-life", "red-life-project")
         .resources_dir_name("assets")
         .window_setup(
             ggez::conf::WindowSetup::default()
                 .icon("/icon.png")
-                .to_owned()
-                .title("Red Life")
-                .vsync(true),
+                .title("Red Life"),
         );
     let (mut ctx, event_loop) = cb.build()?;
     window_setup(&mut ctx)?;
@@ -27,7 +26,7 @@ pub fn main() -> RedResult {
     event::run(ctx, event_loop, screen_stack);
 }
 
-fn window_setup(ctx: &mut Context) -> RedResult {
+fn window_setup(ctx: &mut Context) -> RLResult {
     ctx.gfx.set_resizable(true)?;
     ctx.gfx.set_drawable_size(1920., 1080.)?;
     // If we're in a release build set fullscreen to true

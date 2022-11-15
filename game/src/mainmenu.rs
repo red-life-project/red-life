@@ -2,9 +2,8 @@ use crate::gamestate::GameState;
 use crate::mainmenu::Message::{Exit, NewGame, Start};
 use crate::screen::{Screen, StackCommand};
 use crate::utils::get_scale;
-use crate::RedResult;
+use crate::RLResult;
 use ggez::event::MouseButton;
-use ggez::glam::Vec2;
 use ggez::graphics::Color;
 use ggez::mint::Point2;
 use ggez::{graphics, Context, GameResult};
@@ -23,8 +22,7 @@ struct Button<T: Clone> {
     img: Option<graphics::Image>,
     message: Message,
     sender: Sender<T>,
-    size: Vec2,
-    pos: Vec2,
+    rect: graphics::Rect,
     color: Color,
 }
 
@@ -34,13 +32,13 @@ impl Button<Message> {
     }
 
     fn is_clicked(&self, mouse_pos: Point2<f32>) -> bool {
-        let x = mouse_pos.x;
-        let y = mouse_pos.y;
-        let x1 = self.pos.x;
-        let y1 = self.pos.y;
-        let x2 = self.pos.x + self.size.x;
-        let y2 = self.pos.y + self.size.y;
-        x > x1 && x < x2 && y > y1 && y < y2
+        self.rect.contains(mouse_pos)
+    }
+    fn click(&mut self, mouse_pos: Point2<f32>) {
+        if self.is_clicked(mouse_pos) {
+            self.pressed();
+            self.sender.send(self.message).unwrap();
+        }
     }
 }
 
@@ -51,16 +49,10 @@ pub struct MainMenu<Message: Clone> {
     sender: Sender<Message>,
 }
 
-//TODO: pos in struct for buttons
-
 fn draw_button(ctx: &mut Context, btn: &Button<Message>) -> GameResult<graphics::Mesh> {
     let mb = &mut graphics::MeshBuilder::new();
 
-    mb.rectangle(
-        graphics::DrawMode::fill(),
-        graphics::Rect::new(btn.pos.x, btn.pos.y, btn.size[0], btn.size[1]),
-        btn.color,
-    )?;
+    mb.rectangle(graphics::DrawMode::fill(), btn.rect, btn.color)?;
 
     Ok(graphics::Mesh::from_data(ctx, mb.build()))
 }
@@ -74,8 +66,7 @@ impl<Message: Clone> Default for MainMenu<Message> {
             img: None,
             message: Start,
             sender: sender.clone(),
-            pos: Vec2::new(650.0, 180.0),
-            size: Vec2::new(350.0, 120.0),
+            rect: graphics::Rect::new(650.0, 180.0, 350.0, 120.0),
             color: Color::from_rgba(0, 0, 0, 0),
         };
         let exit_button = Button {
@@ -83,8 +74,7 @@ impl<Message: Clone> Default for MainMenu<Message> {
             img: None,
             message: Exit,
             sender: sender.clone(),
-            pos: Vec2::new(650.0, 420.0),
-            size: Vec2::new(350.0, 120.0),
+            rect: graphics::Rect::new(650.0, 420.0, 350.0, 120.0),
             color: Color::from_rgba(0, 0, 0, 0),
         };
         let new_game_button = Button {
@@ -92,8 +82,7 @@ impl<Message: Clone> Default for MainMenu<Message> {
             img: None,
             message: NewGame,
             sender: sender.clone(),
-            pos: Vec2::new(650.0, 300.0),
-            size: Vec2::new(350.0, 120.0),
+            rect: graphics::Rect::new(650.0, 300.0, 350.0, 120.0),
             color: Color::from_rgba(0, 0, 0, 0),
         };
 
@@ -106,30 +95,30 @@ impl<Message: Clone> Default for MainMenu<Message> {
 }
 
 impl Screen for MainMenu<Message> {
-    fn update(&mut self, ctx: &mut Context) -> RedResult<StackCommand> {
+    fn update(&mut self, ctx: &mut Context) -> RLResult<StackCommand> {
         //handle buttons
         if ctx.mouse.button_pressed(MouseButton::Left) {
-            dbg!(ctx.mouse.position());
             let current_position = ctx.mouse.position();
-            for mut btn in &mut self.buttons {
-                if btn.is_clicked(current_position) {
-                    btn.pressed();
-
-                    return match btn.message {
-                        Exit => Ok(StackCommand::Pop),
-                        NewGame => Ok(StackCommand::Push(Box::new(GameState::default()))),
-                        Start => Ok(StackCommand::Push(Box::new(GameState::default()))),
-                    };
-                }
-            }
-            return Ok(StackCommand::Push(Box::new(
-                GameState::load(false).unwrap_or_default(),
-            )));
+            self.buttons
+                .iter_mut()
+                .for_each(|btn| btn.click(current_position));
         }
-        Ok(StackCommand::None)
+        if let Ok(msg) = self.receiver.try_recv() {
+            match msg {
+                Exit => Ok(StackCommand::Pop),
+                NewGame => Ok(StackCommand::Push(Box::new(GameState::new(ctx)?))),
+                Start => Ok(StackCommand::Push(Box::new({
+                    let mut gamestate = GameState::load(false).unwrap_or_default();
+                    gamestate.load_assets(ctx)?;
+                    gamestate
+                }))),
+            }
+        } else {
+            Ok(StackCommand::None)
+        }
     }
 
-    fn draw(&self, ctx: &mut Context) -> RedResult {
+    fn draw(&self, ctx: &mut Context) -> RLResult {
         let scale = get_scale(ctx);
         let mut canvas =
             graphics::Canvas::from_frame(ctx, graphics::Color::from([0.1, 0.2, 0.3, 1.0]));
