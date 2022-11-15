@@ -4,7 +4,6 @@ use crate::screen::{Screen, StackCommand};
 use crate::utils::get_scale;
 use crate::RLResult;
 use ggez::event::MouseButton;
-use ggez::glam::Vec2;
 use ggez::graphics::Color;
 use ggez::mint::Point2;
 use ggez::{graphics, Context, GameResult};
@@ -108,9 +107,11 @@ impl Screen for MainMenu<Message> {
             match msg {
                 Exit => Ok(StackCommand::Pop),
                 NewGame => Ok(StackCommand::Push(Box::new(GameState::new(ctx)?))),
-                Start => Ok(StackCommand::Push(Box::new(
-                    GameState::load(false, ctx).unwrap_or_default(),
-                ))),
+                Start => Ok(StackCommand::Push(Box::new({
+                    let mut gamestate = GameState::load(false).unwrap_or_default();
+                    gamestate.load_assets(ctx)?;
+                    gamestate
+                }))),
             }
         } else {
             Ok(StackCommand::None)

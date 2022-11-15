@@ -6,7 +6,7 @@ use ggez::glam::Vec2;
 use ggez::graphics::Rect;
 use ggez::graphics::{Canvas, Image};
 use ggez::winit::event::VirtualKeyCode;
-use ggez::{graphics, Context, GameError};
+use ggez::{graphics, Context};
 use serde::{Deserialize, Serialize};
 use std::cmp::{max, min};
 use std::collections::HashMap;
@@ -104,12 +104,13 @@ impl GameState {
         );
         Ok(())
     }
-    fn load_assets(&mut self, ctx: &mut Context) -> RLResult {
+    pub(crate) fn load_assets(&mut self, ctx: &mut Context) -> RLResult {
         read_dir("assets")?.for_each(|file| {
             let file = file.unwrap();
             let bytes = fs::read(file.path()).unwrap();
             let name = file.file_name().into_string().unwrap();
-            self.assets.insert(name, Image::from_bytes(ctx, bytes.as_slice()).unwrap());
+            self.assets
+                .insert(name, Image::from_bytes(ctx, bytes.as_slice()).unwrap());
         });
         if self.assets.is_empty() {
             return Err(RLError::AssetError("Could not find assets!".to_string()));
@@ -130,14 +131,13 @@ impl GameState {
         Ok(())
     }
     /// Loads a game state from a file. The boolean value "milestone" determines whether this is a milestone or an autosave. If the file doesn't exist, it will return a default game state.
-    pub fn load(milestone: bool, ctx: &mut Context) -> RLResult<GameState> {
+    pub fn load(milestone: bool) -> RLResult<GameState> {
         let save_data = if milestone {
             std::fs::read_to_string("./saves/milestone.yaml")
         } else {
             std::fs::read_to_string("./saves/autosave.yaml")
         }?;
         let mut game_state: GameState = serde_yaml::from_str(&save_data)?;
-        game_state.load_assets(ctx)?;
         Ok(game_state)
     }
 
@@ -145,9 +145,9 @@ impl GameState {
     fn machine_collision_detection(&self, next_player_pos: (usize, usize)) -> bool {
         for machine in &self.machines {
             if max(machine.x as usize, next_player_pos.0)
-                <= min((machine.x + machine.w) as usize, (next_player_pos.0 + 41))
+                <= min((machine.x + machine.w) as usize, next_player_pos.0 + 41)
                 && max(machine.y as usize, next_player_pos.1)
-                    <= min((machine.y + machine.h) as usize, (next_player_pos.1 + 50))
+                    <= min((machine.y + machine.h) as usize, next_player_pos.1 + 50)
             {
                 return true;
             }
