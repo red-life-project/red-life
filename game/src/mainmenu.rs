@@ -53,11 +53,7 @@ pub struct MainMenu<Message: Clone> {
 fn draw_button(ctx: &mut Context, btn: &Button<Message>) -> GameResult<graphics::Mesh> {
     let mb = &mut graphics::MeshBuilder::new();
 
-    mb.rectangle(
-        graphics::DrawMode::fill(),
-        btn.rect,
-        btn.color,
-    )?;
+    mb.rectangle(graphics::DrawMode::fill(), btn.rect, btn.color)?;
 
     Ok(graphics::Mesh::from_data(ctx, mb.build()))
 }
@@ -104,16 +100,19 @@ impl Screen for MainMenu<Message> {
         //handle buttons
         if ctx.mouse.button_pressed(MouseButton::Left) {
             let current_position = ctx.mouse.position();
-            self.buttons.iter_mut().for_each(|btn| btn.click(current_position));
+            self.buttons
+                .iter_mut()
+                .for_each(|btn| btn.click(current_position));
         }
         if let Ok(msg) = self.receiver.try_recv() {
             match msg {
                 Exit => Ok(StackCommand::Pop),
-                NewGame => Ok(StackCommand::Push(Box::new(GameState::default()))),
-                Start => Ok(StackCommand::Push(Box::new(GameState::default()))),
+                NewGame => Ok(StackCommand::Push(Box::new(GameState::new(ctx)?))),
+                Start => Ok(StackCommand::Push(Box::new(
+                    GameState::load(false, ctx).unwrap_or_default(),
+                ))),
             }
-        }
-        else {
+        } else {
             Ok(StackCommand::None)
         }
     }

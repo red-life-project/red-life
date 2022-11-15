@@ -4,6 +4,7 @@ use std::io;
 #[derive(Debug)]
 pub enum RLError {
     Ui(GameError),
+    AssetError(String),
     Deserialization(serde_yaml::Error),
     IO(io::Error),
 }

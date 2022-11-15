@@ -1,16 +1,17 @@
+use crate::error::RLError;
 use crate::screen::StackCommand;
 use crate::utils::get_scale;
 use crate::{screen::Screen, RLResult};
 use ggez::glam::Vec2;
-use ggez::graphics::Canvas;
 use ggez::graphics::Rect;
+use ggez::graphics::{Canvas, Image};
 use ggez::winit::event::VirtualKeyCode;
 use ggez::{graphics, Context, GameError};
 use serde::{Deserialize, Serialize};
 use std::cmp::{max, min};
 use std::collections::HashMap;
 use std::fs;
-use crate::error::RLError;
+use std::fs::read_dir;
 
 const MOVEMENT_SPEED: usize = 5;
 /// Defines an item in the inventory of the player
@@ -53,7 +54,7 @@ pub struct GameState {
     player: Player,
     /// The current milestone the player has reached.
     milestone: usize,
-    machines: Vec<(Rect)>,
+    machines: Vec<Rect>,
     #[serde(skip)]
     assets: HashMap<String, graphics::Image>,
 }
@@ -65,6 +66,11 @@ impl PartialEq for GameState {
     }
 }
 impl GameState {
+    pub fn new(ctx: &mut Context) -> RLResult<Self> {
+        let mut result = GameState::default();
+        result.load_assets(ctx)?;
+        Ok(result)
+    }
     pub fn tick(&mut self) {
         self.player.air = self.player.air.saturating_add_signed(self.player.energy_cr);
         self.player.energy = self.player.energy.saturating_add_signed(self.player.air_cr);
@@ -99,9 +105,15 @@ impl GameState {
         Ok(())
     }
     fn load_assets(&mut self, ctx: &mut Context) -> RLResult {
-        fs::read_dir("assets").unwrap().into_iter().for_each(|asset|{
-            self.assets.insert(asset.as_ref().unwrap().file_name().into_string().unwrap(), graphics::Image::from_path(ctx, asset.unwrap().path()).unwrap());
+        read_dir("assets")?.for_each(|file| {
+            let file = file.unwrap();
+            let bytes = fs::read(file.path()).unwrap();
+            let name = file.file_name().into_string().unwrap();
+            self.assets.insert(name, Image::from_bytes(ctx, bytes.as_slice()).unwrap());
         });
+        if self.assets.is_empty() {
+            return Err(RLError::AssetError("Could not find assets!".to_string()));
+        }
         Ok(())
     }
 
@@ -216,15 +228,22 @@ impl Screen for GameState {
         let scale = get_scale(ctx);
         let mut canvas =
             graphics::Canvas::from_frame(ctx, graphics::Color::from([0.1, 0.2, 0.3, 1.0]));
-        // TODO: After asset loading we can load this from a hashmap: let background = graphics::Image::from_bytes(ctx, include_bytes!("../../assets/basis.png"))?;
-        //canvas.draw(&background, graphics::DrawParam::default().scale(scale));
-        let player = self.assets.get("player.png").unwrap().clone();
+        let background = self
+            .assets
+            .get("basis.png")
+            .ok_or(RLError::AssetError("Could not find asset".to_string()))?;
+        canvas.draw(background, graphics::DrawParam::default().scale(scale));
+        let player = self
+            .assets
+            .get("player.png")
+            .ok_or(RLError::AssetError("Could not find asset".to_string()))?;
         canvas.draw(
-            &player,
+            player,
             graphics::DrawParam::default()
                 .scale(scale)
                 .dest([self.player.position.0 as f32, self.player.position.1 as f32]),
         );
+        self.draw_resources(&mut canvas, scale)?;
         canvas.finish(ctx)?;
         Ok(())
     }
