@@ -1,8 +1,8 @@
+use crate::main_menu::mainmenu::Message;
 use ggez::graphics;
 use ggez::graphics::Color;
 use ggez::mint::Point2;
 use std::sync::mpsc::Sender;
-use crate::main_menu::mainmenu::Message;
 
 #[derive(Debug)]
 pub(crate) struct Button {
