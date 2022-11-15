@@ -1,7 +1,7 @@
 use crate::error::RLError;
 use crate::mainmenu::{MainMenu, Message};
-use crate::RLResult;
 use crate::utils::get_scale;
+use crate::RLResult;
 use ggez::graphics::Color;
 use ggez::{event, graphics, Context};
 use std::fmt::Debug;

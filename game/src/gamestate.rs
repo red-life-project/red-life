@@ -24,6 +24,8 @@ struct Item {
     img: String,
 }
 
+/// The current game player, containing its inventory and the current position, air and energy,
+/// along with their change rate
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 struct Player {
     /// The current items of the player.
@@ -104,6 +106,7 @@ impl GameState {
         );
         Ok(())
     }
+    /// Loads the assets. Has to be called before drawing the game.
     pub(crate) fn load_assets(&mut self, ctx: &mut Context) -> RLResult {
         read_dir("assets")?.for_each(|file| {
             let file = file.unwrap();
@@ -216,9 +219,7 @@ impl Screen for GameState {
                             self.player.position.0.saturating_add(MOVEMENT_SPEED);
                     }
                 }
-                key => {
-                    dbg!(key);
-                }
+                _ => {}
             }
         }
         Ok(StackCommand::None)
