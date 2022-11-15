@@ -1,8 +1,8 @@
 use crate::gamestate::GameState;
 use crate::screen::StackCommand;
+use crate::RLResult;
 use ggez::winit::event::VirtualKeyCode;
 use ggez::Context;
-use crate::RLResult;
 
 const MOVEMENT_SPEED: usize = 5;
 
