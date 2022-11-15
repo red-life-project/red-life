@@ -1,13 +1,13 @@
 use crate::gamestate::GameState;
 use crate::screen::StackCommand;
-use crate::RedResult;
 use ggez::winit::event::VirtualKeyCode;
 use ggez::Context;
+use crate::RLResult;
 
 const MOVEMENT_SPEED: usize = 5;
 
 impl GameState {
-    pub fn move_player(&mut self, ctx: &mut Context) -> RedResult<StackCommand> {
+    pub fn move_player(&mut self, ctx: &mut Context) -> RLResult<StackCommand> {
         let keys = ctx.keyboard.pressed_keys();
         for key in keys.iter() {
             match key {

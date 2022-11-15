@@ -26,7 +26,7 @@ struct Item {
 /// The current game player, containing its inventory and the current position, air and energy,
 /// along with their change rate
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
-struct Player {
+pub struct Player {
     /// The current items of the player.
     inventory: Vec<Item>,
     pub(crate) position: (usize, usize),
@@ -52,7 +52,7 @@ impl Default for Player {
 pub struct GameState {
     inventory: Vec<Item>,
     /// Contains the current player position, air and energy
-    pub(crate) player: Player,
+    pub player: Player,
     /// The current milestone the player has reached.
     milestone: usize,
     machines: Vec<Rect>,
@@ -121,7 +121,7 @@ impl GameState {
     }
 
     /// Saves the active game state to a file. The boolean value "milestone" determines whether this is a milestone or an autosave. If the file already exists, it will be overwritten.
-    fn save(&self, milestone: bool) -> RLResult {
+    pub(crate) fn save(&self, milestone: bool) -> RLResult {
         let save_data = serde_yaml::to_string(self)?;
         // Create the folder if it doesn't exist
         std::fs::create_dir_all("./saves")?;
