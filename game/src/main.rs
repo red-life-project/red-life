@@ -1,4 +1,3 @@
-#![feature(mixed_integer_ops)]
 mod error;
 mod gamestate;
 mod mainmenu;
