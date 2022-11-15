@@ -29,7 +29,7 @@ struct Item {
 struct Player {
     /// The current items of the player.
     inventory: Vec<Item>,
-    position: (usize, usize),
+    pub(crate) position: (usize, usize),
     air: u16,
     energy: u16,
     air_cr: i16,
