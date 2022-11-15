@@ -1,11 +1,10 @@
-use crate::error::RLError;
-use crate::screen::StackCommand;
-use crate::utils::get_scale;
-use crate::{screen::Screen, RLResult};
+use crate::backend::screen::StackCommand;
+use crate::backend::utils::get_scale;
+use crate::backend::{error::RLError, screen::Screen};
+use crate::RLResult;
 use ggez::glam::Vec2;
 use ggez::graphics::Rect;
 use ggez::graphics::{Canvas, Image};
-use ggez::winit::event::VirtualKeyCode;
 use ggez::{graphics, Context};
 use serde::{Deserialize, Serialize};
 use std::cmp::{max, min};
@@ -78,7 +77,7 @@ impl GameState {
         if self.player.air == 0 || self.player.energy == 0 {
             // TODO: Load last game state
             // Remove a milestone if the player is dead
-            self.milestone = dbg!(self.milestone.saturating_sub(1));
+            self.milestone = /*dbg!*/(self.milestone.saturating_sub(1));
             self.player.air = u16::MAX;
             self.player.energy = u16::MAX;
         } else {

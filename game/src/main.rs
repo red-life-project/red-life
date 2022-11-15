@@ -1,11 +1,10 @@
-mod error;
-mod gamestate;
-mod mainmenu;
-mod movement;
-mod screen;
-mod utils;
+mod backend;
+mod basis;
+mod game_core;
+mod main_menu;
+mod maschienen;
 
-use crate::screen::Screenstack;
+use crate::backend::{error, screen::Screenstack};
 use ggez::conf::FullscreenType;
 use ggez::{event, Context};
 
