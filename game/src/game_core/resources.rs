@@ -9,6 +9,15 @@ pub struct Resources {
     pub(crate) life: i16,
 }
 
+impl IntoIterator for Resources {
+    type Item = i16;
+    type IntoIter = std::array::IntoIter<i16, 3>;
+
+    fn into_iter(self) -> Self::IntoIter {
+       [self.oxygen, self.energy, self.life].into_iter()
+    }
+}
+
 impl ops::Add<Resources> for Resources
 {
     type Output = Self;
@@ -38,7 +47,7 @@ mod test {
     use crate::game_core::resources::Resources;
 
     #[test]
-    fn test()
+    fn addition()
     {
         let a = Resources {
             oxygen: 1,
@@ -51,12 +60,27 @@ mod test {
             life: 6,
         };
         let c = a + b;
-        let d = Resources{
+        let d = Resources {
             oxygen: 5,
             energy: 7,
-            life: 9
+            life: 9,
         };
-        assert_eq!(c,d)
+        assert_eq!(c, d)
+    }
+
+    #[test]
+    fn into_it()
+    {
+        let a = Resources {
+            oxygen: 3,
+            energy: 2,
+            life: 1,
+        };
+        let mut ait = a.into_iter();
+        assert_eq!(ait.next().unwrap(),3 ) ;
+        assert_eq!(ait.next().unwrap() ,2) ;
+        assert_eq!(ait.next().unwrap() ,1) ;
+        assert_eq!(Some(ait.next()),Some(None))
     }
 }
 
