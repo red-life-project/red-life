@@ -14,7 +14,7 @@ impl IntoIterator for Resources {
     type IntoIter = std::array::IntoIter<i16, 3>;
 
     fn into_iter(self) -> Self::IntoIter {
-       [self.oxygen, self.energy, self.life].into_iter()
+        [self.oxygen, self.energy, self.life].into_iter()
     }
 }
 
@@ -59,13 +59,21 @@ mod test {
             energy: 5,
             life: 6,
         };
-        let c = a + b;
-        let d = Resources {
+        let add_result = a + b;
+        let sub_result = a - b;
+        let add_controll = Resources {
+            oxygen: -3,
+            energy: -3,
+            life: -3,
+        };
+
+        let sub_controll = Resources {
             oxygen: 5,
             energy: 7,
             life: 9,
         };
-        assert_eq!(c, d)
+        assert_eq!(add_result, add_controll);
+        assert_eq!(sub_result, sub_controll)
     }
 
     #[test]
@@ -77,10 +85,10 @@ mod test {
             life: 1,
         };
         let mut ait = a.into_iter();
-        assert_eq!(ait.next().unwrap(),3 ) ;
-        assert_eq!(ait.next().unwrap() ,2) ;
-        assert_eq!(ait.next().unwrap() ,1) ;
-        assert_eq!(Some(ait.next()),Some(None))
+        assert_eq!(ait.next().unwrap(), 3);
+        assert_eq!(ait.next().unwrap(), 2);
+        assert_eq!(ait.next().unwrap(), 1);
+        assert_eq!(Some(ait.next()), Some(None))
     }
 }
 
