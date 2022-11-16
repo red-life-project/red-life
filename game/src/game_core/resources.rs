@@ -18,8 +18,7 @@ impl IntoIterator for Resources {
     }
 }
 
-impl ops::Add<Resources> for Resources
-{
+impl ops::Add<Resources> for Resources {
     type Output = Self;
     fn add(self, rhs: Self) -> Self {
         Self {
@@ -47,8 +46,7 @@ mod test {
     use crate::game_core::resources::Resources;
 
     #[test]
-    fn addition()
-    {
+    fn addition() {
         let a = Resources {
             oxygen: 1,
             energy: 2,
@@ -77,8 +75,7 @@ mod test {
     }
 
     #[test]
-    fn into_it()
-    {
+    fn into_it() {
         let a = Resources {
             oxygen: 3,
             energy: 2,
@@ -91,4 +88,3 @@ mod test {
         assert_eq!(Some(ait.next()), Some(None))
     }
 }
-
