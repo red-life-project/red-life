@@ -1,24 +1,24 @@
 use std::ops;
-
+use serde::{Serialize, Deserialize};
 /// This struct holds data for resources
 /// This is used to describe the current state and change rate of the player's resources.
-#[derive(Copy, Clone, Debug, PartialEq)]
-pub struct Resources {
-    pub(crate) oxygen: i16,
-    pub(crate) energy: i16,
-    pub(crate) life: i16,
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Resources <T> {
+    pub(crate) oxygen: T,
+    pub(crate) energy: T,
+    pub(crate) life: T,
 }
 
-impl IntoIterator for Resources {
-    type Item = i16;
-    type IntoIter = std::array::IntoIter<i16, 3>;
+impl <T> IntoIterator for Resources <T> {
+    type Item = T;
+    type IntoIter = std::array::IntoIter<T, 3>;
 
     fn into_iter(self) -> Self::IntoIter {
         [self.oxygen, self.energy, self.life].into_iter()
     }
 }
 
-impl ops::Add<Resources> for Resources {
+impl <T: std::ops::Add<Output = T>> ops::Add<Resources <T>> for Resources <T>{
     type Output = Self;
     fn add(self, rhs: Self) -> Self {
         Self {
@@ -29,7 +29,7 @@ impl ops::Add<Resources> for Resources {
     }
 }
 
-impl ops::Sub<Resources> for Resources {
+impl <T: std::ops::Sub<Output = T>> ops::Sub<Resources<T>> for Resources<T> {
     type Output = Self;
     fn sub(self, rhs: Self) -> Self {
         Self {

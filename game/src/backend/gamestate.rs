@@ -3,14 +3,15 @@ use crate::backend::utils::get_scale;
 use crate::backend::{error::RLError, screen::Screen};
 use crate::RLResult;
 use ggez::glam::Vec2;
-use ggez::graphics::Rect;
+use ggez::graphics::{DrawMode, Mesh, MeshBuilder, Rect};
 use ggez::graphics::{Canvas, Image};
-use ggez::{graphics, Context};
+use ggez::{graphics, Context, glam};
 use serde::{Deserialize, Serialize};
 use std::cmp::{max, min};
 use std::collections::HashMap;
 use std::fs;
 use std::fs::read_dir;
+use crate::game_core::resources::Resources;
 
 /// Defines an item in the inventory of the player
 /// Contains the name of the item, information about the item and the image
@@ -29,20 +30,24 @@ pub struct Player {
     /// The current items of the player.
     inventory: Vec<Item>,
     pub(crate) position: (usize, usize),
-    air: u16,
-    energy: u16,
-    air_cr: i16,
-    energy_cr: i16,
+    resources: Resources<u16>,
+    resources_change: Resources<i16>,
 }
 impl Default for Player {
     fn default() -> Self {
         Self {
             inventory: vec![],
             position: (0, 0),
-            air: u16::MAX,
-            energy: u16::MAX,
-            air_cr: -10,
-            energy_cr: -10,
+            resources: Resources {
+                oxygen: u16::MAX,
+                energy: u16::MAX,
+                life: u16::MAX,
+            },
+            resources_change: Resources {
+                oxygen: -100,
+                energy: -1,
+                life: 0,
+            },
         }
     }
 }
@@ -72,36 +77,34 @@ impl GameState {
         Ok(result)
     }
     pub fn tick(&mut self) {
-        self.player.air = self.player.air.saturating_add_signed(self.player.energy_cr);
-        self.player.energy = self.player.energy.saturating_add_signed(self.player.air_cr);
-        if self.player.air == 0 || self.player.energy == 0 {
-            // TODO: Load last game state
-            // Remove a milestone if the player is dead
-            self.milestone = /*dbg!*/(self.milestone.saturating_sub(1));
-            self.player.air = u16::MAX;
-            self.player.energy = u16::MAX;
-        } else {
-            self.milestone += 1;
-        }
+        self.player.resources.oxygen = self.player.resources.oxygen.saturating_add_signed(self.player.resources_change.oxygen);
+        self.player.resources.energy = self.player.resources.energy.saturating_add_signed(self.player.resources_change.energy);
     }
 
     /// Draws the current resources to the screen.
     /// TODO: Make them Bars with counters only displayed in debug configurations.
-    fn draw_resources(&self, canvas: &mut Canvas, scale: Vec2) -> RLResult {
-        let mut text = graphics::Text::new(format!("Air: {}", self.player.air));
+    fn draw_resources(&self, canvas: &mut Canvas, scale: Vec2, ctx: &mut Context) -> RLResult {
+        let mut text = graphics::Text::new(format!("Air: {}", self.player.resources.oxygen));
         canvas.draw(
             &text,
             graphics::DrawParam::default()
                 .dest([50. * scale.x, 1000. * scale.y])
                 .scale(scale),
         );
-        text = graphics::Text::new(format!("Energy: {}", self.player.energy));
+        text = graphics::Text::new(format!("Energy: {}", self.player.resources.energy));
         canvas.draw(
             &text,
             graphics::DrawParam::default()
                 .dest([50. * scale.x, 1050. * scale.y])
                 .scale(scale),
         );
+        let mut rect_air = graphics::Rect::new(400.0 * scale.x as f32, 1050.0 * scale.y as f32, (u16::MAX as f32 * scale.x as f32)* 0.004, 10.0 * scale.y as f32);
+        let rect_mesh_air = graphics::Mesh::new_rectangle(ctx, graphics::DrawMode::fill(), rect_air, graphics::Color::from_rgb(0, 204, 255))?;
+        let mut rect_air2 = graphics::Rect::new(400.0 * scale.x as f32, 1050.0 * scale.y as f32, (self.player.resources.oxygen as f32 * scale.x as f32) * 0.004, 10.0 * scale.y as f32);
+        let rect_mesh_air2 = graphics::Mesh::new_rectangle(ctx, graphics::DrawMode::fill(), rect_air2, graphics::Color::from_rgb(51, 51, 204))?;
+        graphics::draw(canvas, &rect_mesh_air, graphics::DrawParam::default());
+        graphics::draw(canvas, &rect_mesh_air2, graphics::DrawParam::default());
+
         Ok(())
     }
     /// Loads the assets. Has to be called before drawing the game.
@@ -196,7 +199,7 @@ impl Screen for GameState {
                 .scale(scale)
                 .dest([self.player.position.0 as f32, self.player.position.1 as f32]),
         );
-        self.draw_resources(&mut canvas, scale)?;
+        self.draw_resources(&mut canvas, scale, ctx)?;
         canvas.finish(ctx)?;
         Ok(())
     }
