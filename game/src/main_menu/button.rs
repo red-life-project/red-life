@@ -1,12 +1,12 @@
 use crate::main_menu::mainmenu::Message;
+use ggez::glam::f32::Vec2;
 use ggez::graphics::Color;
 use ggez::mint::Point2;
 use ggez::{graphics, Context, GameResult};
 use std::sync::mpsc::Sender;
-use ggez::glam::f32::Vec2;
 
 #[derive(Debug)]
-pub(crate) struct Button {
+pub struct Button {
     pub(crate) text: String,
     pub(crate) img: Option<graphics::Image>,
     pub(crate) message: Message,
@@ -20,13 +20,15 @@ impl Button {
         dbg!("Pressed {:?}", self.message);
     }
 
-    fn is_clicked(&self, mouse_pos: Point2<f32>, scale: &Vec2) -> bool {
-        let button_rect = self.clone();
-        button_rect.scale(scale.x, scale.y).contains(mouse_pos)
+    fn is_clicked(&self, mouse_pos: Point2<f32>, scale: Vec2) -> bool {
+        let mut button_rect = self.rect.clone();
+        button_rect.x *= scale.x;
+        button_rect.y *= scale.y;
+        button_rect.contains(mouse_pos)
         //self.rect.contains(mouse_pos)
     }
-    pub(crate) fn click(&mut self, mouse_pos: Point2<f32>) {
-        if self.is_clicked(mouse_pos, &Default::default()) {
+    pub(crate) fn click(&mut self, mouse_pos: Point2<f32>, scale: Vec2) {
+        if self.is_clicked(mouse_pos, scale) {
             self.pressed();
             self.sender.send(self.message).unwrap();
         }

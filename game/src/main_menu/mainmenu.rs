@@ -3,7 +3,7 @@ use crate::backend::{
     screen::{Screen, StackCommand},
     utils::get_scale,
 };
-use crate::main_menu::button::Button;
+use crate::main_menu::button::{draw_button, Button};
 use crate::main_menu::mainmenu::Message::{Exit, NewGame, Start};
 use crate::RLResult;
 use ggez::event::MouseButton;
@@ -24,14 +24,6 @@ pub struct MainMenu {
     buttons: Vec<Button>,
     receiver: Receiver<Message>,
     sender: Sender<Message>,
-}
-
-fn draw_button(ctx: &mut Context, btn: &Button) -> GameResult<graphics::Mesh> {
-    let mb = &mut graphics::MeshBuilder::new();
-
-    mb.rectangle(graphics::DrawMode::fill(), btn.rect, btn.color)?;
-
-    Ok(graphics::Mesh::from_data(ctx, mb.build()))
 }
 
 impl Default for MainMenu {
@@ -73,12 +65,14 @@ impl Default for MainMenu {
 
 impl Screen for MainMenu {
     fn update(&mut self, ctx: &mut Context) -> RLResult<StackCommand> {
+        let scale = get_scale(ctx);
+        println!("Scale: {:?}", &scale);
         //handle buttons
         if ctx.mouse.button_pressed(MouseButton::Left) {
             let current_position = ctx.mouse.position();
             self.buttons
                 .iter_mut()
-                .for_each(|btn| btn.click(current_position));
+                .for_each(|btn| btn.click(current_position, scale));
         }
         if let Ok(msg) = self.receiver.try_recv() {
             match msg {
