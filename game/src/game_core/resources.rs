@@ -32,5 +32,31 @@ impl ops::Sub<Resources> for Resources {
     }
 }
 
+#[cfg(test)]
+mod test {
+    use super::*;
+    use crate::game_core::resources::Resources;
+
+    #[test]
+    fn test()
+    {
+        let a = Resources {
+            oxygen: 1,
+            energy: 2,
+            life: 3,
+        };
+        let b = Resources {
+            oxygen: 4,
+            energy: 5,
+            life: 6,
+        };
+        let c = a + b;
+        let d = Resources{
+            oxygen: 5,
+            energy: 7,
+            life: 9
+        };
+        assert_eq!(c,d)
+    }
 }
 
