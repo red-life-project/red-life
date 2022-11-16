@@ -1,5 +1,8 @@
 use std::default::default;
+use std::ptr::null;
+use std::sync::mpsc::Sender;
 use ggez::graphics::Rect;
+use crate::basis::ressourcen::Resource;
 use crate::maschienen::maschiene_sprite::MaschineSprite;
 
 pub enum State {
@@ -15,31 +18,48 @@ pub struct Maschine {
     state: State,
     sprite: MaschineSprite,
     trades: Vec<Trade>,
+    running_recources : Resource,
+    sender:Sender<Resource>;
 
 }
 impl Default for Maschine
 {
     fn default() -> Self {
         Self{
-            name : String::default("Machiene ohne namen"),
+            name : String::default("Machene ohne namen"),
             hitbox : Rect::default(),
             interaction_area:Rect::default(),
             state: State::Broken,
             sprite : MaschineSprite,
             trades: vec![],
+            running_recources: Ressourcen,
+            sender: NULL,
         }
     }
 }
 
 impl Maschine {
 
-    pub fn new(name: String, trades: Vec<Trade>) -> Self {
+    pub fn new(namen: String, trades: Vec<Trade>) -> Self {
 
         let loadedSprite: MaschineSprite =  AssetService::get(name);
-        let default = Maschine::default();
-        Self { name, hitbox:default.hitbox, interaction_area, state, sprite: loadedSprite, trades }
+
+        Self {
+            name: namen,
+            hitbox: Default::default(),
+            interaction_area: Default::default(),
+            state: State::Broken,
+            sprite: Default::default(),
+            trades,
+            running_recources: (),
+            sender: ()
+        }
     }
 
 
-    pub fn
+    pub fn no_energy(&mut self){
+        self.state = State::Idel;
+        //timer pausiren
+
+    }
 }
