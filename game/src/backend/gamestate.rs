@@ -1,7 +1,8 @@
 use crate::backend::screen::StackCommand;
+#[macro_use]
 use crate::backend::utils::get_scale;
 use crate::backend::{error::RLError, screen::Screen};
-use crate::RLResult;
+use crate::{draw, RLResult};
 use ggez::glam::Vec2;
 use ggez::graphics::Rect;
 use ggez::graphics::{Canvas, Image};
@@ -168,6 +169,13 @@ impl GameState {
         self.machine_collision_detection(next_player_pos)
             || Self::border_collision_detection(next_player_pos)
     }
+    /// Returns the asset if it exists
+    fn get_asset(&self, name: &str) -> RLResult<&Image> {
+        self.assets.get(name).ok_or(RLError::AssetError(format!(
+            "Could not find asset with name {}",
+            name
+        )))
+    }
 }
 
 impl Screen for GameState {
@@ -181,20 +189,14 @@ impl Screen for GameState {
         let scale = get_scale(ctx);
         let mut canvas =
             graphics::Canvas::from_frame(ctx, graphics::Color::from([0.1, 0.2, 0.3, 1.0]));
-        let background = self
-            .assets
-            .get("basis.png")
-            .ok_or(RLError::AssetError("Could not find asset".to_string()))?;
+        let background = self.get_asset("background.png")?;
         canvas.draw(background, graphics::DrawParam::default().scale(scale));
-        let player = self
-            .assets
-            .get("player.png")
-            .ok_or(RLError::AssetError("Could not find asset".to_string()))?;
-        canvas.draw(
+        let player = self.get_asset("player.png")?;
+        draw!(
+            canvas,
             player,
-            graphics::DrawParam::default()
-                .scale(scale)
-                .dest([self.player.position.0 as f32, self.player.position.1 as f32]),
+            [self.player.position.0 as f32, self.player.position.1 as f32],
+            scale
         );
         self.draw_resources(&mut canvas, scale)?;
         canvas.finish(ctx)?;
