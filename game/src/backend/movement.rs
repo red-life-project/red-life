@@ -23,7 +23,6 @@ impl GameState {
                             self.player.position.0,
                             self.player.position.1.saturating_sub(MOVEMENT_SPEED),
                         ),
-                        scale,
                     ) {
                         self.player.position.1 =
                             self.player.position.1.saturating_sub(MOVEMENT_SPEED);
@@ -35,7 +34,6 @@ impl GameState {
                             self.player.position.0.saturating_sub(MOVEMENT_SPEED),
                             self.player.position.1,
                         ),
-                        scale,
                     ) {
                         self.player.position.0 =
                             self.player.position.0.saturating_sub(MOVEMENT_SPEED);
@@ -47,7 +45,6 @@ impl GameState {
                             self.player.position.0,
                             self.player.position.1.saturating_add(MOVEMENT_SPEED),
                         ),
-                        scale,
                     ) {
                         self.player.position.1 =
                             self.player.position.1.saturating_add(MOVEMENT_SPEED);
@@ -59,7 +56,6 @@ impl GameState {
                             self.player.position.0.saturating_add(MOVEMENT_SPEED),
                             self.player.position.1,
                         ),
-                        scale,
                     ) {
                         self.player.position.0 =
                             self.player.position.0.saturating_add(MOVEMENT_SPEED);

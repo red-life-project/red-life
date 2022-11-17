@@ -23,7 +23,7 @@ impl Default for Player {
                 life: u16::MAX,
             },
             resources_change: Resources {
-                oxygen: -100,
+                oxygen: -1,
                 energy: -1,
                 life: 0,
             },
