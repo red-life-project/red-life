@@ -25,7 +25,6 @@ impl Button {
         button_rect.x *= scale.x;
         button_rect.y *= scale.y;
         button_rect.contains(mouse_pos)
-        //self.rect.contains(mouse_pos)
     }
     pub(crate) fn click(&mut self, mouse_pos: Point2<f32>, scale: Vec2) {
         if self.is_clicked(mouse_pos, scale) {
