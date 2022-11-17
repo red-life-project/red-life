@@ -29,14 +29,17 @@ pub struct DeathScreen {
     additional_text: graphics::Text,
 }
 
-pub fn new(death_reason: DeathReason) -> DeathScreen {
-    DeathScreen {
-        buttons: vec![],
-        death_reason,
-        death_message: graphics::Text::new(DEATH_MESSAGES[death_reason as usize]),
-        additional_text: graphics::Text::new("Press ESC to exit the game!"),
+impl DeathScreen {
+    pub fn new(death_reason: DeathReason) -> Self {
+        Self {
+            buttons: vec![],
+            death_reason,
+            death_message: graphics::Text::new(DEATH_MESSAGES[death_reason as usize]),
+            additional_text: graphics::Text::new("Press ESC to exit the game!"),
+        }
     }
 }
+
 
 impl Screen for DeathScreen {
     fn update(&mut self, ctx: &mut Context) -> RLResult<StackCommand> {
