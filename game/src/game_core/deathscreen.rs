@@ -1,7 +1,8 @@
 use crate::backend::screen::{Screen, StackCommand};
 use crate::backend::utils::get_scale;
 use crate::main_menu::button::Button;
-use crate::RLResult;
+use crate::{draw, RLResult};
+use ggez::glam::Vec2;
 use ggez::winit::event::VirtualKeyCode;
 use ggez::{graphics, Context};
 use std::fmt::{Debug, Display, Formatter};
@@ -15,7 +16,7 @@ pub enum DeathReason {
     Oxygen,
     Energy,
 }
-impl Display for DeathReason{
+impl Display for DeathReason {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             DeathReason::Oxygen => write!(f, "Oxygen"),
@@ -37,7 +38,7 @@ impl DeathScreen {
         Self {
             buttons: vec![],
             death_reason,
-            death_message: graphics::Text::new(DEATH_MESSAGES[death_reason as usize]),
+            death_message: graphics::Text::new(format!("You died from lack of {}", death_reason)),
             additional_text: graphics::Text::new("Press ESC to exit the game!"),
         }
     }
@@ -50,7 +51,7 @@ impl Screen for DeathScreen {
             return match key {
                 VirtualKeyCode::Escape => Ok(StackCommand::Pop),
                 _ => Ok(StackCommand::None),
-            }
+            };
         }
         Ok(StackCommand::None)
     }
@@ -59,19 +60,9 @@ impl Screen for DeathScreen {
         let scale = get_scale(ctx);
         let mut canvas = graphics::Canvas::from_frame(ctx, graphics::Color::RED);
 
-        canvas.draw(
-            &self.death_message,
-            graphics::DrawParam::default()
-                .dest([800. * scale.x, 400. * scale.y])
-                .scale(scale),
-        );
+        draw!(canvas, &self.death_message, Vec2::new(800., 400.), scale);
 
-        canvas.draw(
-            &self.additional_text,
-            graphics::DrawParam::default()
-                .dest([845. * scale.x, 600. * scale.y])
-                .scale(scale),
-        );
+        draw!(canvas, &self.additional_text, Vec2::new(845., 600.), scale);
 
         canvas.finish(ctx)?;
 
