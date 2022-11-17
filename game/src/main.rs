@@ -1,8 +1,8 @@
 mod backend;
 mod basis;
 mod game_core;
-mod main_menu;
 mod machines;
+mod main_menu;
 
 use crate::backend::{error, screen::Screenstack};
 use ggez::conf::FullscreenType;
