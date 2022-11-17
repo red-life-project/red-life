@@ -38,7 +38,7 @@ impl DeathScreen {
         Self {
             buttons: vec![],
             death_reason,
-            death_message: graphics::Text::new(format!("Dein Todesgrund: {}", death_reason)),
+            death_message: graphics::Text::new(format!("Dein Todesgrund: {death_reason}")),
             additional_text: graphics::Text::new("Bitte drücke ESC!"),
         }
     }
@@ -47,7 +47,7 @@ impl DeathScreen {
 impl Screen for DeathScreen {
     fn update(&mut self, ctx: &mut Context) -> RLResult<StackCommand> {
         let keys = ctx.keyboard.pressed_keys();
-        for key in keys.iter() {
+        if let Some(key) = keys.iter().next() {
             return match key {
                 VirtualKeyCode::Escape => Ok(StackCommand::Pop),
                 _ => Ok(StackCommand::None),
