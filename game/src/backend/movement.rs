@@ -18,45 +18,37 @@ impl GameState {
                     return Ok(StackCommand::Pop);
                 }
                 VirtualKeyCode::W => {
-                    if !self.collision_detection(
-                        (
-                            self.player.position.0,
-                            self.player.position.1.saturating_sub(MOVEMENT_SPEED),
-                        ),
-                    ) {
+                    if !self.collision_detection((
+                        self.player.position.0,
+                        self.player.position.1.saturating_sub(MOVEMENT_SPEED),
+                    )) {
                         self.player.position.1 =
                             self.player.position.1.saturating_sub(MOVEMENT_SPEED);
                     }
                 }
                 VirtualKeyCode::A => {
-                    if !self.collision_detection(
-                        (
-                            self.player.position.0.saturating_sub(MOVEMENT_SPEED),
-                            self.player.position.1,
-                        ),
-                    ) {
+                    if !self.collision_detection((
+                        self.player.position.0.saturating_sub(MOVEMENT_SPEED),
+                        self.player.position.1,
+                    )) {
                         self.player.position.0 =
                             self.player.position.0.saturating_sub(MOVEMENT_SPEED);
                     }
                 }
                 VirtualKeyCode::S => {
-                    if !self.collision_detection(
-                        (
-                            self.player.position.0,
-                            self.player.position.1.saturating_add(MOVEMENT_SPEED),
-                        ),
-                    ) {
+                    if !self.collision_detection((
+                        self.player.position.0,
+                        self.player.position.1.saturating_add(MOVEMENT_SPEED),
+                    )) {
                         self.player.position.1 =
                             self.player.position.1.saturating_add(MOVEMENT_SPEED);
                     }
                 }
                 VirtualKeyCode::D => {
-                    if !self.collision_detection(
-                        (
-                            self.player.position.0.saturating_add(MOVEMENT_SPEED),
-                            self.player.position.1,
-                        ),
-                    ) {
+                    if !self.collision_detection((
+                        self.player.position.0.saturating_add(MOVEMENT_SPEED),
+                        self.player.position.1,
+                    )) {
                         self.player.position.0 =
                             self.player.position.0.saturating_add(MOVEMENT_SPEED);
                     }
