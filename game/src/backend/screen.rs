@@ -1,7 +1,7 @@
 use crate::backend::utils::get_scale;
 use crate::error::RLError;
 use crate::main_menu::mainmenu::{MainMenu, Message};
-use crate::RLResult;
+use crate::{draw, RLResult};
 use ggez::graphics::Color;
 use ggez::{event, graphics, Context};
 use std::fmt::Debug;
@@ -58,9 +58,9 @@ impl Screenstack {
         self.popup.retain(|popup| popup.expiration > Instant::now());
     }
 }
-/// The StackCommand is necessary in order to send commands back to the screenstack
-/// from the screen. We can for example tell the screenstack to push the gamestate screen onto the
-/// screenstack
+/// The `StackCommand` is necessary in order to send commands back to the `Screenstack`
+/// from the `Screen`. We can for example tell the screenstack to push the `Gamestate` screen onto the
+/// `Screenstack`
 pub enum StackCommand {
     None,
     Push(Box<dyn Screen>),
@@ -108,7 +108,7 @@ impl event::EventHandler<RLError> for Screenstack {
 impl Default for Screenstack {
     fn default() -> Self {
         Self {
-            screens: vec![Box::<MainMenu<Message>>::default()],
+            screens: vec![Box::<MainMenu>::default()],
             popup: vec![],
         }
     }
