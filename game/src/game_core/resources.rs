@@ -46,9 +46,9 @@ impl Resources<u16> {
     // This function returns the value that reached zero first
     // If no value reached zero, it returns None
     pub fn get_zero_values(&self) -> Option<DeathReason> {
-        if self.oxygen <= 0 {
+        if self.oxygen == 0 {
             Some(DeathReason::Oxygen)
-        } else if self.energy <= 0 {
+        } else if self.energy == 0 {
             Some(DeathReason::Energy)
         } else {
             None
