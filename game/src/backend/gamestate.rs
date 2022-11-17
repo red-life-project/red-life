@@ -64,7 +64,7 @@ impl GameState {
         if let Some(deathreason) = Resources::get_zero_values(&self.player.resources) {
             self.player.resources_change.life = -100;
             if self.player.resources.life == 0 {
-                let gamestate = GameState::load(true).unwrap();
+                let gamestate = GameState::load(true).unwrap_or_default();
                 gamestate.save(false).unwrap();
                 return Some(StackCommand::Push(Box::new(DeathScreen::new(deathreason))));
             };
@@ -162,16 +162,19 @@ impl GameState {
     }
 
     /// Returns if the player would collide with a border if they moved in the given direction
-    fn border_collision_detection(next_player_pos: (usize, usize)) -> bool {
-        next_player_pos.0 >= 1879 || next_player_pos.1 >= 1030
+    fn border_collision_detection(next_player_pos: (usize, usize), scale: Vec2) -> bool {
+        next_player_pos.0 >= (1785. * scale.x) as usize
+            || next_player_pos.1 >= (867.0 * scale.y) as usize
+            || next_player_pos.0 <= (280.0 * scale.x) as usize
+            || next_player_pos.1 <= (219.0 * scale.y) as usize
     }
     /// Returns a boolean indicating whether the player would collide with a machine or border if they moved in the given direction
     ///
     /// # Arguments
     /// * `next_player_pos` - A tuple containing the next position of the player
-    pub(crate) fn collision_detection(&self, next_player_pos: (usize, usize)) -> bool {
+    pub(crate) fn collision_detection(&self, next_player_pos: (usize, usize), scale: Vec2) -> bool {
         self.machine_collision_detection(next_player_pos)
-            || Self::border_collision_detection(next_player_pos)
+            || Self::border_collision_detection(next_player_pos, scale)
     }
     /// Returns the asset if it exists
     fn get_asset(&self, name: &str) -> RLResult<&Image> {

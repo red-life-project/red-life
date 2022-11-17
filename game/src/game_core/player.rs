@@ -16,7 +16,7 @@ impl Default for Player {
     fn default() -> Self {
         Self {
             inventory: vec![],
-            position: (0, 0),
+            position: (600, 500),
             resources: Resources {
                 oxygen: u16::MAX,
                 energy: u16::MAX,
