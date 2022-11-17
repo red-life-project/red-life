@@ -189,13 +189,13 @@ impl Screen for GameState {
         let scale = get_scale(ctx);
         let mut canvas =
             graphics::Canvas::from_frame(ctx, graphics::Color::from([0.1, 0.2, 0.3, 1.0]));
-        let background = self.get_asset("background.png")?;
+        let background = self.get_asset("basis.png")?;
         canvas.draw(background, graphics::DrawParam::default().scale(scale));
         let player = self.get_asset("player.png")?;
         draw!(
             canvas,
             player,
-            [self.player.position.0 as f32, self.player.position.1 as f32],
+            Vec2::from([self.player.position.0 as f32, self.player.position.1 as f32]),
             scale
         );
         self.draw_resources(&mut canvas, scale)?;
