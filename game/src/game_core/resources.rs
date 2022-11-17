@@ -84,19 +84,19 @@ mod test {
         };
         let add_result = a + b;
         let sub_result = a - b;
-        let add_controll = Resources {
+        let sub_control = Resources {
             oxygen: -3,
             energy: -3,
             life: -3,
         };
 
-        let sub_controll = Resources {
+        let add_control = Resources {
             oxygen: 5,
             energy: 7,
             life: 9,
         };
-        assert_eq!(add_result, add_controll);
-        assert_eq!(sub_result, sub_controll)
+        assert_eq!(add_result, add_control);
+        assert_eq!(sub_result, sub_control)
     }
 
     #[test]
