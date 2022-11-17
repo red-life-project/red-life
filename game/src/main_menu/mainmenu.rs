@@ -8,8 +8,7 @@ use crate::main_menu::mainmenu::Message::{Exit, NewGame, Start};
 use crate::RLResult;
 use ggez::event::MouseButton;
 use ggez::graphics::Color;
-use ggez::mint::Point2;
-use ggez::{graphics, Context, GameResult};
+use ggez::{graphics, Context};
 use std::sync::mpsc::{channel, Receiver, Sender};
 
 #[derive(Copy, Clone, Debug, PartialEq)]
