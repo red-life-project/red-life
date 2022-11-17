@@ -1,24 +1,27 @@
+use crate::game_core::deathscreen::{DeathReason, DeathScreen};
+use serde::{Deserialize, Serialize};
+use std::cmp::PartialOrd;
 use std::ops;
 
 /// This struct holds data for resources
 /// This is used to describe the current state and change rate of the player's resources.
-#[derive(Copy, Clone, Debug, PartialEq)]
-pub struct Resources {
-    pub(crate) oxygen: i16,
-    pub(crate) energy: i16,
-    pub(crate) life: i16,
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Resources<T: PartialOrd> {
+    pub(crate) oxygen: T,
+    pub(crate) energy: T,
+    pub(crate) life: T,
 }
 
-impl IntoIterator for Resources {
-    type Item = i16;
-    type IntoIter = std::array::IntoIter<i16, 3>;
+impl<T: std::cmp::PartialOrd> IntoIterator for Resources<T> {
+    type Item = T;
+    type IntoIter = std::array::IntoIter<T, 3>;
 
     fn into_iter(self) -> Self::IntoIter {
         [self.oxygen, self.energy, self.life].into_iter()
     }
 }
 
-impl ops::Add<Resources> for Resources {
+impl<T: std::ops::Add<Output = T> + std::cmp::PartialOrd> ops::Add<Resources<T>> for Resources<T> {
     type Output = Self;
     fn add(self, rhs: Self) -> Self {
         Self {
@@ -29,7 +32,7 @@ impl ops::Add<Resources> for Resources {
     }
 }
 
-impl ops::Sub<Resources> for Resources {
+impl<T: std::ops::Sub<Output = T> + std::cmp::PartialOrd> ops::Sub<Resources<T>> for Resources<T> {
     type Output = Self;
     fn sub(self, rhs: Self) -> Self {
         Self {
@@ -39,7 +42,19 @@ impl ops::Sub<Resources> for Resources {
         }
     }
 }
-
+impl Resources<u16> {
+    // This function returns the value that reached zero first
+    // If no value reached zero, it returns None
+    pub fn get_zero_values(&self) -> Option<DeathReason> {
+        if self.oxygen == 0 {
+            Some(DeathReason::Oxygen)
+        } else if self.energy == 0 {
+            Some(DeathReason::Energy)
+        } else {
+            None
+        }
+    }
+}
 #[cfg(test)]
 mod test {
     use super::*;

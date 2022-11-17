@@ -1,10 +1,14 @@
 use crate::backend::screen::StackCommand;
 use crate::backend::utils::get_scale;
 use crate::backend::{error::RLError, screen::Screen};
+use crate::game_core::deathscreen::{DeathReason, DeathScreen};
+use crate::game_core::item::Item;
+use crate::game_core::player::Player;
+use crate::game_core::resources::Resources;
 use crate::{draw, RLResult};
 use ggez::glam::Vec2;
-use ggez::graphics::Rect;
 use ggez::graphics::{Canvas, Image};
+use ggez::graphics::{DrawMode, Drawable, Mesh, MeshBuilder, Rect};
 use ggez::{graphics, Context};
 use serde::{Deserialize, Serialize};
 use std::cmp::{max, min};
@@ -13,44 +17,10 @@ use std::fs;
 use std::fs::read_dir;
 use crate::backend::area::Area;
 
-/// Defines an item in the inventory of the player
-/// Contains the name of the item, information about the item and the image
-#[derive(Clone, Eq, Debug, PartialEq, Serialize, Deserialize)]
-struct Item {
-    name: String,
-    info_text: String,
-    img: String,
-}
-
-/// The current game player, containing its inventory and the current position, air and energy,
-/// along with their change rate
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Player {
-    /// The current items of the player.
-    inventory: Vec<Item>,
-    pub(crate) position: (usize, usize),
-    air: u16,
-    energy: u16,
-    air_cr: i16,
-    energy_cr: i16,
-}
-impl Default for Player {
-    fn default() -> Self {
-        Self {
-            inventory: vec![],
-            position: (0, 0),
-            air: u16::MAX,
-            energy: u16::MAX,
-            air_cr: -10,
-            energy_cr: -10,
-        }
-    }
-}
 /// This is the game state. It contains all the data that is needed to run the game.
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct GameState {
-    inventory: Vec<Item>,
-    /// Contains the current player position, air and energy
+    /// Contains the current player position, resources(air, energy, life) and the inventory and their change rates
     pub player: Player,
     /// The current milestone the player has reached.
     milestone: usize,
@@ -60,6 +30,7 @@ pub struct GameState {
     #[serde(skip)]
     areas: Vec<Box<dyn Area>>,
 }
+
 impl PartialEq for GameState {
     fn eq(&self, other: &Self) -> bool {
         self.inventory == other.inventory
@@ -68,43 +39,76 @@ impl PartialEq for GameState {
             && self.machines == other.machines
     }
 }
+const RESOURCE_POSITION: [f32; 3] = [316.0, 639.0, 1373.0];
+const RESOURCE_COLOR: [[i32; 3]; 3] = [[51, 51, 204], [186, 158, 19], [102, 24, 18]];
+const RESOURCE_NAME: [&str; 3] = ["Luft", "Energie", "Leben"];
 impl GameState {
     pub fn new(ctx: &mut Context) -> RLResult<Self> {
         let mut result = GameState::default();
         result.load_assets(ctx)?;
         Ok(result)
     }
-    pub fn tick(&mut self) {
-        self.player.air = self.player.air.saturating_add_signed(self.player.energy_cr);
-        self.player.energy = self.player.energy.saturating_add_signed(self.player.air_cr);
-        if self.player.air == 0 || self.player.energy == 0 {
-            // TODO: Load last game state
-            // Remove a milestone if the player is dead
-            self.milestone = /*dbg!*/(self.milestone.saturating_sub(1));
-            self.player.air = u16::MAX;
-            self.player.energy = u16::MAX;
-        } else {
-            self.milestone += 1;
+    pub fn tick(&mut self) -> Option<StackCommand> {
+        self.player.resources.oxygen = self
+            .player
+            .resources
+            .oxygen
+            .saturating_add_signed(self.player.resources_change.oxygen);
+        self.player.resources.energy = self
+            .player
+            .resources
+            .energy
+            .saturating_add_signed(self.player.resources_change.energy);
+        if let Some(deathreason) = Resources::get_zero_values(&self.player.resources) {
+            self.player.resources.life = self
+                .player
+                .resources
+                .life
+                .saturating_add_signed(self.player.resources_change.life);
+            if self.player.resources.life == 0 {
+                let gamestate = GameState::load(true).unwrap();
+                gamestate.save(false).unwrap();
+                return Some(StackCommand::Push(Box::new(DeathScreen::new(deathreason))));
+            };
         }
+        None
     }
 
-    /// Draws the current resources to the screen.
+    /// Paints the current resource level of air, energy and life as a bar on the screen.
     /// TODO: Make them Bars with counters only displayed in debug configurations.
-    fn draw_resources(&self, canvas: &mut Canvas, scale: Vec2) -> RLResult {
-        let mut text = graphics::Text::new(format!("Air: {}", self.player.air));
-        canvas.draw(
-            &text,
-            graphics::DrawParam::default()
-                .dest([50. * scale.x, 1000. * scale.y])
-                .scale(scale),
-        );
-        text = graphics::Text::new(format!("Energy: {}", self.player.energy));
-        canvas.draw(
-            &text,
-            graphics::DrawParam::default()
-                .dest([50. * scale.x, 1050. * scale.y])
-                .scale(scale),
-        );
+    fn draw_resources(&self, canvas: &mut Canvas, scale: Vec2, ctx: &mut Context) -> RLResult {
+        for (i, resource) in self.player.resources.into_iter().enumerate() {
+            let mut x = RESOURCE_POSITION[i];
+            let mut color = RESOURCE_COLOR[i];
+            let mut r = color[0] as u8;
+            let mut g = color[1] as u8;
+            let mut b = color[2] as u8;
+            let mut rect = graphics::Rect::new(
+                x * scale.x,
+                961.0 * scale.y,
+                (resource as f32 * scale.x) * 0.00435,
+                12.6 * scale.y,
+            );
+            let mut mesh = graphics::Mesh::new_rounded_rectangle(
+                ctx,
+                graphics::DrawMode::fill(),
+                rect,
+                3.0,
+                graphics::Color::from_rgb(r, g, b),
+            )?;
+            mesh.draw(canvas, graphics::DrawParam::default());
+            let mut text = graphics::Text::new(format!(
+                "{}: {:.1}",
+                RESOURCE_NAME[i],
+                (resource as f32 / u16::MAX as f32) * 100.0
+            ));
+            draw!(
+                canvas,
+                &text,
+                Vec2::new(RESOURCE_POSITION[i] + 20.0, 961.0),
+                scale
+            );
+        }
         Ok(())
     }
     /// Loads the assets. Has to be called before drawing the game.
@@ -183,7 +187,9 @@ impl GameState {
 impl Screen for GameState {
     /// Updates the game and handles input. Returns StackCommand::Pop when Escape is pressed.
     fn update(&mut self, ctx: &mut Context) -> RLResult<StackCommand> {
-        self.tick();
+        if let Some(death) = self.tick() {
+            return Ok(death);
+        }
         return self.move_player(ctx);
     }
     /// Draws the game state to the screen.
@@ -200,7 +206,7 @@ impl Screen for GameState {
             Vec2::from([self.player.position.0 as f32, self.player.position.1 as f32]),
             scale
         );
-        self.draw_resources(&mut canvas, scale)?;
+        self.draw_resources(&mut canvas, scale, ctx)?;
         canvas.finish(ctx)?;
         Ok(())
     }
