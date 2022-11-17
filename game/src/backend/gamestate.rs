@@ -2,11 +2,11 @@ use crate::backend::screen::StackCommand;
 #[macro_use]
 use crate::backend::utils::get_scale;
 use crate::backend::{error::RLError, screen::Screen};
-use crate::{draw, RLResult};
 use crate::game_core::deathscreen::{DeathReason, DeathScreen};
 use crate::game_core::item::Item;
 use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
+use crate::{draw, RLResult};
 use ggez::glam::Vec2;
 use ggez::graphics::{Canvas, Image};
 use ggez::graphics::{DrawMode, Mesh, MeshBuilder, Rect};
