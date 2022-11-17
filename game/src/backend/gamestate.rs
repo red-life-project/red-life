@@ -1,5 +1,4 @@
 use crate::backend::screen::StackCommand;
-#[macro_use]
 use crate::backend::utils::get_scale;
 use crate::backend::{error::RLError, screen::Screen};
 use crate::{draw, RLResult};
@@ -12,6 +11,7 @@ use std::cmp::{max, min};
 use std::collections::HashMap;
 use std::fs;
 use std::fs::read_dir;
+use crate::backend::area::Area;
 
 /// Defines an item in the inventory of the player
 /// Contains the name of the item, information about the item and the image
@@ -19,7 +19,6 @@ use std::fs::read_dir;
 struct Item {
     name: String,
     info_text: String,
-    //image should be a texture, didnt work yet
     img: String,
 }
 
@@ -48,7 +47,7 @@ impl Default for Player {
     }
 }
 /// This is the game state. It contains all the data that is needed to run the game.
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+#[derive(Debug, Default, Serialize, Deserialize)]
 pub struct GameState {
     inventory: Vec<Item>,
     /// Contains the current player position, air and energy
@@ -58,10 +57,13 @@ pub struct GameState {
     machines: Vec<Rect>,
     #[serde(skip)]
     assets: HashMap<String, graphics::Image>,
+    #[serde(skip)]
+    areas: Vec<Box<dyn Area>>,
 }
 impl PartialEq for GameState {
     fn eq(&self, other: &Self) -> bool {
-        self.player == other.player
+        self.inventory == other.inventory
+            && self.player == other.player
             && self.milestone == other.milestone
             && self.machines == other.machines
     }
