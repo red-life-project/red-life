@@ -1,65 +1,32 @@
-use std::default::default;
-use std::ptr::null;
-use std::sync::mpsc::Sender;
-use ggez::graphics::Rect;
-use crate::basis::ressourcen::Resource;
-use crate::maschienen::maschiene_sprite::MaschineSprite;
+use ggez::graphics::{Image};
 
-pub enum State {
-    Broken,
-    Idel,
-    Running
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct MaschineSprite {
+    name:String,
+    idel:Image,
+    broken: Image,
+    running: Image,
 }
 
-pub struct Maschine {
-    name: String,
-    hitbox: Rect,
-    interaction_area: Rect,
-    state: State,
-    sprite: MaschineSprite,
-    trades: Vec<Trade>,
-    running_recources : Resource,
-    sender:Sender<Resource>;
-
-}
-impl Default for Maschine
-{
+impl Default for MaschineSprite{
     fn default() -> Self {
         Self{
-            name : String::default("Machene ohne namen"),
-            hitbox : Rect::default(),
-            interaction_area:Rect::default(),
-            state: State::Broken,
-            sprite : MaschineSprite,
-            trades: vec![],
-            running_recources: Ressourcen,
-            sender: NULL,
+            name:  String::default("Machiene ohne namen"),
+            idel: Image(),
+            broken: Image(),
+            running: Image()
         }
     }
 }
 
-impl Maschine {
+impl MaschineSprite {
 
-    pub fn new(namen: String, trades: Vec<Trade>) -> Self {
-
-        let loadedSprite: MaschineSprite =  AssetService::get(name);
-
-        Self {
-            name: namen,
-            hitbox: Default::default(),
-            interaction_area: Default::default(),
-            state: State::Broken,
-            sprite: Default::default(),
-            trades,
-            running_recources: (),
-            sender: ()
-        }
+    pub fn name(&self) -> String {
+        self.name
+    }
+    pub fn new(name: String, idel: Image, broken: Image, running: Image) -> Self {
+        Self { name, idel, broken, running }
     }
 
-
-    pub fn no_energy(&mut self){
-        self.state = State::Idel;
-        //timer pausiren
-
-    }
 }
+
