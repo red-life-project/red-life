@@ -42,9 +42,9 @@ impl Screen for DeathScreen {
     fn update(&mut self, ctx: &mut Context) -> RLResult<StackCommand> {
         let keys = ctx.keyboard.pressed_keys();
         for key in keys.iter() {
-            match key {
-                VirtualKeyCode::Escape => std::process::exit(0),
-                _ => {}
+            return match key {
+                VirtualKeyCode::Escape => Ok(StackCommand::Pop),
+                _ => Ok(StackCommand::None),
             }
         }
         Ok(StackCommand::None)
@@ -57,14 +57,14 @@ impl Screen for DeathScreen {
         canvas.draw(
             &self.death_message,
             graphics::DrawParam::default()
-                .dest([800., 400.])
+                .dest([800. * scale.x, 400. * scale.y])
                 .scale(scale),
         );
 
         canvas.draw(
             &self.additional_text,
             graphics::DrawParam::default()
-                .dest([845., 600.])
+                .dest([845. * scale.x, 600. * scale.y])
                 .scale(scale),
         );
 
