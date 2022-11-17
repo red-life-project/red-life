@@ -4,7 +4,7 @@ use crate::main_menu::button::Button;
 use crate::RLResult;
 use ggez::winit::event::VirtualKeyCode;
 use ggez::{graphics, Context};
-use std::fmt::{Debug, Formatter};
+use std::fmt::{Debug, Display, Formatter};
 
 /// Create DeathScreen using deathscreen::new() and pass reason of death from DeathReason enum.
 /// # Example
@@ -15,12 +15,15 @@ pub enum DeathReason {
     Oxygen,
     Energy,
 }
-
-const DEATH_MESSAGES: [&str; 2] = [
-    "You died because you ran out of oxygen!",
-    "You died because you ran out of energy!",
-];
-
+impl Display for DeathReason{
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            DeathReason::Oxygen => write!(f, "Oxygen"),
+            DeathReason::Energy => write!(f, "Energy"),
+        }
+    }
+}
+/// Deathscreen, telling the user why they died.
 #[derive(Debug)]
 pub struct DeathScreen {
     buttons: Vec<Button>,
