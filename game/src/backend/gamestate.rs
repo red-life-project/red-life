@@ -68,15 +68,16 @@ impl GameState {
     }
     pub fn tick(&mut self) -> Option<StackCommand> {
         // Iterate over every resource and add the change rate to the current value
-        // Iterate over every resource and add the change rate to the current value
-        self.player.resources = Resources::from_iter(self
-            .player
-            .resources
-            .into_iter()
-            .zip(self.player.resources_change.into_iter())
-            .map(|(a, b)| a.saturating_add_signed(b)));
+        self.player.resources = Resources::from_iter(
+            self.player
+                .resources
+                .into_iter()
+                .zip(self.player.resources_change.into_iter())
+                .map(|(a, b)| a.saturating_add_signed(b)),
+        );
         // Check if the player is dead
-        if let Some(deathreason) = Resources::get_zero_values(&self.player.resources) {
+        if let Some(empty_resource) = Resources::get_zero_values(&self.player.resources) {
+            self.player.resources_change.life = -10;
             if self.player.resources.life == 0 {
                 let gamestate = GameState::load(true).unwrap_or_default();
                 gamestate.save(false).unwrap();
