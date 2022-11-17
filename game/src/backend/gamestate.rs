@@ -2,6 +2,9 @@ use crate::backend::screen::StackCommand;
 #[macro_use]
 use crate::backend::utils::get_scale;
 use crate::backend::{error::RLError, screen::Screen};
+use crate::game_core::deathscreen::{DeathReason, DeathScreen};
+use crate::game_core::item::Item;
+use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
 use crate::{draw, RLResult};
 use ggez::glam::Vec2;
@@ -13,46 +16,6 @@ use std::cmp::{max, min};
 use std::collections::HashMap;
 use std::fs;
 use std::fs::read_dir;
-
-/// Defines an item in the inventory of the player
-/// Contains the name of the item, information about the item and the image
-#[derive(Clone, Eq, Debug, PartialEq, Serialize, Deserialize)]
-struct Item {
-    name: String,
-    info_text: String,
-    //image should be a texture, didnt work yet
-    img: String,
-}
-
-/// The current game player, containing its inventory and the current position, air and energy,
-/// along with their change rate
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Player {
-    /// The current items of the player.
-    inventory: Vec<Item>,
-    pub(crate) position: (usize, usize),
-    resources: Resources<u16>,
-    resources_change: Resources<i16>,
-}
-
-impl Default for Player {
-    fn default() -> Self {
-        Self {
-            inventory: vec![],
-            position: (0, 0),
-            resources: Resources {
-                oxygen: u16::MAX,
-                energy: u16::MAX,
-                life: u16::MAX,
-            },
-            resources_change: Resources {
-                oxygen: -5,
-                energy: -5,
-                life: -5,
-            },
-        }
-    }
-}
 
 /// This is the game state. It contains all the data that is needed to run the game.
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
@@ -82,7 +45,7 @@ impl GameState {
         result.load_assets(ctx)?;
         Ok(result)
     }
-    pub fn tick(&mut self) {
+    pub fn tick(&mut self) -> Option<StackCommand> {
         self.player.resources.oxygen = self
             .player
             .resources
@@ -93,11 +56,19 @@ impl GameState {
             .resources
             .energy
             .saturating_add_signed(self.player.resources_change.energy);
-        self.player.resources.life = self
-            .player
-            .resources
-            .life
-            .saturating_add_signed(self.player.resources_change.life);
+        if let Some(deathreason) = Resources::get_zero_values(&self.player.resources) {
+            self.player.resources.life = self
+                .player
+                .resources
+                .life
+                .saturating_add_signed(self.player.resources_change.life);
+            if self.player.resources.life == 0 {
+                let gamestate = GameState::load(true).unwrap();
+                gamestate.save(false).unwrap();
+                return Some(StackCommand::Push(Box::new(DeathScreen::new(deathreason))));
+            };
+        }
+        None
     }
 
     /// Paints the current resource level of air, energy and life as a bar on the screen.
@@ -213,7 +184,9 @@ impl GameState {
 impl Screen for GameState {
     /// Updates the game and handles input. Returns StackCommand::Pop when Escape is pressed.
     fn update(&mut self, ctx: &mut Context) -> RLResult<StackCommand> {
-        self.tick();
+        if let Some(death) = self.tick() {
+            return Ok(death);
+        }
         return self.move_player(ctx);
     }
     /// Draws the game state to the screen.
