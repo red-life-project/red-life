@@ -56,12 +56,13 @@ impl GameState {
             .resources
             .energy
             .saturating_add_signed(self.player.resources_change.energy);
+        self.player.resources.life = self
+            .player
+            .resources
+            .life
+            .saturating_add_signed(self.player.resources_change.life);
         if let Some(deathreason) = Resources::get_zero_values(&self.player.resources) {
-            self.player.resources.life = self
-                .player
-                .resources
-                .life
-                .saturating_add_signed(self.player.resources_change.life);
+            self.player.resources_change.life = -100;
             if self.player.resources.life == 0 {
                 let gamestate = GameState::load(true).unwrap();
                 gamestate.save(false).unwrap();
