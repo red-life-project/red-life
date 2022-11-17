@@ -1,5 +1,5 @@
 use ggez::graphics::Rect;
 
-struct hole{
+struct hole {
     interaction_area: Rect,
 }

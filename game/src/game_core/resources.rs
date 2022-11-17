@@ -12,6 +12,16 @@ pub struct Resources<T: PartialOrd> {
     pub(crate) life: T,
 }
 
+impl FromIterator<u16> for Resources<u16> {
+    fn from_iter<I: IntoIterator<Item = u16>>(iter: I) -> Self {
+        let mut iter = iter.into_iter();
+        Self {
+            oxygen: iter.next().unwrap(),
+            energy: iter.next().unwrap(),
+            life: iter.next().unwrap(),
+        }
+    }
+}
 impl<T: std::cmp::PartialOrd> IntoIterator for Resources<T> {
     type Item = T;
     type IntoIter = std::array::IntoIter<T, 3>;
