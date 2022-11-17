@@ -2,17 +2,17 @@ use crate::backend::screen::StackCommand;
 #[macro_use]
 use crate::backend::utils::get_scale;
 use crate::backend::{error::RLError, screen::Screen};
+use crate::game_core::resources::Resources;
 use crate::{draw, RLResult};
 use ggez::glam::Vec2;
-use ggez::graphics::{DrawMode, Mesh, MeshBuilder, Rect};
 use ggez::graphics::{Canvas, Image};
-use ggez::{graphics, Context, glam};
+use ggez::graphics::{DrawMode, Drawable, Mesh, MeshBuilder, Rect};
+use ggez::{graphics, Context};
 use serde::{Deserialize, Serialize};
 use std::cmp::{max, min};
 use std::collections::HashMap;
 use std::fs;
 use std::fs::read_dir;
-use crate::game_core::resources::Resources;
 
 /// Defines an item in the inventory of the player
 /// Contains the name of the item, information about the item and the image
@@ -34,6 +34,7 @@ pub struct Player {
     resources: Resources<u16>,
     resources_change: Resources<i16>,
 }
+
 impl Default for Player {
     fn default() -> Self {
         Self {
@@ -45,18 +46,18 @@ impl Default for Player {
                 life: u16::MAX,
             },
             resources_change: Resources {
-                oxygen: -100,
-                energy: -1,
-                life: 0,
+                oxygen: -5,
+                energy: -5,
+                life: -5,
             },
         }
     }
 }
+
 /// This is the game state. It contains all the data that is needed to run the game.
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct GameState {
-    inventory: Vec<Item>,
-    /// Contains the current player position, air and energy
+    /// Contains the current player position, resources(air, energy, life) and the inventory and their change rates
     pub player: Player,
     /// The current milestone the player has reached.
     milestone: usize,
@@ -64,6 +65,7 @@ pub struct GameState {
     #[serde(skip)]
     assets: HashMap<String, graphics::Image>,
 }
+
 impl PartialEq for GameState {
     fn eq(&self, other: &Self) -> bool {
         self.player == other.player
@@ -71,6 +73,9 @@ impl PartialEq for GameState {
             && self.machines == other.machines
     }
 }
+const RESOURCE_POSITION: [f32; 3] = [316.0, 639.0, 1373.0];
+const RESOURCE_COLOR: [[i32; 3]; 3] = [[51, 51, 204], [186, 158, 19], [102, 24, 18]];
+const RESOURCE_NAME: [&str; 3] = ["Luft", "Energie", "Leben"];
 impl GameState {
     pub fn new(ctx: &mut Context) -> RLResult<Self> {
         let mut result = GameState::default();
@@ -78,34 +83,58 @@ impl GameState {
         Ok(result)
     }
     pub fn tick(&mut self) {
-        self.player.resources.oxygen = self.player.resources.oxygen.saturating_add_signed(self.player.resources_change.oxygen);
-        self.player.resources.energy = self.player.resources.energy.saturating_add_signed(self.player.resources_change.energy);
+        self.player.resources.oxygen = self
+            .player
+            .resources
+            .oxygen
+            .saturating_add_signed(self.player.resources_change.oxygen);
+        self.player.resources.energy = self
+            .player
+            .resources
+            .energy
+            .saturating_add_signed(self.player.resources_change.energy);
+        self.player.resources.life = self
+            .player
+            .resources
+            .life
+            .saturating_add_signed(self.player.resources_change.life);
     }
 
-    /// Draws the current resources to the screen.
+    /// Paints the current resource level of air, energy and life as a bar on the screen.
     /// TODO: Make them Bars with counters only displayed in debug configurations.
     fn draw_resources(&self, canvas: &mut Canvas, scale: Vec2, ctx: &mut Context) -> RLResult {
-        let mut text = graphics::Text::new(format!("Air: {}", self.player.resources.oxygen));
-        canvas.draw(
-            &text,
-            graphics::DrawParam::default()
-                .dest([50. * scale.x, 1000. * scale.y])
-                .scale(scale),
-        );
-        text = graphics::Text::new(format!("Energy: {}", self.player.resources.energy));
-        canvas.draw(
-            &text,
-            graphics::DrawParam::default()
-                .dest([50. * scale.x, 1050. * scale.y])
-                .scale(scale),
-        );
-        let mut rect_air = graphics::Rect::new(400.0 * scale.x as f32, 1050.0 * scale.y as f32, (u16::MAX as f32 * scale.x as f32)* 0.004, 10.0 * scale.y as f32);
-        let rect_mesh_air = graphics::Mesh::new_rectangle(ctx, graphics::DrawMode::fill(), rect_air, graphics::Color::from_rgb(0, 204, 255))?;
-        let mut rect_air2 = graphics::Rect::new(400.0 * scale.x as f32, 1050.0 * scale.y as f32, (self.player.resources.oxygen as f32 * scale.x as f32) * 0.004, 10.0 * scale.y as f32);
-        let rect_mesh_air2 = graphics::Mesh::new_rectangle(ctx, graphics::DrawMode::fill(), rect_air2, graphics::Color::from_rgb(51, 51, 204))?;
-        graphics::draw(canvas, &rect_mesh_air, graphics::DrawParam::default());
-        graphics::draw(canvas, &rect_mesh_air2, graphics::DrawParam::default());
-
+        for (i, resource) in self.player.resources.into_iter().enumerate() {
+            let mut x = RESOURCE_POSITION[i];
+            let mut color = RESOURCE_COLOR[i];
+            let mut r = color[0] as u8;
+            let mut g = color[1] as u8;
+            let mut b = color[2] as u8;
+            let mut rect = graphics::Rect::new(
+                x * scale.x,
+                961.0 * scale.y,
+                (resource as f32 * scale.x) * 0.00435,
+                12.6 * scale.y,
+            );
+            let mut mesh = graphics::Mesh::new_rounded_rectangle(
+                ctx,
+                graphics::DrawMode::fill(),
+                rect,
+                3.0,
+                graphics::Color::from_rgb(r, g, b),
+            )?;
+            mesh.draw(canvas, graphics::DrawParam::default());
+            let mut text = graphics::Text::new(format!(
+                "{}: {:.1}",
+                RESOURCE_NAME[i],
+                (resource as f32 / u16::MAX as f32) * 100.0
+            ));
+            draw!(
+                canvas,
+                &text,
+                Vec2::new(RESOURCE_POSITION[i] + 20.0, 961.0),
+                scale
+            );
+        }
         Ok(())
     }
     /// Loads the assets. Has to be called before drawing the game.
