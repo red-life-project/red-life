@@ -6,13 +6,15 @@ use ggez::Context;
 /// let scale = get_scale(ctx);
 /// graphics::draw(ctx, &self.img, graphics::DrawParam::default().scale(scale))?;
 /// ```
+#[inline(always)]
 pub fn get_scale(ctx: &Context) -> Vec2 {
     let (width, height) = ctx.gfx.drawable_size();
     Vec2::new(width / 1920., height / 1080.)
 }
-#[macro_export]
+
 /// This macro is used for simplifying drawing with scaling.
-/// It takes a canvas, a `Drawable`, an (optional) position(as `Vec2` for example) and a scale.
+/// It takes a canvas, a `Drawable`, an (optional) position(as `Vec2` for example) and a scale as `Vec2`.
+#[macro_export]
 macro_rules! draw {
     ($canvas: expr, $asset: expr, $position: expr, $scale: expr) => {
         $canvas.draw(
