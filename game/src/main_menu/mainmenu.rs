@@ -66,7 +66,6 @@ impl Default for MainMenu {
 impl Screen for MainMenu {
     fn update(&mut self, ctx: &mut Context) -> RLResult<StackCommand> {
         let scale = get_scale(ctx);
-        dbg!("Scale: {:?}", &scale);
         //handle buttons
         if ctx.mouse.button_pressed(MouseButton::Left) {
             let current_position = ctx.mouse.position();
