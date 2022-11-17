@@ -1,18 +1,18 @@
-use std::ops;
-use serde::{Serialize, Deserialize};
 use crate::game_core::deathscreen::{DeathReason, DeathScreen};
+use serde::{Deserialize, Serialize};
 use std::cmp::PartialOrd;
+use std::ops;
 
 /// This struct holds data for resources
 /// This is used to describe the current state and change rate of the player's resources.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub struct Resources <T: PartialOrd> {
+pub struct Resources<T: PartialOrd> {
     pub(crate) oxygen: T,
     pub(crate) energy: T,
     pub(crate) life: T,
 }
 
-impl <T: std::cmp::PartialOrd> IntoIterator for Resources <T> {
+impl<T: std::cmp::PartialOrd> IntoIterator for Resources<T> {
     type Item = T;
     type IntoIter = std::array::IntoIter<T, 3>;
 
@@ -21,7 +21,7 @@ impl <T: std::cmp::PartialOrd> IntoIterator for Resources <T> {
     }
 }
 
-impl <T: std::ops::Add<Output = T> + std::cmp::PartialOrd> ops::Add<Resources <T>> for Resources <T>{
+impl<T: std::ops::Add<Output = T> + std::cmp::PartialOrd> ops::Add<Resources<T>> for Resources<T> {
     type Output = Self;
     fn add(self, rhs: Self) -> Self {
         Self {
@@ -32,7 +32,7 @@ impl <T: std::ops::Add<Output = T> + std::cmp::PartialOrd> ops::Add<Resources <T
     }
 }
 
-impl <T: std::ops::Sub<Output = T>+ std::cmp::PartialOrd> ops::Sub<Resources<T>> for Resources<T> {
+impl<T: std::ops::Sub<Output = T> + std::cmp::PartialOrd> ops::Sub<Resources<T>> for Resources<T> {
     type Output = Self;
     fn sub(self, rhs: Self) -> Self {
         Self {

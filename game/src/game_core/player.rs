@@ -1,6 +1,6 @@
-use serde::{Deserialize, Serialize};
-use crate::game_core::resources::Resources;
 use crate::game_core::item::Item;
+use crate::game_core::resources::Resources;
+use serde::{Deserialize, Serialize};
 
 /// The current game player, containing its inventory and the current position, air and energy,
 /// along with their change rate

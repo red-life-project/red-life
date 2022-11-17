@@ -1,21 +1,20 @@
 use crate::backend::screen::StackCommand;
 use crate::backend::utils::get_scale;
 use crate::backend::{error::RLError, screen::Screen};
+use crate::game_core::deathscreen::{DeathReason, DeathScreen};
+use crate::game_core::item::Item;
+use crate::game_core::player::Player;
+use crate::game_core::resources::Resources;
 use crate::RLResult;
 use ggez::glam::Vec2;
-use ggez::graphics::{DrawMode, Mesh, MeshBuilder, Rect};
 use ggez::graphics::{Canvas, Image};
-use ggez::{graphics, Context, glam};
+use ggez::graphics::{DrawMode, Mesh, MeshBuilder, Rect};
+use ggez::{glam, graphics, Context};
 use serde::{Deserialize, Serialize};
 use std::cmp::{max, min};
 use std::collections::HashMap;
 use std::fs;
 use std::fs::read_dir;
-use crate::game_core::deathscreen::{DeathScreen, DeathReason};
-use crate::game_core::player::Player;
-use crate::game_core::item::Item;
-use crate::game_core::resources::Resources;
-
 
 /// This is the game state. It contains all the data that is needed to run the game.
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
@@ -43,16 +42,29 @@ impl GameState {
         Ok(result)
     }
     pub fn tick(&mut self) -> Option<StackCommand> {
-        self.player.resources.oxygen = self.player.resources.oxygen.saturating_add_signed(self.player.resources_change.oxygen);
-        self.player.resources.energy = self.player.resources.energy.saturating_add_signed(self.player.resources_change.energy);
-        if let Some(deathreason) = Resources::get_zero_values(&self.player.resources){
-            self.player.resources.life = self.player.resources.life.saturating_add_signed(self.player.resources_change.life);
-                if self.player.resources.life == 0 {
-                    let gamestate = GameState::load(true).unwrap();
-                    gamestate.save(false).unwrap();
-                    return Some(StackCommand::Push(Box::new(DeathScreen::new(deathreason))));
-                };
-        } None
+        self.player.resources.oxygen = self
+            .player
+            .resources
+            .oxygen
+            .saturating_add_signed(self.player.resources_change.oxygen);
+        self.player.resources.energy = self
+            .player
+            .resources
+            .energy
+            .saturating_add_signed(self.player.resources_change.energy);
+        if let Some(deathreason) = Resources::get_zero_values(&self.player.resources) {
+            self.player.resources.life = self
+                .player
+                .resources
+                .life
+                .saturating_add_signed(self.player.resources_change.life);
+            if self.player.resources.life == 0 {
+                let gamestate = GameState::load(true).unwrap();
+                gamestate.save(false).unwrap();
+                return Some(StackCommand::Push(Box::new(DeathScreen::new(deathreason))));
+            };
+        }
+        None
     }
 
     /// Draws the current resources to the screen.
@@ -72,10 +84,30 @@ impl GameState {
                 .dest([50. * scale.x, 1050. * scale.y])
                 .scale(scale),
         );
-        let mut rect_air = graphics::Rect::new(400.0 * scale.x as f32, 1050.0 * scale.y as f32, (u16::MAX as f32 * scale.x as f32)* 0.004, 10.0 * scale.y as f32);
-        let rect_mesh_air = graphics::Mesh::new_rectangle(ctx, graphics::DrawMode::fill(), rect_air, graphics::Color::from_rgb(0, 204, 255))?;
-        let mut rect_air2 = graphics::Rect::new(400.0 * scale.x as f32, 1050.0 * scale.y as f32, (self.player.resources.oxygen as f32 * scale.x as f32) * 0.004, 10.0 * scale.y as f32);
-        let rect_mesh_air2 = graphics::Mesh::new_rectangle(ctx, graphics::DrawMode::fill(), rect_air2, graphics::Color::from_rgb(51, 51, 204))?;
+        let mut rect_air = graphics::Rect::new(
+            400.0 * scale.x as f32,
+            1050.0 * scale.y as f32,
+            (u16::MAX as f32 * scale.x as f32) * 0.004,
+            10.0 * scale.y as f32,
+        );
+        let rect_mesh_air = graphics::Mesh::new_rectangle(
+            ctx,
+            graphics::DrawMode::fill(),
+            rect_air,
+            graphics::Color::from_rgb(0, 204, 255),
+        )?;
+        let mut rect_air2 = graphics::Rect::new(
+            400.0 * scale.x as f32,
+            1050.0 * scale.y as f32,
+            (self.player.resources.oxygen as f32 * scale.x as f32) * 0.004,
+            10.0 * scale.y as f32,
+        );
+        let rect_mesh_air2 = graphics::Mesh::new_rectangle(
+            ctx,
+            graphics::DrawMode::fill(),
+            rect_air2,
+            graphics::Color::from_rgb(51, 51, 204),
+        )?;
         graphics::draw(canvas, &rect_mesh_air, graphics::DrawParam::default());
         graphics::draw(canvas, &rect_mesh_air2, graphics::DrawParam::default());
 

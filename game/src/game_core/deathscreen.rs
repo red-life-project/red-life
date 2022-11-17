@@ -40,7 +40,6 @@ impl DeathScreen {
     }
 }
 
-
 impl Screen for DeathScreen {
     fn update(&mut self, ctx: &mut Context) -> RLResult<StackCommand> {
         let keys = ctx.keyboard.pressed_keys();
