@@ -5,6 +5,7 @@ use ggez::mint::Point2;
 use ggez::{graphics, Context, GameResult};
 use std::sync::mpsc::Sender;
 
+/// Clickable button
 #[derive(Debug)]
 pub struct Button {
     pub(crate) text: String,
