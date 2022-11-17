@@ -83,7 +83,7 @@ impl GameState {
                     ctx,
                     DrawMode::fill(),
                     rect,
-                    10.0,
+                    3.0,
                     Color::from(COLORS[i]),
                 )?;
                 draw!(canvas, &mesh, scale);
