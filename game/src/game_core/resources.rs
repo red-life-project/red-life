@@ -83,20 +83,33 @@ mod test {
             life: 6,
         };
         let add_result = a + b;
-        let sub_result = a - b;
-        let sub_control = Resources {
-            oxygen: -3,
-            energy: -3,
-            life: -3,
-        };
-
         let add_control = Resources {
             oxygen: 5,
             energy: 7,
             life: 9,
         };
         assert_eq!(add_result, add_control);
-        assert_eq!(sub_result, sub_control)
+    }
+
+    #[test]
+    fn subtraction() {
+        let a = Resources {
+            oxygen: 1,
+            energy: 2,
+            life: 3,
+        };
+        let b = Resources {
+            oxygen: 4,
+            energy: 5,
+            life: 6,
+        };
+        let sub_result = a - b;
+        let sub_control = Resources {
+            oxygen: -3,
+            energy: -3,
+            life: -3,
+        };
+        assert_eq!(sub_result, sub_control);
     }
 
     #[test]
