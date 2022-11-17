@@ -64,7 +64,7 @@ impl GameState {
         if let Some(deathreason) = Resources::get_zero_values(&self.player.resources) {
             self.player.resources_change.life = -100;
             if self.player.resources.life == 0 {
-                let gamestate = GameState::load(true).unwrap();
+                let gamestate = GameState::load(true).unwrap_or_default();
                 gamestate.save(false).unwrap();
                 return Some(StackCommand::Push(Box::new(DeathScreen::new(deathreason))));
             };
@@ -163,7 +163,10 @@ impl GameState {
 
     /// Returns if the player would collide with a border if they moved in the given direction
     fn border_collision_detection(next_player_pos: (usize, usize)) -> bool {
-        next_player_pos.0 >= 1879 || next_player_pos.1 >= 1030
+        next_player_pos.0 >= 1785
+            || next_player_pos.1 >= 896
+            || next_player_pos.0 <= 280
+            || next_player_pos.1 <= 225
     }
     /// Returns a boolean indicating whether the player would collide with a machine or border if they moved in the given direction
     ///

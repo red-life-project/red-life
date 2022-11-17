@@ -1,5 +1,6 @@
 use crate::backend::gamestate::GameState;
 use crate::backend::screen::StackCommand;
+use crate::backend::utils::get_scale;
 use crate::RLResult;
 use ggez::winit::event::VirtualKeyCode;
 use ggez::Context;
@@ -8,6 +9,7 @@ const MOVEMENT_SPEED: usize = 5;
 
 impl GameState {
     pub fn move_player(&mut self, ctx: &mut Context) -> RLResult<StackCommand> {
+        let scale = get_scale(ctx);
         let keys = ctx.keyboard.pressed_keys();
         for key in keys.iter() {
             match key {
