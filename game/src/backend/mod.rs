@@ -1,3 +1,4 @@
+pub(crate) mod area;
 pub(crate) mod asset_service;
 pub(crate) mod error;
 pub(crate) mod gamestate;

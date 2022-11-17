@@ -3,6 +3,7 @@ use crate::backend::{
     screen::{Screen, StackCommand},
     utils::get_scale,
 };
+use crate::main_menu::button::{draw_button, Button};
 use crate::main_menu::mainmenu::Message::{Exit, NewGame, Start};
 use crate::RLResult;
 use ggez::event::MouseButton;
@@ -19,47 +20,13 @@ pub enum Message {
 }
 
 #[derive(Debug)]
-struct Button<T: Clone> {
-    text: String,
-    img: Option<graphics::Image>,
-    message: Message,
-    sender: Sender<T>,
-    rect: graphics::Rect,
-    color: Color,
-}
-
-impl Button<Message> {
-    fn pressed(&self) {
-        dbg!("Pressed {:?}", self.message);
-    }
-
-    fn is_clicked(&self, mouse_pos: Point2<f32>) -> bool {
-        self.rect.contains(mouse_pos)
-    }
-    fn click(&mut self, mouse_pos: Point2<f32>) {
-        if self.is_clicked(mouse_pos) {
-            self.pressed();
-            self.sender.send(self.message).unwrap();
-        }
-    }
-}
-
-#[derive(Debug)]
-pub struct MainMenu<Message: Clone> {
-    buttons: Vec<Button<Message>>,
+pub struct MainMenu {
+    buttons: Vec<Button>,
     receiver: Receiver<Message>,
     sender: Sender<Message>,
 }
 
-fn draw_button(ctx: &mut Context, btn: &Button<Message>) -> GameResult<graphics::Mesh> {
-    let mb = &mut graphics::MeshBuilder::new();
-
-    mb.rectangle(graphics::DrawMode::fill(), btn.rect, btn.color)?;
-
-    Ok(graphics::Mesh::from_data(ctx, mb.build()))
-}
-
-impl<Message: Clone> Default for MainMenu<Message> {
+impl Default for MainMenu {
     fn default() -> Self {
         let (sender, receiver) = channel();
 
@@ -96,14 +63,16 @@ impl<Message: Clone> Default for MainMenu<Message> {
     }
 }
 
-impl Screen for MainMenu<Message> {
+impl Screen for MainMenu {
     fn update(&mut self, ctx: &mut Context) -> RLResult<StackCommand> {
+        let scale = get_scale(ctx);
+        dbg!("Scale: {:?}", &scale);
         //handle buttons
         if ctx.mouse.button_pressed(MouseButton::Left) {
             let current_position = ctx.mouse.position();
             self.buttons
                 .iter_mut()
-                .for_each(|btn| btn.click(current_position));
+                .for_each(|btn| btn.click(current_position, scale));
         }
         if let Ok(msg) = self.receiver.try_recv() {
             match msg {
