@@ -9,6 +9,7 @@ edition = "2021"
 serde = "1.0.145"
 serde_yaml = "0.9.13"
 ggez = "0.8.1"
+dyn-clone = "1.0.9"
 
 [build-dependencies]
 fs_extra = "1.2.0"

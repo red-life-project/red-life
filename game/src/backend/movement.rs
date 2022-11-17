@@ -51,9 +51,7 @@ impl GameState {
                             self.player.position.0.saturating_add(MOVEMENT_SPEED);
                     }
                 }
-                key => {
-                    dbg!("{:?}", key);
-                }
+                key => {}
             }
         }
 

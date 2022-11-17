@@ -4,3 +4,4 @@ pub(crate) mod gamestate;
 pub(crate) mod movement;
 pub(crate) mod screen;
 pub(crate) mod utils;
+pub(crate) mod area;

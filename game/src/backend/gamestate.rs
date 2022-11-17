@@ -1,5 +1,4 @@
 use crate::backend::screen::StackCommand;
-#[macro_use]
 use crate::backend::utils::get_scale;
 use crate::backend::{error::RLError, screen::Screen};
 use crate::game_core::deathscreen::{DeathReason, DeathScreen};
@@ -16,9 +15,10 @@ use std::cmp::{max, min};
 use std::collections::HashMap;
 use std::fs;
 use std::fs::read_dir;
+use crate::backend::area::Area;
 
 /// This is the game state. It contains all the data that is needed to run the game.
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+#[derive(Debug, Default, Serialize, Deserialize)]
 pub struct GameState {
     /// Contains the current player position, resources(air, energy, life) and the inventory and their change rates
     pub player: Player,
@@ -27,11 +27,14 @@ pub struct GameState {
     machines: Vec<Rect>,
     #[serde(skip)]
     assets: HashMap<String, graphics::Image>,
+    #[serde(skip)]
+    areas: Vec<Box<dyn Area>>,
 }
 
 impl PartialEq for GameState {
     fn eq(&self, other: &Self) -> bool {
-        self.player == other.player
+        self.inventory == other.inventory
+            && self.player == other.player
             && self.milestone == other.milestone
             && self.machines == other.machines
     }
