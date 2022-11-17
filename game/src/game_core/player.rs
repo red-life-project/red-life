@@ -25,7 +25,7 @@ impl Default for Player {
             resources_change: Resources {
                 oxygen: -100,
                 energy: -1,
-                life: -100,
+                life: 0,
             },
         }
     }
