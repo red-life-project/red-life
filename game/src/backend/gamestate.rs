@@ -40,7 +40,7 @@ impl PartialEq for GameState {
 }
 const RESOURCE_POSITION: [f32; 3] = [316.0, 639.0, 1373.0];
 const RESOURCE_NAME: [&str; 3] = ["Luft", "Energie", "Leben"];
-const COLORS: [(u8,u8,u8);3] = [(51, 51, 204), (186, 158, 19), (102, 24, 18)];
+const COLORS: [(u8, u8, u8); 3] = [(51, 51, 204), (186, 158, 19), (102, 24, 18)];
 impl GameState {
     pub fn new(ctx: &mut Context) -> RLResult<Self> {
         let mut result = GameState::default();
@@ -78,7 +78,12 @@ impl GameState {
             .enumerate()
             .map(|(i, resource)| -> RLResult<()> {
                 let scale = get_scale(ctx);
-                let rect = graphics::Rect::new(RESOURCE_POSITION[i], 961.0, resource as f32 * 0.00435, 12.6);
+                let rect = graphics::Rect::new(
+                    RESOURCE_POSITION[i],
+                    961.0,
+                    resource as f32 * 0.00435,
+                    12.6,
+                );
                 let mesh = graphics::Mesh::new_rounded_rectangle(
                     ctx,
                     DrawMode::fill(),
