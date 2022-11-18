@@ -6,13 +6,13 @@ use std::ops;
 /// This struct holds data for resources
 /// This is used to describe the current state and change rate of the player's resources.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub struct Resources<T: PartialOrd> {
+pub struct Resources<T> {
     pub(crate) oxygen: T,
     pub(crate) energy: T,
     pub(crate) life: T,
 }
 
-impl<T:PartialOrd> Default for Resources<T>
+impl Default for Resources<i16>
 {
     fn default() -> Self {
         Self{

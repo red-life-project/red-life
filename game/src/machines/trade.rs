@@ -1,8 +1,10 @@
 use std::collections::HashMap;
 use std::path::Iter;
 use ggez::glam::Vec2;
+use serde::{Deserialize, Serialize};
 use crate::game_core::item::Item;
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub(crate) struct Trade {
     time_ms: usize,
     cost: Vec<(Item, usize)>,

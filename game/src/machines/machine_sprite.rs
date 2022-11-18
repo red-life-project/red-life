@@ -1,32 +1,28 @@
 use ggez::graphics::{Image};
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct MaschineSprite {
     name:String,
-    idel:Image,
-    broken: Image,
-    running: Image,
+    idel:String, //temp img for later
+    broken: String,//temp img for later
+    running: String,//temp img for later
 }
 
 impl Default for MaschineSprite{
     fn default() -> Self {
         Self{
-            name:  String::default("Machiene ohne namen"),
-            idel: Image(),
-            broken: Image(),
-            running: Image()
+            name:  "Machiene ohne namen".to_string(),
+            idel: "img".to_string(),
+            broken: "img".to_string(),
+            running: "img".to_string()
         }
     }
 }
 
 impl MaschineSprite {
-
-    pub fn name(&self) -> String {
-        self.name
-    }
-    pub fn new(name: String, idel: Image, broken: Image, running: Image) -> Self {
+    pub fn new(name: String, idel: String, broken: String, running: String) -> Self {
         Self { name, idel, broken, running }
     }
-
 }
 
