@@ -126,7 +126,7 @@ impl GameState {
         Ok(())
     }
 
-    /// Saves the active game state to a file. The boolean value "milestone" determines whether this is a milestone or an autosave. 
+    /// Saves the active game state to a file. The boolean value "milestone" determines whether this is a milestone or an autosave.
     /// If the file already exists, it will be overwritten.
     pub(crate) fn save(&self, milestone: bool) -> RLResult {
         let save_data = serde_yaml::to_string(self)?;

@@ -5,8 +5,8 @@ use crate::{draw, RLResult};
 use ggez::graphics::Color;
 use ggez::{event, graphics, Context};
 use std::fmt::Debug;
+use std::sync::mpsc::{channel, Receiver, Sender};
 use std::time::Instant;
-use std::sync::mpsc::{Receiver, Sender, channel};
 
 /// A screen is every drawable object in the game, so the main menu is a screen too
 pub trait Screen: Debug {
@@ -16,8 +16,7 @@ pub trait Screen: Debug {
     /// Used for drawing the last screen in the game.
     fn draw(&self, ctx: &mut Context) -> RLResult;
     /// Set sender of the screen
-    fn set_sender(&mut self, sender: Sender<StackCommand>){
-    }
+    fn set_sender(&mut self, sender: Sender<StackCommand>) {}
 }
 
 /// A Screenstack contains multiple screens, the first one of which is the current screen
@@ -36,22 +35,13 @@ pub struct Popup {
 }
 impl Popup {
     pub fn nasa(text: String) -> Self {
-        Self::new(
-            Color::from_rgb(10,10,255),
-            text,
-            10)
+        Self::new(Color::from_rgb(10, 10, 255), text, 10)
     }
     pub fn mars(text: String) -> Self {
-        Self::new(
-            Color::from_rgb(125,125,125),
-            text,
-            10)
+        Self::new(Color::from_rgb(125, 125, 125), text, 10)
     }
     pub fn warning(text: String) -> Self {
-        Self::new(
-            Color::from_rgb(255,10,10),
-            text,
-            10)
+        Self::new(Color::from_rgb(255, 10, 10), text, 10)
     }
     fn new(color: Color, text: String, duration: u64) -> Self {
         Self {
@@ -107,7 +97,7 @@ impl event::EventHandler<RLError> for Screenstack {
             StackCommand::Push(mut screen) => {
                 screen.set_sender(self.sender.clone());
                 self.screens.push(screen);
-            },
+            }
             StackCommand::Pop => {
                 match self.screens.len() {
                     1 => std::process::exit(0),
