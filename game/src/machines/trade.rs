@@ -1,22 +1,23 @@
 use std::collections::HashMap;
 use std::path::Iter;
 use ggez::glam::Vec2;
-use super::super::game_core::item;
+use crate::game_core::item::Item;
 
-struct Trade {
+pub(crate) struct Trade {
     time_ms: usize,
-    cost: HashMap<item, usize>,
-    result: item,
+    cost: Vec<(Item, usize)>,
+    result: Item,
     amount_produced: usize,
 }
 
 impl Default for Trade {
+
     fn default() -> Self {
 
         Self{
             time_ms:1000,
-            cost:HashMap::default(),
-            result:item,
+            cost:Vec::default(),
+            result:Item::default(),
             amount_produced: 0
         }
     }

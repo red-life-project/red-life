@@ -12,6 +12,17 @@ pub struct Resources<T: PartialOrd> {
     pub(crate) life: T,
 }
 
+impl<T:PartialOrd> Default for Resources<T>
+{
+    fn default() -> Self {
+        Self{
+            oxygen: 0,
+            energy: 0,
+            life: 0
+        }
+    }
+}
+
 impl FromIterator<u16> for Resources<u16> {
     fn from_iter<I: IntoIterator<Item = u16>>(iter: I) -> Self {
         let mut iter = iter.into_iter();

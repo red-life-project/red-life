@@ -1,6 +1,6 @@
 use ggez::graphics::{Image};
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone)]
 pub struct MaschineSprite {
     name:String,
     idel:Image,

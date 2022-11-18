@@ -9,3 +9,16 @@ pub(crate) struct Item {
     //image should be a texture, didnt work yet
     img: String,
 }
+
+impl Default for Item
+{
+    fn default() -> Self {
+        Self
+        {
+            name: "Default Item".to_string(),
+            info_text: "lock at this info".to_string(),
+            img: "image".to_string()
+        }
+    }
+}
+
