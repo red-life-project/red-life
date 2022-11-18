@@ -12,13 +12,12 @@ pub struct Resources<T> {
     pub(crate) life: T,
 }
 
-impl Default for Resources<i16>
-{
+impl Default for Resources<i16> {
     fn default() -> Self {
-        Self{
+        Self {
             oxygen: 0,
             energy: 0,
-            life: 0
+            life: 0,
         }
     }
 }

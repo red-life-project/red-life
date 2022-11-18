@@ -1,8 +1,8 @@
-use std::collections::HashMap;
-use std::path::Iter;
+use crate::game_core::item::Item;
 use ggez::glam::Vec2;
 use serde::{Deserialize, Serialize};
-use crate::game_core::item::Item;
+use std::collections::HashMap;
+use std::path::Iter;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub(crate) struct Trade {
@@ -13,14 +13,12 @@ pub(crate) struct Trade {
 }
 
 impl Default for Trade {
-
     fn default() -> Self {
-
-        Self{
-            time_ms:1000,
-            cost:Vec::default(),
-            result:Item::default(),
-            amount_produced: 0
+        Self {
+            time_ms: 1000,
+            cost: Vec::default(),
+            result: Item::default(),
+            amount_produced: 0,
         }
     }
 }
