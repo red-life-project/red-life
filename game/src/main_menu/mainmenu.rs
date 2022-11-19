@@ -10,7 +10,6 @@ use ggez::event::MouseButton;
 use ggez::graphics::Color;
 use ggez::{graphics, Context};
 use std::fs;
-use std::fs::remove_file;
 use std::sync::mpsc::{channel, Receiver, Sender};
 
 #[derive(Copy, Clone, Debug, PartialEq)]

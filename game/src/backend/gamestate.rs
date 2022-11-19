@@ -3,6 +3,7 @@ use crate::backend::screen::{Popup, StackCommand};
 use crate::backend::utils::get_scale;
 use crate::backend::{error::RLError, screen::Screen};
 use crate::game_core::deathscreen::DeathScreen;
+use crate::game_core::event::Event;
 use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
 use crate::{draw, RLResult};
@@ -28,6 +29,7 @@ pub struct GameState {
     /// The current milestone the player has reached.
     milestone: usize,
     machines: Vec<Rect>,
+    events: Vec<Event>,
     #[serde(skip)]
     assets: HashMap<String, graphics::Image>,
     #[serde(skip)]
