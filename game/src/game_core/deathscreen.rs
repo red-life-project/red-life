@@ -1,13 +1,13 @@
 use crate::backend::screen::{Screen, StackCommand};
 use crate::backend::utils::get_scale;
 use crate::main_menu::button::Button;
+use crate::main_menu::mainmenu::MainMenu;
 use crate::{draw, RLResult};
 use ggez::glam::Vec2;
+use ggez::graphics::PxScale;
 use ggez::winit::event::VirtualKeyCode;
 use ggez::{graphics, Context};
 use std::fmt::{Debug, Display, Formatter};
-use ggez::graphics::PxScale;
-use crate::main_menu::mainmenu::MainMenu;
 
 /// Create DeathScreen using deathscreen::new() and pass reason of death from DeathReason enum.
 /// # Example
@@ -62,9 +62,19 @@ impl Screen for DeathScreen {
         let scale = get_scale(ctx);
         let mut canvas = graphics::Canvas::from_frame(ctx, graphics::Color::RED);
 
-        draw!(canvas, &self.death_message, Vec2::new(400., 200.), 2. * scale);
+        draw!(
+            canvas,
+            &self.death_message,
+            Vec2::new(400., 200.),
+            2. * scale
+        );
 
-        draw!(canvas, &self.additional_text, Vec2::new(422.5, 300.), 2. * scale);
+        draw!(
+            canvas,
+            &self.additional_text,
+            Vec2::new(422.5, 300.),
+            2. * scale
+        );
 
         canvas.finish(ctx)?;
 
