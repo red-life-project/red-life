@@ -5,7 +5,6 @@ mod machines;
 mod main_menu;
 
 use crate::backend::{error, screen::Screenstack};
-use ggez::conf::FullscreenType;
 use ggez::{event, Context};
 
 /// Our own Result Type for custom Error handling.

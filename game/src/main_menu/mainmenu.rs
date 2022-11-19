@@ -1,3 +1,5 @@
+use std::fs;
+use std::fs::remove_file;
 use crate::backend::{
     gamestate::GameState,
     screen::{Screen, StackCommand},
@@ -8,8 +10,7 @@ use crate::main_menu::mainmenu::Message::{Exit, NewGame, Start};
 use crate::RLResult;
 use ggez::event::MouseButton;
 use ggez::graphics::Color;
-use ggez::mint::Point2;
-use ggez::{graphics, Context, GameResult};
+use ggez::{graphics, Context};
 use std::sync::mpsc::{channel, Receiver, Sender};
 
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -76,7 +77,9 @@ impl Screen for MainMenu {
         if let Ok(msg) = self.receiver.try_recv() {
             match msg {
                 Exit => Ok(StackCommand::Pop),
-                NewGame => Ok(StackCommand::Push(Box::new(GameState::new(ctx)?))),
+                NewGame => { fs::remove_file("./saves/autosave.yaml");
+                    fs::remove_file("./saves/milestone.yaml");
+                    Ok(StackCommand::Push(Box::new(GameState::new(ctx)?)))},
                 Start => Ok(StackCommand::Push(Box::new({
                     let mut gamestate = GameState::load(false).unwrap_or_default();
                     gamestate.load_assets(ctx)?;
