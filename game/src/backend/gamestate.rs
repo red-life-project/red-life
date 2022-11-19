@@ -151,7 +151,7 @@ impl GameState {
         Ok(game_state)
     }
 
-    fn get_interactable(&self) -> Option<&Box<dyn Area>> {
+    pub(crate) fn get_interactable(&self) -> Option<&Box<dyn Area>> {
         self.areas
             .iter()
             .find(|area| area.is_interactable(self.player.position))
@@ -172,7 +172,7 @@ impl GameState {
         self.areas
             .iter()
             .map(|area| area.get_collision_area())
-            .any(|area| is_colliding(next_player_pos, area))
+            .any(|area| is_colliding(next_player_pos, &area))
             || Self::border_collision_detection(next_player_pos)
     }
     /// Returns the asset if it exists
