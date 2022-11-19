@@ -1,22 +1,25 @@
 use crate::backend::area::Area;
-use crate::backend::screen::StackCommand;
+use crate::backend::screen::{Popup, StackCommand};
 use crate::backend::utils::get_scale;
 use crate::backend::{error::RLError, screen::Screen};
-use crate::game_core::deathscreen::{DeathReason, DeathScreen};
-use crate::game_core::item::Item;
+use crate::game_core::deathscreen::DeathScreen;
 use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
 use crate::{draw, RLResult};
 use ggez::glam::Vec2;
 use ggez::graphics::{Canvas, Color, Image};
-use ggez::graphics::{DrawMode, Drawable, Mesh, MeshBuilder, Rect};
+use ggez::graphics::{DrawMode, Mesh, MeshBuilder, Rect};
 use ggez::{graphics, Context};
 use serde::{Deserialize, Serialize};
 use std::cmp::{max, min};
 use std::collections::HashMap;
 use std::fs;
 use std::fs::read_dir;
+use std::sync::mpsc::Sender;
 
+const RESOURCE_POSITION: [f32; 3] = [316.0, 639.0, 1373.0];
+const RESOURCE_NAME: [&str; 3] = ["Luft", "Energie", "Leben"];
+const COLORS: [(u8, u8, u8); 3] = [(51, 51, 204), (186, 158, 19), (102, 24, 18)];
 /// This is the game state. It contains all the data that is needed to run the game.
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct GameState {
@@ -29,6 +32,8 @@ pub struct GameState {
     assets: HashMap<String, graphics::Image>,
     #[serde(skip)]
     areas: Vec<Box<dyn Area>>,
+    #[serde(skip)]
+    screen_sender: Option<Sender<StackCommand>>,
 }
 
 impl PartialEq for GameState {
@@ -38,9 +43,7 @@ impl PartialEq for GameState {
             && self.machines == other.machines
     }
 }
-const RESOURCE_POSITION: [f32; 3] = [316.0, 639.0, 1373.0];
-const RESOURCE_NAME: [&str; 3] = ["Luft", "Energie", "Leben"];
-const COLORS: [(u8, u8, u8); 3] = [(51, 51, 204), (186, 158, 19), (102, 24, 18)];
+
 impl GameState {
     pub fn new(ctx: &mut Context) -> RLResult<Self> {
         let mut result = GameState::default();
@@ -123,7 +126,8 @@ impl GameState {
         Ok(())
     }
 
-    /// Saves the active game state to a file. The boolean value "milestone" determines whether this is a milestone or an autosave. If the file already exists, it will be overwritten.
+    /// Saves the active game state to a file. The boolean value "milestone" determines whether this is a milestone or an autosave.
+    /// If the file already exists, it will be overwritten.
     pub(crate) fn save(&self, milestone: bool) -> RLResult {
         let save_data = serde_yaml::to_string(self)?;
         // Create the folder if it doesn't exist
@@ -135,7 +139,8 @@ impl GameState {
         }
         Ok(())
     }
-    /// Loads a game state from a file. The boolean value "milestone" determines whether this is a milestone or an autosave. If the file doesn't exist, it will return a default game state.
+    /// Loads a game state from a file. The boolean value "milestone" determines whether this is a milestone or an autosave.
+    /// If the file doesn't exist, it will return a default game state.
     pub fn load(milestone: bool) -> RLResult<GameState> {
         let save_data = if milestone {
             std::fs::read_to_string("./saves/milestone.yaml")

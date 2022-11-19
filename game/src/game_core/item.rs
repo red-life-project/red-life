@@ -1,4 +1,3 @@
-use ggez::graphics::{Image, Rect};
 use serde::{Deserialize, Serialize};
 /// Defines an item in the inventory of the player
 /// Contains the name of the item, information about the item and the image

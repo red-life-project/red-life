@@ -1,4 +1,4 @@
-use crate::game_core::deathscreen::{DeathReason, DeathScreen};
+use crate::game_core::deathscreen::DeathReason;
 use serde::{Deserialize, Serialize};
 use std::cmp::PartialOrd;
 use std::ops;
