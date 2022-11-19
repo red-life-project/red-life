@@ -6,6 +6,7 @@ use ggez::glam::Vec2;
 use ggez::winit::event::VirtualKeyCode;
 use ggez::{graphics, Context};
 use std::fmt::{Debug, Display, Formatter};
+use crate::main_menu::mainmenu::MainMenu;
 
 /// Create DeathScreen using deathscreen::new() and pass reason of death from DeathReason enum.
 /// # Example
@@ -49,7 +50,7 @@ impl Screen for DeathScreen {
         let keys = ctx.keyboard.pressed_keys();
         if let Some(key) = keys.iter().next() {
             return match key {
-                VirtualKeyCode::Escape => Ok(StackCommand::Pop),
+                VirtualKeyCode::Escape => Ok(StackCommand::Push(Box::new(MainMenu::default()))),
                 _ => Ok(StackCommand::None),
             };
         }

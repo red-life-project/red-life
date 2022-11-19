@@ -76,7 +76,7 @@ impl Screen for MainMenu {
         }
         if let Ok(msg) = self.receiver.try_recv() {
             match msg {
-                Exit => Ok(StackCommand::Pop),
+                Exit => std::process::exit(0),
                 NewGame => {
                     fs::remove_file("./saves/autosave.yaml");
                     fs::remove_file("./saves/milestone.yaml");
