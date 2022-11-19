@@ -235,13 +235,15 @@ mod test {
 
     #[test]
     fn test_load_autosave() {
-        test_save_autosave();
-        let gamestate = GameState::load(false).unwrap();
+        let gamestate = GameState::default();
+        gamestate.save(false).unwrap();
+        let gamestate_loaded = GameState::load(false).unwrap();
     }
 
     #[test]
     fn test_load_milestone() {
-        test_save_milestone();
-        let gamestate = GameState::load(true).unwrap();
+        let gamestate = GameState::default();
+        gamestate.save(true).unwrap();
+        let gamestate_loaded = GameState::load(true).unwrap();
     }
 }
