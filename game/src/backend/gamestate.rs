@@ -169,9 +169,10 @@ impl GameState {
     /// # Arguments
     /// * `next_player_pos` - A tuple containing the next position of the player
     pub(crate) fn collision_detection(&self, next_player_pos: (usize, usize)) -> bool {
-        self.machines
+        self.areas
             .iter()
-            .any(|machine| is_colliding(next_player_pos, machine))
+            .map(|area| area.get_collision_area())
+            .any(|area| is_colliding(next_player_pos, area))
             || Self::border_collision_detection(next_player_pos)
     }
     /// Returns the asset if it exists
