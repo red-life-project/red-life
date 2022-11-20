@@ -36,21 +36,25 @@ impl Default for Player {
 impl Player {
     /// Checks whether the player has taken damage in the past few seconds and if not so start the regeneration
     pub(crate) fn life_regeneration(&mut self) {
-        //If the player regenerated the full amount of life, reset the regeneration change and set last_damage to 0
-        if self.resources.life == u16::MAX && self.resources_change.life > 0 {
-            self.resources_change.life = 0;
-            if self.last_damage != 0 {
+        match (
+            self.resources_change.life,
+            self.last_damage,
+            self.resources.life,
+        ) {
+            (x, _, u16::MAX) if x > 0 => {
+                self.resources_change.life = 0;
+                self.last_damage = 0;
+                match self.last_damage {
+                    0 => {}
+                    _ => self.last_damage = 0,
+                }
+            }
+            (x, y, _) if x > 0 && y > 0 => {
                 self.last_damage = 0;
             }
-        }
-        //If the player does not take damage right now and did not take damage in the last 5 seconds, start regeneration and reset the last_damage time
-        else if self.resources_change.life == 0 && self.last_damage >= 1000 {
-            self.resources_change.life += 5;
-            // self.last_damage = 0;
-        }
-        //If the player takes damage, set the last_damage time to 0
-        else if self.resources_change.life <= 0 {
-            self.last_damage += 1;
+            (0, y, _) if y >= 1000 => self.resources_change.life += 5,
+            (x, _, _) if x < 0 => self.last_damage = 0,
+            _ => self.last_damage += 1,
         }
     }
 }
