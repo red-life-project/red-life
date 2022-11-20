@@ -1,5 +1,8 @@
 use ggez::glam::Vec2;
+use ggez::graphics::Rect;
 use ggez::Context;
+use std::cmp::{max, min};
+
 /// This returns the scale so we can have resolution-agnostic scaling
 /// Use it in your drawing calls like this:
 /// ```rust
@@ -10,6 +13,13 @@ use ggez::Context;
 pub fn get_scale(ctx: &Context) -> Vec2 {
     let (width, height) = ctx.gfx.drawable_size();
     Vec2::new(width / 1920., height / 1080.)
+}
+
+/// Returns if the player would collide with a machine if they moved in the given direction
+#[inline(always)]
+pub fn is_colliding(player_pos: (usize, usize), area: &Rect) -> bool {
+    max(area.x as usize, player_pos.0) <= min((area.x + area.w) as usize, player_pos.0 + 41)
+        && max(area.y as usize, player_pos.1) <= min((area.y + area.h) as usize, player_pos.1 + 50)
 }
 
 /// This macro is used for simplifying drawing with scaling.
