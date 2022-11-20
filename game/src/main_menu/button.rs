@@ -1,6 +1,8 @@
+use crate::backend::utils::get_scale;
 use crate::main_menu::mainmenu::Message;
+use crate::{draw, RLResult};
 use ggez::glam::f32::Vec2;
-use ggez::graphics::Color;
+use ggez::graphics::{Canvas, Color};
 use ggez::mint::Point2;
 use ggez::{graphics, Context, GameResult};
 use std::sync::mpsc::Sender;
@@ -8,7 +10,7 @@ use std::sync::mpsc::Sender;
 /// Clickable button
 #[derive(Debug)]
 pub struct Button {
-    pub(crate) text: String,
+    pub(crate) text: graphics::Text,
     pub(crate) img: Option<graphics::Image>,
     pub(crate) message: Message,
     pub(crate) sender: Sender<Message>,
@@ -33,12 +35,36 @@ impl Button {
             self.sender.send(self.message).unwrap();
         }
     }
-}
+    pub(crate) fn draw_button(&self, ctx: &mut Context, canvas: &mut Canvas) -> RLResult {
+        let mb = &mut graphics::MeshBuilder::new();
+        let scale = get_scale(ctx);
 
-pub fn draw_button(ctx: &mut Context, btn: &Button) -> GameResult<graphics::Mesh> {
-    let mb = &mut graphics::MeshBuilder::new();
+        //mb.rectangle(graphics::DrawMode::fill(), btn.rect, btn.color)?;
+        mb.rounded_rectangle(graphics::DrawMode::fill(), self.rect, 10.0, self.color)?;
+        mb.rounded_rectangle(
+            graphics::DrawMode::stroke(8.0),
+            self.rect,
+            10.0,
+            Color::BLACK,
+        )?;
 
-    mb.rectangle(graphics::DrawMode::fill(), btn.rect, btn.color)?;
+        draw!(
+            canvas,
+            &graphics::Mesh::from_data(ctx, mb.build()),
+            Vec2::new(0., 0.),
+            scale
+        );
 
-    Ok(graphics::Mesh::from_data(ctx, mb.build()))
+        let mut text = &mut self.text.clone();
+        text.set_scale(70.);
+
+        draw!(
+            canvas,
+            text,
+            Vec2::new(self.rect.x + 20., self.rect.y + 25.),
+            scale
+        );
+
+        Ok(())
+    }
 }
