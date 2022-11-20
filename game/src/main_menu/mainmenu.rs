@@ -3,7 +3,7 @@ use crate::backend::{
     screen::{Screen, StackCommand},
     utils::get_scale,
 };
-use crate::main_menu::button::{draw_button, Button};
+use crate::main_menu::button::Button;
 use crate::main_menu::mainmenu::Message::{Exit, NewGame, Start};
 use crate::RLResult;
 use ggez::event::MouseButton;
@@ -30,30 +30,32 @@ impl Default for MainMenu {
     fn default() -> Self {
         let (sender, receiver) = channel();
 
-        let start_button = Button {
-            text: Text::new(TextFragment::new("Start").color(Color::BLACK)),
-            img: None,
-            message: Start,
-            sender: sender.clone(),
-            rect: graphics::Rect::new(650.0, 180.0, 350.0, 120.0),
-            color: Color::from_rgba(195, 195, 195, 255),
-        };
-        let exit_button = Button {
-            text: Text::new(TextFragment::new("Exit").color(Color::BLACK)),
-            img: None,
-            message: Exit,
-            sender: sender.clone(),
-            rect: graphics::Rect::new(650.0, 420.0, 350.0, 120.0),
-            color: Color::from_rgba(195, 195, 195, 255),
-        };
-        let new_game_button = Button {
-            text: Text::new(TextFragment::new("New Game").color(Color::BLACK)),
-            img: None,
-            message: NewGame,
-            sender: sender.clone(),
-            rect: graphics::Rect::new(650.0, 300.0, 350.0, 120.0),
-            color: Color::from_rgba(195, 195, 195, 255),
-        };
+        let start_button = Button::new(
+            "Start".to_string(),
+            None,
+            Start,
+            sender.clone(),
+            graphics::Rect::new(650.0, 180.0, 350.0, 120.0),
+            Color::from_rgba(195, 195, 195, 255),
+        );
+
+        let new_game_button = Button::new(
+            "New Game".to_string(),
+            None,
+            NewGame,
+            sender.clone(),
+            graphics::Rect::new(650.0, 300.0, 350.0, 120.0),
+            Color::from_rgba(195, 195, 195, 255),
+        );
+
+        let exit_button = Button::new(
+            "Exit".to_string(),
+            None,
+            Exit,
+            sender.clone(),
+            graphics::Rect::new(650.0, 420.0, 350.0, 120.0),
+            Color::from_rgba(195, 195, 195, 255),
+        );
 
         Self {
             buttons: vec![start_button, new_game_button, exit_button],
