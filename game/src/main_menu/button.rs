@@ -37,10 +37,6 @@ impl Button {
         }
     }
 
-    fn pressed(&self) {
-        dbg!("Pressed {:?}", self.message);
-    }
-
     fn is_clicked(&self, mouse_pos: Point2<f32>, scale: Vec2) -> bool {
         let mut button_rect = self.rect.clone();
         button_rect.x *= scale.x;
@@ -50,7 +46,7 @@ impl Button {
 
     pub(crate) fn click(&mut self, mouse_pos: Point2<f32>, scale: Vec2) {
         if self.is_clicked(mouse_pos, scale) {
-            self.pressed();
+            dbg!(format!("Pressed {:?}", self.message));
             self.sender.send(self.message).unwrap();
         }
     }
