@@ -11,6 +11,7 @@ pub struct Player {
     pub(crate) position: (usize, usize),
     pub(crate) resources: Resources<u16>,
     pub(crate) resources_change: Resources<i16>,
+    pub(crate) last_damage: u32,
 }
 impl Default for Player {
     fn default() -> Self {
@@ -27,6 +28,22 @@ impl Default for Player {
                 energy: -1,
                 life: 0,
             },
+            last_damage: 0,
+        }
+    }
+}
+
+impl Player {
+    /// Checks whether the player has taken damage in the past few seconds and if not so start the regeneration
+    pub(crate) fn life_regeneration(&mut self) {
+        if self.resources_change.life == 0 && self.last_damage >= 1000 {
+            self.resources_change.life += 5;
+            self.last_damage = 0;
+        }
+        if self.resources.life == u16::MAX && self.resources_change.life > 0 {
+            self.resources_change.life = 0;
+        } else {
+            self.last_damage += 1;
         }
     }
 }

@@ -61,6 +61,7 @@ impl GameState {
                 .zip(self.player.resources_change.into_iter())
                 .map(|(a, b)| a.saturating_add_signed(b)),
         );
+        self.player.life_regeneration();
         // Check if the player is dead
         if let Some(empty_resource) = Resources::get_zero_values(&self.player.resources) {
             self.player.resources_change.life = -10;
