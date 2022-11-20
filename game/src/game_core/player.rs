@@ -46,11 +46,11 @@ impl Player {
         //If the player does not take damage right now and did not take damage in the last 5 seconds, start regeneration and reset the last_damage time
         else if self.resources_change.life == 0 && self.last_damage >= 1000 {
             self.resources_change.life += 5;
-           // self.last_damage = 0;
+            // self.last_damage = 0;
         }
         //If the player takes damage, set the last_damage time to 0
-         else if self.resources_change.life <= 0 {
-            self.last_damage = 0;
+        else if self.resources_change.life <= 0 {
+            self.last_damage += 1;
         }
     }
 }
