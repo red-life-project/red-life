@@ -35,24 +35,27 @@ impl Default for MainMenu {
             img: None,
             message: Start,
             sender: sender.clone(),
-            rect: graphics::Rect::new(650.0, 180.0, 350.0, 120.0),
-            color: Color::from_rgba(0, 0, 0, 0),
+            rect: graphics::Rect::new(1200.0, 300.0, 350.0, 120.0),
+            radius: 5.0,
+            color: Color::from_rgba(226, 105, 18, 255),
         };
         let exit_button = Button {
             text: "Exit".to_string(),
             img: None,
             message: Exit,
             sender: sender.clone(),
-            rect: graphics::Rect::new(650.0, 420.0, 350.0, 120.0),
-            color: Color::from_rgba(0, 0, 0, 0),
+            rect: graphics::Rect::new(1200.0, 660.0, 350.0, 120.0),
+            radius: 5.0,
+            color: Color::from_rgba(226, 105, 18, 255),
         };
         let new_game_button = Button {
             text: "New Game".to_string(),
             img: None,
             message: NewGame,
             sender: sender.clone(),
-            rect: graphics::Rect::new(650.0, 300.0, 350.0, 120.0),
-            color: Color::from_rgba(0, 0, 0, 0),
+            rect: graphics::Rect::new(1200.0, 480.0, 350.0, 120.0),
+            radius: 5.0,
+            color: Color::from_rgba(226, 105, 18, 255),
         };
 
         Self {

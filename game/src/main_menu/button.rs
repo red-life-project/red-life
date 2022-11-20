@@ -13,6 +13,7 @@ pub struct Button {
     pub(crate) message: Message,
     pub(crate) sender: Sender<Message>,
     pub(crate) rect: graphics::Rect,
+    pub(crate) radius: f32,
     pub(crate) color: Color,
 }
 
@@ -38,7 +39,7 @@ impl Button {
 pub fn draw_button(ctx: &mut Context, btn: &Button) -> GameResult<graphics::Mesh> {
     let mb = &mut graphics::MeshBuilder::new();
 
-    mb.rectangle(graphics::DrawMode::fill(), btn.rect, btn.color)?;
+    mb.rounded_rectangle(graphics::DrawMode::fill(), btn.rect, btn.radius,  btn.color,)?;
 
     Ok(graphics::Mesh::from_data(ctx, mb.build()))
 }
