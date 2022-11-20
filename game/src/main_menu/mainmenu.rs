@@ -3,11 +3,11 @@ use crate::backend::{
     screen::{Screen, StackCommand},
     utils::get_scale,
 };
-use crate::main_menu::button::{draw_button, Button};
+use crate::main_menu::button::Button;
 use crate::main_menu::mainmenu::Message::{Exit, NewGame, Start};
 use crate::RLResult;
 use ggez::event::MouseButton;
-use ggez::graphics::Color;
+use ggez::graphics::{Color, Text, TextFragment};
 use ggez::{graphics, Context};
 use std::fs;
 use std::sync::mpsc::{channel, Receiver, Sender};
@@ -30,30 +30,29 @@ impl Default for MainMenu {
     fn default() -> Self {
         let (sender, receiver) = channel();
 
-        let start_button = Button {
-            text: "Start".to_string(),
-            img: None,
-            message: Start,
-            sender: sender.clone(),
-            rect: graphics::Rect::new(650.0, 180.0, 350.0, 120.0),
-            color: Color::from_rgba(0, 0, 0, 0),
-        };
-        let exit_button = Button {
-            text: "Exit".to_string(),
-            img: None,
-            message: Exit,
-            sender: sender.clone(),
-            rect: graphics::Rect::new(650.0, 420.0, 350.0, 120.0),
-            color: Color::from_rgba(0, 0, 0, 0),
-        };
-        let new_game_button = Button {
-            text: "New Game".to_string(),
-            img: None,
-            message: NewGame,
-            sender: sender.clone(),
-            rect: graphics::Rect::new(650.0, 300.0, 350.0, 120.0),
-            color: Color::from_rgba(0, 0, 0, 0),
-        };
+        let start_button = Button::new(
+            "Start".to_string(),
+            Start,
+            sender.clone(),
+            graphics::Rect::new(1322., 350., 350., 120.),
+            Color::from_rgba(195, 195, 195, 255),
+        );
+
+        let new_game_button = Button::new(
+            "New Game".to_string(),
+            NewGame,
+            sender.clone(),
+            graphics::Rect::new(1322., 490., 350., 120.),
+            Color::from_rgba(195, 195, 195, 255),
+        );
+
+        let exit_button = Button::new(
+            "Exit".to_string(),
+            Exit,
+            sender.clone(),
+            graphics::Rect::new(1322., 630., 350., 120.),
+            Color::from_rgba(195, 195, 195, 255),
+        );
 
         Self {
             buttons: vec![start_button, new_game_button, exit_button],
@@ -69,6 +68,7 @@ impl Screen for MainMenu {
         //handle buttons
         if ctx.mouse.button_pressed(MouseButton::Left) {
             let current_position = ctx.mouse.position();
+            dbg!(format!("Current mouse position: {current_position:?}"));
             self.buttons
                 .iter_mut()
                 .for_each(|btn| btn.click(current_position, scale));
@@ -100,13 +100,8 @@ impl Screen for MainMenu {
             graphics::Image::from_bytes(ctx, include_bytes!("../../../assets/mainmenu.png"))?;
         canvas.draw(&background, graphics::DrawParam::default().scale(scale));
 
-        //draw buttons
-        let mut btn_meshes = Vec::new();
         for btn in self.buttons.iter() {
-            btn_meshes.push(draw_button(ctx, btn)?);
-        }
-        for mesh in btn_meshes {
-            canvas.draw(&mesh, graphics::DrawParam::default().scale(scale));
+            btn.draw_button(ctx, &mut canvas)?;
         }
         canvas.finish(ctx)?;
 
