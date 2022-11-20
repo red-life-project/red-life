@@ -9,7 +9,6 @@ const MOVEMENT_SPEED: usize = 5;
 
 impl GameState {
     pub fn move_player(&mut self, ctx: &mut Context) -> RLResult<StackCommand> {
-        let scale = get_scale(ctx);
         let keys = ctx.keyboard.pressed_keys();
         for key in keys.iter() {
             match key {
@@ -53,7 +52,11 @@ impl GameState {
                             self.player.position.0.saturating_add(MOVEMENT_SPEED);
                     }
                 }
-                key => {}
+                // TODO: Interact with the possible area
+                VirtualKeyCode::E => {
+                    dbg!(self.get_interactable());
+                }
+                _ => {}
             }
         }
 

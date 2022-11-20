@@ -1,13 +1,13 @@
 use crate::backend::area::Area;
 use crate::backend::screen::{Popup, StackCommand};
-use crate::backend::utils::get_scale;
+use crate::backend::utils::{get_scale, is_colliding};
 use crate::backend::{error::RLError, screen::Screen};
 use crate::game_core::deathscreen::DeathScreen;
 use crate::game_core::event::Event;
 use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
 use crate::{draw, RLResult};
-use ggez::glam::Vec2;
+use ggez::glam::{vec2, Vec2};
 use ggez::graphics::{Canvas, Color, Image};
 use ggez::graphics::{DrawMode, Mesh, MeshBuilder, Rect};
 use ggez::{graphics, Context};
@@ -153,18 +153,10 @@ impl GameState {
         Ok(game_state)
     }
 
-    /// Returns if the player would collide with a machine if they moved in the given direction
-    fn machine_collision_detection(&self, next_player_pos: (usize, usize)) -> bool {
-        for machine in &self.machines {
-            if max(machine.x as usize, next_player_pos.0)
-                <= min((machine.x + machine.w) as usize, next_player_pos.0 + 41)
-                && max(machine.y as usize, next_player_pos.1)
-                    <= min((machine.y + machine.h) as usize, next_player_pos.1 + 50)
-            {
-                return true;
-            }
-        }
-        false
+    pub(crate) fn get_interactable(&self) -> Option<&Box<dyn Area>> {
+        self.areas
+            .iter()
+            .find(|area| area.is_interactable(self.player.position))
     }
 
     /// Returns if the player would collide with a border if they moved in the given direction
@@ -179,7 +171,10 @@ impl GameState {
     /// # Arguments
     /// * `next_player_pos` - A tuple containing the next position of the player
     pub(crate) fn collision_detection(&self, next_player_pos: (usize, usize)) -> bool {
-        self.machine_collision_detection(next_player_pos)
+        self.areas
+            .iter()
+            .map(|area| area.get_collision_area())
+            .any(|area| is_colliding(next_player_pos, &area))
             || Self::border_collision_detection(next_player_pos)
     }
     /// Returns the asset if it exists
@@ -242,11 +237,13 @@ mod test {
 
     #[test]
     fn test_load_autosave() {
-        let gamestate = GameState::load(false).unwrap();
+        GameState::default().save(false).unwrap();
+        let gamestate_loaded = GameState::load(false).unwrap();
     }
 
     #[test]
     fn test_load_milestone() {
-        let gamestate = GameState::load(true).unwrap();
+        GameState::default().save(true).unwrap();
+        let gamestate_loaded = GameState::load(true).unwrap();
     }
 }
