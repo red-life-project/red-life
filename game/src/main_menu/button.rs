@@ -10,8 +10,7 @@ use std::sync::mpsc::Sender;
 /// Clickable button
 #[derive(Debug)]
 pub struct Button {
-    pub(crate) text: graphics::Text,
-    pub(crate) img: Option<graphics::Image>,
+    pub(crate) text: Text,
     pub(crate) message: Message,
     pub(crate) sender: Sender<Message>,
     pub(crate) rect: graphics::Rect,
@@ -21,7 +20,6 @@ pub struct Button {
 impl Button {
     pub(crate) fn new(
         text: String,
-        img: Option<graphics::Image>,
         message: Message,
         sender: Sender<Message>,
         rect: graphics::Rect,
@@ -29,7 +27,6 @@ impl Button {
     ) -> Self {
         Self {
             text: Text::new(TextFragment::new(text).color(Color::BLACK)),
-            img,
             message,
             sender,
             rect,
