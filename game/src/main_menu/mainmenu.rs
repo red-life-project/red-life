@@ -35,7 +35,7 @@ impl Default for MainMenu {
             None,
             Start,
             sender.clone(),
-            graphics::Rect::new(650.0, 180.0, 350.0, 120.0),
+            graphics::Rect::new(1322., 350., 350.0, 120.0),
             Color::from_rgba(195, 195, 195, 255),
         );
 
@@ -44,7 +44,7 @@ impl Default for MainMenu {
             None,
             NewGame,
             sender.clone(),
-            graphics::Rect::new(650.0, 300.0, 350.0, 120.0),
+            graphics::Rect::new(1322., 490., 350.0, 120.0),
             Color::from_rgba(195, 195, 195, 255),
         );
 
@@ -53,7 +53,7 @@ impl Default for MainMenu {
             None,
             Exit,
             sender.clone(),
-            graphics::Rect::new(650.0, 420.0, 350.0, 120.0),
+            graphics::Rect::new(1322., 630., 350.0, 120.0),
             Color::from_rgba(195, 195, 195, 255),
         );
 
@@ -71,6 +71,7 @@ impl Screen for MainMenu {
         //handle buttons
         if ctx.mouse.button_pressed(MouseButton::Left) {
             let current_position = ctx.mouse.position();
+            dbg!(format!("Current mouse position: {:?}", current_position));
             self.buttons
                 .iter_mut()
                 .for_each(|btn| btn.click(current_position, scale));
