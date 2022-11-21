@@ -23,4 +23,3 @@ impl Item {
         self.amount += amount;
     }
 }
-
