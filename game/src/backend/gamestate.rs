@@ -183,10 +183,14 @@ impl GameState {
 impl Screen for GameState {
     /// Updates the game and handles input. Returns StackCommand::Pop when Escape is pressed.
     fn update(&mut self, ctx: &mut Context) -> RLResult<StackCommand> {
-        if let Some(death) = self.tick() {
-            return Ok(death);
+        const DESIRED_FPS: u32 = 60;
+        while ctx.time.check_update_time(DESIRED_FPS) {
+            if let Some(death) = self.tick() {
+                return Ok(death);
+            }
+            return self.move_player(ctx);
         }
-        return self.move_player(ctx);
+        Ok(StackCommand::None)
     }
     /// Draws the game state to the screen.
     fn draw(&self, ctx: &mut Context) -> RLResult {
@@ -202,6 +206,11 @@ impl Screen for GameState {
             scale
         );
         self.draw_resources(&mut canvas, scale, ctx)?;
+        #[cfg(debug_assertions)]
+        {
+            let fps = graphics::Text::new(format!("FPS: {}", ctx.time.fps()));
+            draw!(canvas, &fps, Vec2::new(0.0, 0.0), scale);
+        }
         canvas.finish(ctx)?;
         Ok(())
     }
