@@ -1,10 +1,13 @@
 use crate::backend::screen::{Screen, StackCommand};
 use crate::backend::utils::get_scale;
 use crate::main_menu::button::Button;
-use crate::RLResult;
+use crate::main_menu::mainmenu::MainMenu;
+use crate::{draw, RLResult};
+use ggez::glam::Vec2;
+use ggez::graphics::PxScale;
 use ggez::winit::event::VirtualKeyCode;
 use ggez::{graphics, Context};
-use std::fmt::{Debug, Formatter};
+use std::fmt::{Debug, Display, Formatter};
 
 /// Create DeathScreen using deathscreen::new() and pass reason of death from DeathReason enum.
 /// # Example
@@ -15,12 +18,15 @@ pub enum DeathReason {
     Oxygen,
     Energy,
 }
-
-const DEATH_MESSAGES: [&str; 2] = [
-    "You died because you ran out of oxygen!",
-    "You died because you ran out of energy!",
-];
-
+impl Display for DeathReason {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            DeathReason::Oxygen => write!(f, "Luft"),
+            DeathReason::Energy => write!(f, "Energie"),
+        }
+    }
+}
+/// Deathscreen, telling the user why they died.
 #[derive(Debug)]
 pub struct DeathScreen {
     buttons: Vec<Button>,
@@ -34,8 +40,8 @@ impl DeathScreen {
         Self {
             buttons: vec![],
             death_reason,
-            death_message: graphics::Text::new(DEATH_MESSAGES[death_reason as usize]),
-            additional_text: graphics::Text::new("Press ESC to exit the game!"),
+            death_message: graphics::Text::new(format!("Dein Todesgrund: {death_reason}")),
+            additional_text: graphics::Text::new("Bitte drücke ESC!"),
         }
     }
 }
@@ -43,11 +49,11 @@ impl DeathScreen {
 impl Screen for DeathScreen {
     fn update(&mut self, ctx: &mut Context) -> RLResult<StackCommand> {
         let keys = ctx.keyboard.pressed_keys();
-        for key in keys.iter() {
-            match key {
-                VirtualKeyCode::Escape => std::process::exit(0),
-                _ => {}
-            }
+        if let Some(key) = keys.iter().next() {
+            return match key {
+                VirtualKeyCode::Escape => Ok(StackCommand::Push(Box::new(MainMenu::default()))),
+                _ => Ok(StackCommand::None),
+            };
         }
         Ok(StackCommand::None)
     }
@@ -56,18 +62,18 @@ impl Screen for DeathScreen {
         let scale = get_scale(ctx);
         let mut canvas = graphics::Canvas::from_frame(ctx, graphics::Color::RED);
 
-        canvas.draw(
+        draw!(
+            canvas,
             &self.death_message,
-            graphics::DrawParam::default()
-                .dest([800., 400.])
-                .scale(scale),
+            Vec2::new(400., 200.),
+            2. * scale
         );
 
-        canvas.draw(
+        draw!(
+            canvas,
             &self.additional_text,
-            graphics::DrawParam::default()
-                .dest([845., 600.])
-                .scale(scale),
+            Vec2::new(422.5, 300.),
+            2. * scale
         );
 
         canvas.finish(ctx)?;

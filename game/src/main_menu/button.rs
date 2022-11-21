@@ -1,6 +1,8 @@
+use crate::backend::utils::get_scale;
 use crate::main_menu::mainmenu::Message;
+use crate::{draw, RLResult};
 use ggez::glam::f32::Vec2;
-use ggez::graphics::Color;
+use ggez::graphics::{Canvas, Color, Text, TextFragment};
 use ggez::mint::Point2;
 use ggez::{graphics, Context, GameResult};
 use std::sync::mpsc::Sender;
@@ -8,8 +10,7 @@ use std::sync::mpsc::Sender;
 /// Clickable button
 #[derive(Debug)]
 pub struct Button {
-    pub(crate) text: String,
-    pub(crate) img: Option<graphics::Image>,
+    pub(crate) text: Text,
     pub(crate) message: Message,
     pub(crate) sender: Sender<Message>,
     pub(crate) rect: graphics::Rect,
@@ -17,8 +18,20 @@ pub struct Button {
 }
 
 impl Button {
-    fn pressed(&self) {
-        dbg!("Pressed {:?}", self.message);
+    pub(crate) fn new(
+        text: String,
+        message: Message,
+        sender: Sender<Message>,
+        rect: graphics::Rect,
+        color: Color,
+    ) -> Self {
+        Self {
+            text: Text::new(TextFragment::new(text).color(Color::BLACK)),
+            message,
+            sender,
+            rect,
+            color,
+        }
     }
 
     fn is_clicked(&self, mouse_pos: Point2<f32>, scale: Vec2) -> bool {
@@ -27,18 +40,47 @@ impl Button {
         button_rect.y *= scale.y;
         button_rect.contains(mouse_pos)
     }
+
     pub(crate) fn click(&mut self, mouse_pos: Point2<f32>, scale: Vec2) {
         if self.is_clicked(mouse_pos, scale) {
-            self.pressed();
+            dbg!(format!("Pressed {:?}", self.message));
             self.sender.send(self.message).unwrap();
         }
     }
-}
 
-pub fn draw_button(ctx: &mut Context, btn: &Button) -> GameResult<graphics::Mesh> {
-    let mb = &mut graphics::MeshBuilder::new();
+    pub(crate) fn draw_button(&self, ctx: &mut Context, canvas: &mut Canvas) -> RLResult {
+        let mb = &mut graphics::MeshBuilder::new();
+        let scale = get_scale(ctx);
 
-    mb.rectangle(graphics::DrawMode::fill(), btn.rect, btn.color)?;
+        // Background
+        mb.rounded_rectangle(graphics::DrawMode::fill(), self.rect, 10.0, self.color)?;
+        // Border
+        mb.rounded_rectangle(
+            graphics::DrawMode::stroke(8.0),
+            self.rect,
+            10.0,
+            Color::BLACK,
+        )?;
 
-    Ok(graphics::Mesh::from_data(ctx, mb.build()))
+        // Draw button
+        draw!(
+            canvas,
+            &graphics::Mesh::from_data(ctx, mb.build()),
+            Vec2::new(0., 0.),
+            scale
+        );
+
+        let mut text = &mut self.text.clone();
+        text.set_scale(70.);
+
+        //Draw text
+        draw!(
+            canvas,
+            text,
+            Vec2::new(self.rect.x + 20., self.rect.y + 25.),
+            scale
+        );
+
+        Ok(())
+    }
 }
