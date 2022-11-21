@@ -41,7 +41,11 @@ impl Default for Maschine {
             state: State::Broken,
             sprite: MaschineSprite::default(),
             trades: vec![],
-            running_recources: Resources::default(), //  sender: ()
+            running_recources: Resources {
+                oxygen: 0,
+                energy: 0,
+                life: 0,
+            }, //  sender: ()
         }
     }
 }
@@ -68,7 +72,11 @@ impl Maschine {
             state: State::Broken,
             sprite: Default::default(),
             trades: vec![],
-            running_recources: Resources::default(),
+            running_recources: Resources {
+                oxygen: 0,
+                energy: 0,
+                life: 0,
+            },
         }
     }
     /*
@@ -103,10 +111,10 @@ impl Area for Maschine {
     }
 
     fn get_collision_area(&self) -> Rect {
-        todo!()
+        return self.hitbox;
     }
 
     fn get_interaction_area(&self) -> Rect {
-        todo!()
+        return self.interaction_area;
     }
 }

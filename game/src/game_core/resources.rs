@@ -12,16 +12,6 @@ pub struct Resources<T> {
     pub(crate) life: T,
 }
 
-impl Default for Resources<i16> {
-    fn default() -> Self {
-        Self {
-            oxygen: 0,
-            energy: 0,
-            life: 0,
-        }
-    }
-}
-
 impl FromIterator<u16> for Resources<u16> {
     fn from_iter<I: IntoIterator<Item = u16>>(iter: I) -> Self {
         let mut iter = iter.into_iter();
