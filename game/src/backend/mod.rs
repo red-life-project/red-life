@@ -6,3 +6,4 @@ pub(crate) mod movement;
 pub(crate) mod popup_messages;
 pub(crate) mod screen;
 pub(crate) mod utils;
+pub(crate) mod rlcolor;
