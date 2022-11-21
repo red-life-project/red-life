@@ -1,11 +1,10 @@
 /// This is the text for the popups that appears in the top left corner.
 
-pub const WARNINGS: [&str; 5] = [
+pub const WARNINGS: [&str; 4] = [
     "$m : Ein Meteorit ist auf dem Weg!",
     "$m : Der Strom ist ausgefallen!",
     "$m : Ein Sandsturm ist auf dem Weg!",
     "Machine $m ist ausgefallen!",
-    "Lebensregeneration gestartet",
 ];
 pub const MARS_INFO: [&str; 5] = [
     "Der Mars ist der 4. Planet in unserem Sonnensystem",
@@ -20,3 +19,4 @@ pub const NASA_INFO: [&str; 5] = [
     "Die NASA hat ihren Sitz in Washington D.C.",
     "Im Rahmen der Apollo-Missionen gelang es der NASA, den ersten Menschen auf den Mond zu bringen"," Die NASA hat über 17.000 Mitarbeiter"
 ];
+pub const GAME_INFO: [&str; 1] = ["Lebensregeneration gestartet"];
