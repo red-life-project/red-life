@@ -34,23 +34,23 @@ impl Default for MainMenu {
             "Start".to_string(),
             Start,
             sender.clone(),
-            graphics::Rect::new(1322., 350., 350., 120.),
+            graphics::Rect::new(1322., 350., 450., 120.),
             Color::from_rgba(195, 195, 195, 255),
         );
 
         let new_game_button = Button::new(
-            "New Game".to_string(),
+            "Neues Spiel".to_string(),
             NewGame,
             sender.clone(),
-            graphics::Rect::new(1322., 490., 350., 120.),
+            graphics::Rect::new(1322., 490., 450., 120.),
             Color::from_rgba(195, 195, 195, 255),
         );
 
         let exit_button = Button::new(
-            "Exit".to_string(),
+            "Beenden".to_string(),
             Exit,
             sender.clone(),
-            graphics::Rect::new(1322., 630., 350., 120.),
+            graphics::Rect::new(1322., 630., 450., 120.),
             Color::from_rgba(195, 195, 195, 255),
         );
 

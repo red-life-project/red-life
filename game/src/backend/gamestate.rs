@@ -63,7 +63,7 @@ impl GameState {
         );
         self.player.life_regeneration();
         // Check if the player is dead
-        if let Some(empty_resource) = Resources::get_zero_values(&self.player.resources) {
+        if let Some(empty_resource) = Resources::get_death_reason(&self.player.resources) {
             self.player.resources_change.life = -10;
             if self.player.resources.life == 0 {
                 let gamestate = GameState::load(true).unwrap_or_default();
