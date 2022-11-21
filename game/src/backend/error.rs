@@ -21,8 +21,8 @@ impl From<serde_yaml::Error> for RLError {
     }
 }
 
-impl From<std::io::Error> for RLError {
-    fn from(e: std::io::Error) -> Self {
+impl From<io::Error> for RLError {
+    fn from(e: io::Error) -> Self {
         RLError::IO(e)
     }
 }
