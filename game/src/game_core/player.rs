@@ -41,20 +41,84 @@ impl Player {
             self.last_damage,
             self.resources.life,
         ) {
+            // If Player has full life and is healing, stop healing, reset last damage
             (x, _, u16::MAX) if x > 0 => {
                 self.resources_change.life = 0;
                 self.last_damage = 0;
-                match self.last_damage {
-                    0 => {}
-                    _ => self.last_damage = 0,
-                }
             }
+            // If player is healing reset last damage point
             (x, y, _) if x > 0 && y > 0 => {
                 self.last_damage = 0;
             }
-            (0, y, _) if y >= 1000 => self.resources_change.life += 5,
+            // If player does not take damage and 5 seconds have passed, start healing
+            (0, y, _) if y >= 900 => {
+                self.resources_change.life += 5;
+                self.last_damage = 0;
+            }
+            // If player takes damage, increase last damage point
             (x, _, _) if x < 0 => self.last_damage = 0,
+            // Else, increase last damage point
             _ => self.last_damage += 1,
         }
+    }
+
+    // TODO: Add Popup test
+    // TODO: Zeit durch Instant ersetzen
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_case_one_life_regeneration() {
+        let mut player = Player::default();
+        player.resources.life = u16::MAX;
+        player.resources_change.life = 5;
+        player.last_damage = 1000;
+        player.life_regeneration();
+        assert_eq!(player.resources_change.life, 0);
+        assert_eq!(player.last_damage, 0);
+    }
+
+    #[test]
+    fn test_case_two_life_regeneration() {
+        let mut player = Player::default();
+        player.resources.life = 1000;
+        player.resources_change.life = 5;
+        player.last_damage = 1000;
+        player.life_regeneration();
+        assert_eq!(player.last_damage, 0);
+    }
+
+    #[test]
+    fn test_case_three_life_regeneration() {
+        let mut player = Player::default();
+        player.resources.life = 1000;
+        player.resources_change.life = 0;
+        player.last_damage = 900;
+        player.life_regeneration();
+        assert_eq!(player.resources_change.life, 5);
+        assert_eq!(player.last_damage, 0);
+    }
+
+    #[test]
+    fn test_case_four_life_regeneration() {
+        let mut player = Player::default();
+        player.last_damage = 500;
+        player.resources_change.life = 0;
+        player.life_regeneration();
+        assert_eq!(player.resources_change.life, 0);
+        assert_eq!(player.last_damage, 501);
+    }
+
+    #[test]
+    fn test_case_fife_life_regeneration() {
+        let mut player = Player::default();
+        player.last_damage = 3;
+        player.resources_change.life = -1;
+        player.life_regeneration();
+        assert_eq!(player.resources_change.life, -1);
+        assert_eq!(player.last_damage, 0);
     }
 }
