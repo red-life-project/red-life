@@ -113,7 +113,7 @@ mod test {
     }
 
     #[test]
-    fn test_case_fife_life_regeneration() {
+    fn test_case_five_life_regeneration() {
         let mut player = Player::default();
         player.last_damage = 3;
         player.resources_change.life = -1;
