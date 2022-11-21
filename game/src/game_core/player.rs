@@ -1,6 +1,11 @@
+use crate::backend::gamestate;
+use crate::backend::popup_messages::WARNINGS;
+use crate::backend::screen::{Popup, Screenstack, StackCommand};
 use crate::game_core::item::Item;
 use crate::game_core::resources::Resources;
+use ggez::graphics::Color;
 use serde::{Deserialize, Serialize};
+use std::sync::mpsc::Sender;
 
 /// The current game player, containing its inventory and the current position, air and energy,
 /// along with their change rate
@@ -35,7 +40,7 @@ impl Default for Player {
 
 impl Player {
     /// Checks whether the player has taken damage in the past few seconds and if not so start the regeneration
-    pub(crate) fn life_regeneration(&mut self) {
+    pub(crate) fn life_regeneration(&mut self, sender: Sender<StackCommand>) {
         match (
             self.resources_change.life,
             self.last_damage,
@@ -51,9 +56,12 @@ impl Player {
                 self.last_damage = 0;
             }
             // If player does not take damage and 5 seconds have passed, start healing
-            (0, y, _) if y >= 900 => {
+            (0, y, _) if y >= 800 => {
                 self.resources_change.life += 5;
                 self.last_damage = 0;
+                let mut popup =
+                    Popup::new(Color::from_rgb(52, 235, 52), WARNINGS[4].to_string(), 5);
+                sender.send(StackCommand::Popup(popup)).unwrap();
             }
             // If player takes damage, increase last damage point
             (x, _, _) if x < 0 => self.last_damage = 0,
@@ -61,63 +69,77 @@ impl Player {
             _ => self.last_damage += 1,
         }
     }
-
-    // TODO: Add Popup test
-    // TODO: Zeit durch Instant ersetzen
 }
 
 #[cfg(test)]
 mod test {
     use super::*;
+    use crate::backend::screen::Screen;
+    use std::sync::mpsc::channel;
 
     #[test]
     fn test_case_one_life_regeneration() {
+        let mut gamestate = gamestate::GameState::default();
+        let mut channel = channel();
+        gamestate.set_sender(channel.0);
         let mut player = Player::default();
         player.resources.life = u16::MAX;
         player.resources_change.life = 5;
         player.last_damage = 1000;
-        player.life_regeneration();
+        player.life_regeneration(gamestate.screen_sender.as_ref().unwrap().clone());
         assert_eq!(player.resources_change.life, 0);
         assert_eq!(player.last_damage, 0);
     }
 
     #[test]
     fn test_case_two_life_regeneration() {
+        let mut gamestate = gamestate::GameState::default();
+        let mut channel = channel();
+        gamestate.set_sender(channel.0);
         let mut player = Player::default();
         player.resources.life = 1000;
         player.resources_change.life = 5;
         player.last_damage = 1000;
-        player.life_regeneration();
+        player.life_regeneration(gamestate.screen_sender.as_ref().unwrap().clone());
         assert_eq!(player.last_damage, 0);
     }
 
     #[test]
     fn test_case_three_life_regeneration() {
+        let mut gamestate = gamestate::GameState::default();
+        let mut channel = channel();
+        gamestate.set_sender(channel.0);
         let mut player = Player::default();
         player.resources.life = 1000;
         player.resources_change.life = 0;
         player.last_damage = 900;
-        player.life_regeneration();
+        player.life_regeneration(gamestate.screen_sender.as_ref().unwrap().clone());
         assert_eq!(player.resources_change.life, 5);
         assert_eq!(player.last_damage, 0);
     }
 
     #[test]
     fn test_case_four_life_regeneration() {
+        let mut gamestate = gamestate::GameState::default();
+        let mut channel = channel();
+        gamestate.set_sender(channel.0);
         let mut player = Player::default();
         player.last_damage = 500;
         player.resources_change.life = 0;
-        player.life_regeneration();
+        player.life_regeneration(gamestate.screen_sender.as_ref().unwrap().clone());
         assert_eq!(player.resources_change.life, 0);
         assert_eq!(player.last_damage, 501);
     }
 
     #[test]
     fn test_case_five_life_regeneration() {
+        let mut gamestate = gamestate::GameState::default();
+        let mut channel = channel();
+        gamestate.set_sender(channel.0);
         let mut player = Player::default();
         player.last_damage = 3;
         player.resources_change.life = -1;
-        player.life_regeneration();
+        player.life_regeneration(gamestate.screen_sender.as_ref().unwrap().clone());
         assert_eq!(player.resources_change.life, -1);
         assert_eq!(player.last_damage, 0);
     }

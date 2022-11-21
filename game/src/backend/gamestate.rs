@@ -35,7 +35,7 @@ pub struct GameState {
     #[serde(skip)]
     areas: Vec<Box<dyn Area>>,
     #[serde(skip)]
-    screen_sender: Option<Sender<StackCommand>>,
+    pub(crate) screen_sender: Option<Sender<StackCommand>>,
 }
 
 impl PartialEq for GameState {
@@ -61,7 +61,9 @@ impl GameState {
                 .zip(self.player.resources_change.into_iter())
                 .map(|(a, b)| a.saturating_add_signed(b)),
         );
-        self.player.life_regeneration();
+        // Check if player is able to regenerate life
+        self.player
+            .life_regeneration(self.screen_sender.as_ref().unwrap().clone());
         // Check if the player is dead
         if let Some(empty_resource) = Resources::get_death_reason(&self.player.resources) {
             self.player.resources_change.life = -10;

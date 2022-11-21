@@ -43,7 +43,7 @@ impl Popup {
     pub fn warning(text: String) -> Self {
         Self::new(Color::from_rgb(255, 10, 10), text, 10)
     }
-    fn new(color: Color, text: String, duration: u64) -> Self {
+    pub(crate) fn new(color: Color, text: String, duration: u64) -> Self {
         Self {
             color,
             text,
