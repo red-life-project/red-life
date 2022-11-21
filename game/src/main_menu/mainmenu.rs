@@ -77,8 +77,7 @@ impl Screen for MainMenu {
             match msg {
                 Exit => std::process::exit(0),
                 NewGame => {
-                    fs::remove_file("./saves/autosave.yaml");
-                    fs::remove_file("./saves/milestone.yaml");
+                    GameState::delete_saves().expect("all saves to be deleted");
                     Ok(StackCommand::Push(Box::new(GameState::new(ctx)?)))
                 }
                 Start => Ok(StackCommand::Push(Box::new({

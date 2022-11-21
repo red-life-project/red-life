@@ -21,6 +21,7 @@ use std::sync::mpsc::Sender;
 const RESOURCE_POSITION: [f32; 3] = [316.0, 639.0, 1373.0];
 const RESOURCE_NAME: [&str; 3] = ["Luft", "Energie", "Leben"];
 const COLORS: [(u8, u8, u8); 3] = [(51, 51, 204), (186, 158, 19), (102, 24, 18)];
+
 /// This is the game state. It contains all the data that is needed to run the game.
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct GameState {
@@ -184,6 +185,20 @@ impl GameState {
             name
         )))
     }
+    /// Deletes all files in the directory saves, returns Ok if saves directory does not exist
+    pub(crate) fn delete_saves() -> RLResult {
+        let existing_files = fs::read_dir("./saves");
+        if existing_files.is_err() {
+            return Ok(());
+        }
+        for entry in existing_files.unwrap() {
+            let file = entry.unwrap();
+            if file.metadata().unwrap().is_file() {
+                fs::remove_file(file.path()).expect("one savefile to be deleted");
+            }
+        }
+        return Ok(());
+    }
 }
 
 impl Screen for GameState {
@@ -245,5 +260,9 @@ mod test {
     fn test_load_milestone() {
         GameState::default().save(true).unwrap();
         let gamestate_loaded = GameState::load(true).unwrap();
+    }
+    #[test]
+    fn test_delete_saves() {
+        GameState::delete_saves().unwrap();
     }
 }
