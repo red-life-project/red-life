@@ -6,7 +6,7 @@ use std::ops;
 /// This struct holds data for resources
 /// This is used to describe the current state and change rate of the player's resources.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub struct Resources<T> {
+pub struct Resources<T:PartialOrd> {
     pub(crate) oxygen: T,
     pub(crate) energy: T,
     pub(crate) life: T,
@@ -55,7 +55,7 @@ impl<T: std::ops::Sub<Output = T> + std::cmp::PartialOrd> ops::Sub<Resources<T>>
 impl Resources<u16> {
     // This function returns the value that reached zero first
     // If no value reached zero, it returns None
-    pub fn get_zero_values(&self) -> Option<DeathReason> {
+    pub fn get_death_reason(&self) -> Option<DeathReason> {
         if self.oxygen == 0 {
             Some(DeathReason::Oxygen)
         } else if self.energy == 0 {
