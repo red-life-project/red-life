@@ -52,7 +52,7 @@ impl Popup {
     }
 }
 impl Screenstack {
-    fn draw_popup(&mut self, ctx: &mut Context) -> RLResult {
+    fn draw_popups(&mut self, ctx: &mut Context) -> RLResult {
         let mut canvas = graphics::Canvas::from_frame(ctx, None);
         for (pos, popup) in self.popup.iter().enumerate() {
             let scale = get_scale(ctx);
@@ -67,6 +67,23 @@ impl Screenstack {
         }
         canvas.finish(ctx)?;
         Ok(())
+    }
+    fn process_command(&mut self, command: StackCommand) {
+        // Match the command given back by the screen
+        match command {
+            StackCommand::None => {}
+            StackCommand::Push(mut screen) => {
+                screen.set_sender(self.sender.clone());
+                self.screens.push(screen);
+            }
+            StackCommand::Pop => {
+                match self.screens.len() {
+                    1 => std::process::exit(0),
+                    _ => self.screens.pop(),
+                };
+            }
+            StackCommand::Popup(popup) => self.popup.push(popup),
+        }
     }
     fn remove_popups(&mut self) {
         self.popup.retain(|popup| popup.expiration > Instant::now());
@@ -91,20 +108,9 @@ impl event::EventHandler<RLError> for Screenstack {
             .last_mut()
             .expect("Failed to get a screen")
             .update(ctx)?;
-        // Match the command given back by the screen
-        match command {
-            StackCommand::None => {}
-            StackCommand::Push(mut screen) => {
-                screen.set_sender(self.sender.clone());
-                self.screens.push(screen);
-            }
-            StackCommand::Pop => {
-                match self.screens.len() {
-                    1 => std::process::exit(0),
-                    _ => self.screens.pop(),
-                };
-            }
-            StackCommand::Popup(popup) => self.popup.push(popup),
+        self.process_command(command);
+        if let Ok(message) = self.receiver.try_recv() {
+            self.process_command(message);
         }
         Ok(())
     }
@@ -114,7 +120,7 @@ impl event::EventHandler<RLError> for Screenstack {
             .last()
             .expect("Failed to get a screen")
             .draw(ctx)?;
-        self.draw_popup(ctx)?;
+        self.draw_popups(ctx)?;
         Ok(())
     }
     /// Override the quit event so we don't actually quit the game.

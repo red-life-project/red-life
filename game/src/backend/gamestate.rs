@@ -215,6 +215,9 @@ impl Screen for GameState {
         canvas.finish(ctx)?;
         Ok(())
     }
+    fn set_sender(&mut self, sender: Sender<StackCommand>) {
+        self.screen_sender = Some(sender);
+    }
 }
 
 #[cfg(test)]
