@@ -17,6 +17,7 @@ use std::collections::HashMap;
 use std::fs;
 use std::fs::read_dir;
 use std::sync::mpsc::Sender;
+use crate::machines::machine::Maschine;
 
 const RESOURCE_POSITION: [f32; 3] = [316.0, 639.0, 1373.0];
 const RESOURCE_NAME: [&str; 3] = ["Luft", "Energie", "Leben"];
@@ -28,7 +29,7 @@ pub struct GameState {
     pub player: Player,
     /// The current milestone the player has reached.
     milestone: usize,
-    machines: Vec<Rect>,
+    pub machines: Vec<Maschine>,
     events: Vec<Event>,
     #[serde(skip)]
     assets: HashMap<String, graphics::Image>,
@@ -183,6 +184,11 @@ impl GameState {
             "Could not find asset with name {}",
             name
         )))
+    }
+
+    pub fn milestone_achieved(&mut self) {
+        self.milestone += 1;
+        self.save(true).unwrap();
     }
 }
 
