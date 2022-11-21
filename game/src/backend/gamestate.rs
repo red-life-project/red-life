@@ -184,7 +184,7 @@ impl Screen for GameState {
     /// Updates the game and handles input. Returns StackCommand::Pop when Escape is pressed.
     fn update(&mut self, ctx: &mut Context) -> RLResult<StackCommand> {
         const DESIRED_FPS: u32 = 60;
-        while ctx.time.check_update_time(DESIRED_FPS) {
+        if ctx.time.check_update_time(DESIRED_FPS) {
             if let Some(death) = self.tick() {
                 return Ok(death);
             }
