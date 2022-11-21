@@ -6,7 +6,7 @@ use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
 use crate::machines::machine_sprite::MaschineSprite;
 use crate::machines::trade::Trade;
-use ggez::graphics::Rect;
+use ggez::graphics::{Image, Rect};
 use serde_yaml::Value::Null;
 use std::ptr::null;
 use std::sync::mpsc::Sender;
@@ -51,7 +51,7 @@ impl Default for Maschine {
 }
 
 impl Maschine {
-    pub fn test_maschine(/*gs:GameState*/) -> Maschine {
+    pub fn test_maschine(img:MaschineSprite) -> Maschine {
         //let msSprite =  get_asset("player.png")?;
 
         Self {
