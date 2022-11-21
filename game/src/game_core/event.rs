@@ -1,6 +1,5 @@
-use crate::main_menu::mainmenu::Message;
 use serde::{Deserialize, Serialize};
-use std::sync::mpsc::Sender;
+
 #[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct Event {
     name: String,

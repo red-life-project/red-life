@@ -22,7 +22,7 @@ impl FromIterator<u16> for Resources<u16> {
         }
     }
 }
-impl<T: std::cmp::PartialOrd> IntoIterator for Resources<T> {
+impl<T: PartialOrd> IntoIterator for Resources<T> {
     type Item = T;
     type IntoIter = std::array::IntoIter<T, 3>;
 
@@ -31,7 +31,7 @@ impl<T: std::cmp::PartialOrd> IntoIterator for Resources<T> {
     }
 }
 
-impl<T: std::ops::Add<Output = T> + std::cmp::PartialOrd> ops::Add<Resources<T>> for Resources<T> {
+impl<T: ops::Add<Output = T> + PartialOrd> ops::Add<Resources<T>> for Resources<T> {
     type Output = Self;
     fn add(self, rhs: Self) -> Self {
         Self {
@@ -42,7 +42,7 @@ impl<T: std::ops::Add<Output = T> + std::cmp::PartialOrd> ops::Add<Resources<T>>
     }
 }
 
-impl<T: std::ops::Sub<Output = T> + std::cmp::PartialOrd> ops::Sub<Resources<T>> for Resources<T> {
+impl<T: ops::Sub<Output = T> + PartialOrd> ops::Sub<Resources<T>> for Resources<T> {
     type Output = Self;
     fn sub(self, rhs: Self) -> Self {
         Self {
@@ -68,7 +68,6 @@ impl Resources<u16> {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::game_core::resources::Resources;
 
     #[test]
     fn addition() {
