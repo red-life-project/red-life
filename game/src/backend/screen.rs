@@ -103,12 +103,10 @@ impl event::EventHandler<RLError> for Screenstack {
     // Redirect the update function to the last screen and handle the returned StackCommand
     fn update(&mut self, ctx: &mut Context) -> RLResult {
         self.remove_popups();
-        let command = self
-            .screens
+        self.screens
             .last_mut()
             .expect("Failed to get a screen")
             .update(ctx)?;
-        self.process_command(command);
         if let Ok(message) = self.receiver.try_recv() {
             self.process_command(message);
         }
