@@ -59,7 +59,7 @@ impl RLColor {
     };
     pub const GREEN: Color = Color {
         r: 0.2,
-        g: 235.,
+        g: 0.922,
         b: 0.2,
         a: 1.,
     };
