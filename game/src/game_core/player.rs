@@ -16,6 +16,7 @@ pub struct Player {
     pub(crate) position: (usize, usize),
     pub(crate) resources: Resources<u16>,
     pub(crate) resources_change: Resources<i16>,
+    pub milestone: usize,
     pub(crate) last_damage: u32,
 }
 impl Default for Player {
@@ -52,6 +53,7 @@ impl Default for Player {
                 energy: -1,
                 life: 0,
             },
+            milestone: 0,
             last_damage: 0,
         }
     }

@@ -27,8 +27,6 @@ const COLORS: [(u8, u8, u8); 3] = [(51, 51, 204), (186, 158, 19), (102, 24, 18)]
 pub struct GameState {
     /// Contains the current player position, resources(air, energy, life) and the inventory and their change rates
     pub player: Player,
-    /// The current milestone the player has reached.
-    milestone: usize,
     pub machines: Vec<Maschine>,
     events: Vec<Event>,
     #[serde(skip)]
@@ -42,7 +40,7 @@ pub struct GameState {
 impl PartialEq for GameState {
     fn eq(&self, other: &Self) -> bool {
         self.player == other.player
-            && self.milestone == other.milestone
+            && self.player.milestone == other.player.milestone
             && self.machines == other.machines
     }
 }
@@ -195,12 +193,12 @@ impl GameState {
             .iter()
             .all(|machine| running_machine.contains(&machine.to_string()))
         {
-            self.milestone += 1;
+            self.player.milestone += 1;
             self.save(true).unwrap();
         }
     }
     fn get_current_milestone(&mut self) {
-        match self.milestone {
+        match self.player.milestone {
             1 => {
                 self.check_on_milestone(vec![
                     "Sauerstoffgenerator".to_string(),
