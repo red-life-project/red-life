@@ -6,6 +6,8 @@ use crate::game_core::deathscreen::DeathScreen;
 use crate::game_core::event::Event;
 use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
+use crate::machines::machine::State::Broken;
+use crate::machines::machine::{Maschine, State};
 use crate::{draw, RLResult};
 use ggez::glam::Vec2;
 use ggez::graphics::{Canvas, Color, Image};
@@ -15,8 +17,8 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
 use std::fs::read_dir;
+use std::io::ErrorKind::BrokenPipe;
 use std::sync::mpsc::Sender;
-use crate::machines::machine::Maschine;
 
 const RESOURCE_POSITION: [f32; 3] = [316.0, 639.0, 1373.0];
 const RESOURCE_NAME: [&str; 3] = ["Luft", "Energie", "Leben"];
@@ -54,6 +56,7 @@ impl GameState {
     }
     pub fn tick(&mut self) -> Option<StackCommand> {
         // Iterate over every resource and add the change rate to the current value
+        self.get_current_milestone();
         self.player.resources = Resources::from_iter(
             self.player
                 .resources
@@ -182,10 +185,42 @@ impl GameState {
             name
         )))
     }
-
-    pub fn milestone_achieved(&mut self) {
-        self.milestone += 1;
-        self.save(true).unwrap();
+    fn get_machine_names(&self) -> Vec<String> {
+        self.machines
+            .iter()
+            .filter(|machine| machine.state != Broken)
+            .map(|m| m.name.clone())
+            .collect::<Vec<String>>()
+    }
+    pub fn check_on_milestone_two(&mut self) {
+        let milestone_machines = vec!["Stromgenerator", "Sauerstoffgenerator"];
+        let running_machine = self.get_machine_names();
+        if milestone_machines
+            .iter()
+            .all(|machine| running_machine.contains(&machine.to_string()))
+        {
+            self.milestone = 2;
+            self.save(true).unwrap();
+        }
+    }
+    pub fn check_on_milestone_three(&mut self) {
+        let milestone_machine = "Kommunikationssystem";
+        let running_machine = self.get_machine_names();
+        if running_machine.contains(&milestone_machine.to_string()) {
+            self.milestone = 3;
+            self.save(true).unwrap();
+        }
+    }
+    fn get_current_milestone(&mut self) {
+        match self.milestone {
+            1 => {
+                self.check_on_milestone_two();
+            }
+            2 => {
+                self.check_on_milestone_three();
+            }
+            _ => {}
+        }
     }
 }
 

@@ -23,7 +23,6 @@ pub struct Maschine {
     //gamestate:GameState,
     pub name: String,
     hitbox: Rect,
-
     interaction_area: Rect,
     pub state: State,
     sprite: MaschineSprite,
