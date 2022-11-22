@@ -1,4 +1,5 @@
 use crate::backend::area::Area;
+use crate::backend::rlcolor::RLColor;
 use crate::backend::screen::StackCommand;
 use crate::backend::utils::{get_scale, is_colliding};
 use crate::backend::{error::RLError, screen::Screen};
@@ -21,7 +22,7 @@ use std::sync::mpsc::Sender;
 
 const RESOURCE_POSITION: [f32; 3] = [316.0, 639.0, 1373.0];
 const RESOURCE_NAME: [&str; 3] = ["Luft", "Energie", "Leben"];
-const COLORS: [(u8, u8, u8); 3] = [(51, 51, 204), (186, 158, 19), (102, 24, 18)];
+const COLORS: [Color; 3] = [RLColor::BLUE, RLColor::GOLD, RLColor::DARK_RED];
 /// This is the game state. It contains all the data that is needed to run the game.
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct GameState {
@@ -87,13 +88,8 @@ impl GameState {
             .map(|(i, resource)| -> RLResult<()> {
                 let scale = get_scale(ctx);
                 let rect = Rect::new(RESOURCE_POSITION[i], 961.0, resource as f32 * 0.00435, 12.6);
-                let mesh = Mesh::new_rounded_rectangle(
-                    ctx,
-                    DrawMode::fill(),
-                    rect,
-                    3.0,
-                    Color::from(COLORS[i]),
-                )?;
+                let mesh =
+                    Mesh::new_rounded_rectangle(ctx, DrawMode::fill(), rect, 3.0, COLORS[i])?;
                 draw!(canvas, &mesh, scale);
                 let text = graphics::Text::new(format!(
                     "{}: {:.1}",

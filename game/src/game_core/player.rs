@@ -1,5 +1,6 @@
 use crate::backend::gamestate;
 use crate::backend::popup_messages::{GAME_INFO, WARNINGS};
+use crate::backend::rlcolor::RLColor;
 use crate::backend::screen::{Popup, Screenstack, StackCommand};
 use crate::game_core::item::Item;
 use crate::game_core::resources::Resources;
@@ -81,8 +82,7 @@ impl Player {
             (0, last_damage, _) if last_damage >= 400 => {
                 self.resources_change.life += 5;
                 self.last_damage = 0;
-                let mut popup =
-                    Popup::new(Color::from_rgb(52, 235, 52), GAME_INFO[0].to_string(), 5);
+                let mut popup = Popup::new(RLColor::GREEN, GAME_INFO[0].to_string(), 5);
                 sender.send(StackCommand::Popup(popup)).unwrap();
             }
             // If player takes damage, increase last damage point
