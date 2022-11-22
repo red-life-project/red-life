@@ -1,3 +1,4 @@
+use crate::backend::rlcolor::RLColor;
 use crate::backend::{
     gamestate::GameState,
     screen::{Screen, StackCommand},
@@ -35,7 +36,7 @@ impl Default for MainMenu {
             Start,
             sender.clone(),
             graphics::Rect::new(1322., 350., 450., 120.),
-            Color::from_rgba(195, 195, 195, 255),
+            RLColor::GREY,
         );
 
         let new_game_button = Button::new(
@@ -43,7 +44,7 @@ impl Default for MainMenu {
             NewGame,
             sender.clone(),
             graphics::Rect::new(1322., 490., 450., 120.),
-            Color::from_rgba(195, 195, 195, 255),
+            RLColor::GREY,
         );
 
         let exit_button = Button::new(
@@ -51,7 +52,7 @@ impl Default for MainMenu {
             Exit,
             sender.clone(),
             graphics::Rect::new(1322., 630., 450., 120.),
-            Color::from_rgba(195, 195, 195, 255),
+            RLColor::GREY,
         );
 
         Self {
@@ -94,8 +95,7 @@ impl Screen for MainMenu {
 
     fn draw(&self, ctx: &mut Context) -> RLResult {
         let scale = get_scale(ctx);
-        let mut canvas =
-            graphics::Canvas::from_frame(ctx, graphics::Color::from([0.1, 0.2, 0.3, 1.0]));
+        let mut canvas = graphics::Canvas::from_frame(ctx, RLColor::DARK_BLUE);
         let background =
             graphics::Image::from_bytes(ctx, include_bytes!("../../../assets/mainmenu.png"))?;
         canvas.draw(&background, graphics::DrawParam::default().scale(scale));

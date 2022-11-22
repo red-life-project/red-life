@@ -1,3 +1,4 @@
+use crate::backend::rlcolor::RLColor;
 use crate::backend::utils::get_scale;
 use crate::error::RLError;
 use crate::main_menu::mainmenu::MainMenu;
@@ -37,13 +38,13 @@ pub struct Popup {
 }
 impl Popup {
     pub fn nasa(text: String) -> Self {
-        Self::new(Color::from_rgb(10, 10, 255), text, 10)
+        Self::new(RLColor::LIGHT_BLUE, text, 10)
     }
     pub fn mars(text: String) -> Self {
-        Self::new(Color::from_rgb(125, 125, 125), text, 10)
+        Self::new(RLColor::LIGHT_GREY, text, 10)
     }
     pub fn warning(text: String) -> Self {
-        Self::new(Color::from_rgb(255, 10, 10), text, 10)
+        Self::new(RLColor::RED, text, 10)
     }
     pub(crate) fn new(color: Color, text: String, duration: u64) -> Self {
         Self {
