@@ -197,7 +197,7 @@ impl GameState {
                 fs::remove_file(file.path())?;
             }
         }
-         Ok(())
+        Ok(())
     }
 }
 
