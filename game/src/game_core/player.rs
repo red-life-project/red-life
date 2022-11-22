@@ -16,6 +16,7 @@ pub struct Player {
     pub(crate) position: (usize, usize),
     pub(crate) resources: Resources<u16>,
     pub(crate) resources_change: Resources<i16>,
+    /// The current milestone the player has reached.
     pub milestone: usize,
     pub(crate) last_damage: u32,
 }
