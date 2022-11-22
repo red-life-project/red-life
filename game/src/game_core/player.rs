@@ -1,7 +1,7 @@
 use crate::backend::gamestate;
 use crate::backend::popup_messages::{GAME_INFO, WARNINGS};
 use crate::backend::screen::{Popup, Screenstack, StackCommand};
-use crate::game_core::item::Item;
+use crate::game_core::item::{Item, BENZIN, GEDRUCKTESTEIL, SUPER_GLUE};
 use crate::game_core::resources::Resources;
 use ggez::graphics::Color;
 use serde::{Deserialize, Serialize};
@@ -12,7 +12,7 @@ use std::sync::mpsc::Sender;
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Player {
     /// The current items of the player.
-    pub(crate) inventory: Vec<Item>,
+    pub(crate) inventory: Vec<(Item, i32)>,
     pub(crate) position: (usize, usize),
     pub(crate) resources: Resources<u16>,
     pub(crate) resources_change: Resources<i16>,
@@ -24,24 +24,9 @@ impl Default for Player {
     fn default() -> Self {
         Self {
             inventory: vec![
-                (Item::new(
-                    "3D-gedrucktes-Teil".to_string(),
-                    " Ein 3D-gedrucktes-Teil, welches zur Reparatur des Kommunikationsmoduls verwendet werden kann".to_string(),
-                    "3D-gedrucktes-Teil.png".to_string(),
-                    0,
-                )),
-                (Item::new(
-                    "SuperGlue".to_string(),
-                    "SuperGlue kann zur Reparatur der Maschinen oder Löcher verwendet werden".to_string(),
-                    "SuperGlue.png".to_string(),
-                    0,
-                )),
-                (Item::new(
-                    "Benzin".to_string(),
-                    "Benzin kann mit dem Notstromgenerator verwendet werden um Strom zu generieren".to_string(),
-                    "Benzin.png".to_string(),
-                    0,
-                )),
+                (Item::new(SUPER_GLUE), 0),
+                (Item::new(BENZIN), 0),
+                (Item::new(GEDRUCKTESTEIL), 0),
             ],
             position: (600, 500),
             resources: Resources {
@@ -90,6 +75,13 @@ impl Player {
             // Else, increase last damage point
             _ => self.last_damage += 1,
         }
+    }
+    pub fn add_item(&mut self, item: Item) {
+        self.inventory.iter_mut().for_each(|(i, amount)| {
+            if i.name == item.name {
+                *amount += 1;
+            }
+        });
     }
 }
 
