@@ -123,11 +123,11 @@ mod test {
     fn test_case_four_life_regeneration() {
         let (mut gamestate, _) = setup_gamestate();
         let mut player = Player::default();
-        player.last_damage = 40;
-        player.resources_change.life = -1;
+        player.last_damage = 300;
+        player.resources_change.life = 0;
         player.life_regeneration(gamestate.screen_sender.as_ref().unwrap().clone());
         assert_eq!(player.resources_change.life, 0);
-        assert_eq!(player.last_damage, 501);
+        assert_eq!(player.last_damage, 301);
     }
 
     #[test]
