@@ -113,7 +113,7 @@ mod test {
         let mut player = Player::default();
         player.resources.life = 1000;
         player.resources_change.life = 0;
-        player.last_damage = 400;
+        player.last_damage = 900;
         player.life_regeneration(gamestate.screen_sender.as_ref().unwrap().clone());
         assert_eq!(player.resources_change.life, 5);
         assert_eq!(player.last_damage, 0);
@@ -123,8 +123,8 @@ mod test {
     fn test_case_four_life_regeneration() {
         let (mut gamestate, _) = setup_gamestate();
         let mut player = Player::default();
-        player.last_damage = 500;
-        player.resources_change.life = 0;
+        player.last_damage = 40;
+        player.resources_change.life = -1;
         player.life_regeneration(gamestate.screen_sender.as_ref().unwrap().clone());
         assert_eq!(player.resources_change.life, 0);
         assert_eq!(player.last_damage, 501);
