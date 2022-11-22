@@ -142,6 +142,7 @@ mod test {
     fn test_case_four_life_regeneration() {
         let (mut gamestate, _) = setup_gamestate();
         let mut player = Player::default();
+        player.resources.life = 20000;
         player.last_damage = 300;
         player.resources_change.life = 0;
         player.life_regeneration(gamestate.screen_sender.as_ref().unwrap().clone());
