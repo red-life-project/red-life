@@ -56,7 +56,7 @@ impl Player {
                 self.last_damage = 0;
             }
             // If player does not take damage and 5 seconds have passed, start healing
-            (0, last_damage, _) if last_damage >= 800 => {
+            (0, last_damage, _) if last_damage >= 400 => {
                 self.resources_change.life += 5;
                 self.last_damage = 0;
                 let mut popup =
@@ -123,11 +123,11 @@ mod test {
     fn test_case_four_life_regeneration() {
         let (mut gamestate, _) = setup_gamestate();
         let mut player = Player::default();
-        player.last_damage = 500;
+        player.last_damage = 300;
         player.resources_change.life = 0;
         player.life_regeneration(gamestate.screen_sender.as_ref().unwrap().clone());
         assert_eq!(player.resources_change.life, 0);
-        assert_eq!(player.last_damage, 501);
+        assert_eq!(player.last_damage, 301);
     }
 
     #[test]
