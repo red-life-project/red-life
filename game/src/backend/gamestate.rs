@@ -17,7 +17,6 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
 use std::fs::read_dir;
-use std::io::ErrorKind::BrokenPipe;
 use std::sync::mpsc::Sender;
 
 const RESOURCE_POSITION: [f32; 3] = [316.0, 639.0, 1373.0];
