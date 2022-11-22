@@ -12,7 +12,7 @@ use std::sync::mpsc::Sender;
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Player {
     /// The current items of the player.
-    inventory: Vec<Item>,
+    pub(crate) inventory: Vec<Item>,
     pub(crate) position: (usize, usize),
     pub(crate) resources: Resources<u16>,
     pub(crate) resources_change: Resources<i16>,
@@ -21,7 +21,26 @@ pub struct Player {
 impl Default for Player {
     fn default() -> Self {
         Self {
-            inventory: vec![],
+            inventory: vec![
+                (Item::new(
+                    "3D-gedrucktes-Teil".to_string(),
+                    " Ein 3D-gedrucktes-Teil, welches zur Reparatur des Kommunikationsmoduls verwendet werden kann".to_string(),
+                    "3D-gedrucktes-Teil.png".to_string(),
+                    0,
+                )),
+                (Item::new(
+                    "SuperGlue".to_string(),
+                    "SuperGlue kann zur Reparatur der Maschinen oder Löcher verwendet werden".to_string(),
+                    "SuperGlue.png".to_string(),
+                    0,
+                )),
+                (Item::new(
+                    "Benzin".to_string(),
+                    "Benzin kann mit dem Notstromgenerator verwendet werden um Strom zu generieren".to_string(),
+                    "Benzin.png".to_string(),
+                    0,
+                )),
+            ],
             position: (600, 500),
             resources: Resources {
                 oxygen: u16::MAX,

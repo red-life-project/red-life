@@ -6,6 +6,8 @@ use crate::game_core::deathscreen::DeathScreen;
 use crate::game_core::event::Event;
 use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
+use crate::machines::machine::State::Broken;
+use crate::machines::machine::{Maschine, State};
 use crate::{draw, RLResult};
 use ggez::glam::Vec2;
 use ggez::graphics::{Canvas, Color, Image};
@@ -27,7 +29,7 @@ pub struct GameState {
     pub player: Player,
     /// The current milestone the player has reached.
     milestone: usize,
-    machines: Vec<Rect>,
+    pub machines: Vec<Maschine>,
     events: Vec<Event>,
     #[serde(skip)]
     assets: HashMap<String, Image>,
@@ -53,6 +55,7 @@ impl GameState {
     }
     pub fn tick(&mut self) -> Option<StackCommand> {
         // Iterate over every resource and add the change rate to the current value
+        self.get_current_milestone();
         self.player.resources = Resources::from_iter(
             self.player
                 .resources
@@ -180,6 +183,35 @@ impl GameState {
             "Could not find asset with name {}",
             name
         )))
+    }
+    pub fn check_on_milestone(&mut self, milestone_machines: Vec<String>) {
+        let running_machine = self
+            .machines
+            .iter()
+            .filter(|machine| machine.state != Broken)
+            .map(|m| m.name.clone())
+            .collect::<Vec<String>>();
+        if milestone_machines
+            .iter()
+            .all(|machine| running_machine.contains(&machine.to_string()))
+        {
+            self.milestone += 1;
+            self.save(true).unwrap();
+        }
+    }
+    fn get_current_milestone(&mut self) {
+        match self.milestone {
+            1 => {
+                self.check_on_milestone(vec![
+                    "Sauerstoffgenerator".to_string(),
+                    "Stromgenerator".to_string(),
+                ]);
+            }
+            2 => {
+                self.check_on_milestone(vec!["Kommunikationsmodul".to_string()]);
+            }
+            _ => {}
+        }
     }
 }
 
