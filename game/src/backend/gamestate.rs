@@ -1,5 +1,5 @@
 use crate::backend::area::Area;
-use crate::backend::screen::{Popup, StackCommand};
+use crate::backend::screen::StackCommand;
 use crate::backend::utils::{get_scale, is_colliding};
 use crate::backend::{error::RLError, screen::Screen};
 use crate::game_core::deathscreen::DeathScreen;
@@ -7,12 +7,11 @@ use crate::game_core::event::Event;
 use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
 use crate::{draw, RLResult};
-use ggez::glam::{vec2, Vec2};
+use ggez::glam::Vec2;
 use ggez::graphics::{Canvas, Color, Image};
-use ggez::graphics::{DrawMode, Mesh, MeshBuilder, Rect};
+use ggez::graphics::{DrawMode, Mesh, Rect};
 use ggez::{graphics, Context};
 use serde::{Deserialize, Serialize};
-use std::cmp::{max, min};
 use std::collections::HashMap;
 use std::fs;
 use std::fs::read_dir;
@@ -32,11 +31,11 @@ pub struct GameState {
     pub machines: Vec<Maschine>,
     events: Vec<Event>,
     #[serde(skip)]
-    assets: HashMap<String, graphics::Image>,
+    assets: HashMap<String, Image>,
     #[serde(skip)]
     areas: Vec<Box<dyn Area>>,
     #[serde(skip)]
-    screen_sender: Option<Sender<StackCommand>>,
+    pub(crate) screen_sender: Option<Sender<StackCommand>>,
 }
 
 impl PartialEq for GameState {
@@ -62,6 +61,9 @@ impl GameState {
                 .zip(self.player.resources_change.into_iter())
                 .map(|(a, b)| a.saturating_add_signed(b)),
         );
+        // Check if player is able to regenerate life
+        self.player
+            .life_regeneration(self.screen_sender.as_ref().unwrap().clone());
         // Check if the player is dead
         if let Some(empty_resource) = Resources::get_death_reason(&self.player.resources) {
             self.player.resources_change.life = -10;
@@ -84,13 +86,8 @@ impl GameState {
             .enumerate()
             .map(|(i, resource)| -> RLResult<()> {
                 let scale = get_scale(ctx);
-                let rect = graphics::Rect::new(
-                    RESOURCE_POSITION[i],
-                    961.0,
-                    resource as f32 * 0.00435,
-                    12.6,
-                );
-                let mesh = graphics::Mesh::new_rounded_rectangle(
+                let rect = Rect::new(RESOURCE_POSITION[i], 961.0, resource as f32 * 0.00435, 12.6);
+                let mesh = Mesh::new_rounded_rectangle(
                     ctx,
                     DrawMode::fill(),
                     rect,
@@ -134,11 +131,11 @@ impl GameState {
     pub(crate) fn save(&self, milestone: bool) -> RLResult {
         let save_data = serde_yaml::to_string(self)?;
         // Create the folder if it doesn't exist
-        std::fs::create_dir_all("./saves")?;
+        fs::create_dir_all("./saves")?;
         if milestone {
-            std::fs::write("./saves/milestone.yaml", save_data)?;
+            fs::write("./saves/milestone.yaml", save_data)?;
         } else {
-            std::fs::write("./saves/autosave.yaml", save_data)?;
+            fs::write("./saves/autosave.yaml", save_data)?;
         }
         Ok(())
     }
@@ -146,9 +143,9 @@ impl GameState {
     /// If the file doesn't exist, it will return a default game state.
     pub fn load(milestone: bool) -> RLResult<GameState> {
         let save_data = if milestone {
-            std::fs::read_to_string("./saves/milestone.yaml")
+            fs::read_to_string("./saves/milestone.yaml")
         } else {
-            std::fs::read_to_string("./saves/autosave.yaml")
+            fs::read_to_string("./saves/autosave.yaml")
         }?;
         let game_state: GameState = serde_yaml::from_str(&save_data)?;
         Ok(game_state)
@@ -195,16 +192,19 @@ impl GameState {
 impl Screen for GameState {
     /// Updates the game and handles input. Returns StackCommand::Pop when Escape is pressed.
     fn update(&mut self, ctx: &mut Context) -> RLResult<StackCommand> {
-        if let Some(death) = self.tick() {
-            return Ok(death);
+        const DESIRED_FPS: u32 = 60;
+        if ctx.time.check_update_time(DESIRED_FPS) {
+            if let Some(death) = self.tick() {
+                return Ok(death);
+            }
+            return self.move_player(ctx);
         }
-        return self.move_player(ctx);
+        Ok(StackCommand::None)
     }
     /// Draws the game state to the screen.
     fn draw(&self, ctx: &mut Context) -> RLResult {
         let scale = get_scale(ctx);
-        let mut canvas =
-            graphics::Canvas::from_frame(ctx, graphics::Color::from([0.1, 0.2, 0.3, 1.0]));
+        let mut canvas = Canvas::from_frame(ctx, graphics::Color::from([0.1, 0.2, 0.3, 1.0]));
         let background = self.get_asset("basis.png")?;
         canvas.draw(background, graphics::DrawParam::default().scale(scale));
         let player = self.get_asset("player.png")?;
@@ -215,8 +215,16 @@ impl Screen for GameState {
             scale
         );
         self.draw_resources(&mut canvas, scale, ctx)?;
+        #[cfg(debug_assertions)]
+        {
+            let fps = graphics::Text::new(format!("FPS: {}", ctx.time.fps()));
+            draw!(canvas, &fps, Vec2::new(0.0, 0.0), scale);
+        }
         canvas.finish(ctx)?;
         Ok(())
+    }
+    fn set_sender(&mut self, sender: Sender<StackCommand>) {
+        self.screen_sender = Some(sender);
     }
 }
 

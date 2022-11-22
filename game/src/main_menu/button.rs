@@ -4,7 +4,7 @@ use crate::{draw, RLResult};
 use ggez::glam::f32::Vec2;
 use ggez::graphics::{Canvas, Color, Text, TextFragment};
 use ggez::mint::Point2;
-use ggez::{graphics, Context, GameResult};
+use ggez::{graphics, Context};
 use std::sync::mpsc::Sender;
 
 /// Clickable button
@@ -70,7 +70,7 @@ impl Button {
             scale
         );
 
-        let mut text = &mut self.text.clone();
+        let text = &mut self.text.clone();
         text.set_scale(70.);
 
         //Draw text

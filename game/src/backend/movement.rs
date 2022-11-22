@@ -1,6 +1,5 @@
 use crate::backend::gamestate::GameState;
 use crate::backend::screen::StackCommand;
-use crate::backend::utils::get_scale;
 use crate::RLResult;
 use ggez::winit::event::VirtualKeyCode;
 use ggez::Context;
