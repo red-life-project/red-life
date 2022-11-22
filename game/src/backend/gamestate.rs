@@ -185,39 +185,31 @@ impl GameState {
             name
         )))
     }
-    fn get_machine_names(&self) -> Vec<String> {
-        self.machines
+    pub fn check_on_milestone(&mut self, milestone_machines: Vec<String>) {
+        let running_machine = self
+            .machines
             .iter()
             .filter(|machine| machine.state != Broken)
             .map(|m| m.name.clone())
-            .collect::<Vec<String>>()
-    }
-    pub fn check_on_milestone_two(&mut self) {
-        let milestone_machines = vec!["Stromgenerator", "Sauerstoffgenerator"];
-        let running_machine = self.get_machine_names();
+            .collect::<Vec<String>>();
         if milestone_machines
             .iter()
             .all(|machine| running_machine.contains(&machine.to_string()))
         {
-            self.milestone = 2;
-            self.save(true).unwrap();
-        }
-    }
-    pub fn check_on_milestone_three(&mut self) {
-        let milestone_machine = "Kommunikationssystem";
-        let running_machine = self.get_machine_names();
-        if running_machine.contains(&milestone_machine.to_string()) {
-            self.milestone = 3;
+            self.milestone += 1;
             self.save(true).unwrap();
         }
     }
     fn get_current_milestone(&mut self) {
         match self.milestone {
             1 => {
-                self.check_on_milestone_two();
+                self.check_on_milestone(vec![
+                    "Sauerstoffgenerator".to_string(),
+                    "Stromgenerator".to_string(),
+                ]);
             }
             2 => {
-                self.check_on_milestone_three();
+                self.check_on_milestone(vec!["Kommunikationsmodul".to_string()]);
             }
             _ => {}
         }

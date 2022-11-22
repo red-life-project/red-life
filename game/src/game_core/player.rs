@@ -24,20 +24,20 @@ impl Default for Player {
             inventory: vec![
                 (Item::new(
                     "3D-gedrucktes-Teil".to_string(),
-                    "3D-gedrucktes-Teil".to_string(),
-                    "3D-gedrucktes-Teil".to_string(),
+                    " Ein 3D-gedrucktes-Teil, welches zur Reparatur des Kommunikationsmoduls verwendet werden kann".to_string(),
+                    "3D-gedrucktes-Teil.png".to_string(),
                     0,
                 )),
                 (Item::new(
                     "SuperGlue".to_string(),
-                    "SuperGlue".to_string(),
-                    "SuperGlue".to_string(),
+                    "SuperGlue kann zur Reparatur der Maschinen oder Löcher verwendet werden".to_string(),
+                    "SuperGlue.png".to_string(),
                     0,
                 )),
                 (Item::new(
                     "Benzin".to_string(),
-                    "Benzin".to_string(),
-                    "Benzin".to_string(),
+                    "Benzin kann mit dem Notstromgenerator verwendet werden um Strom zu generieren".to_string(),
+                    "Benzin.png".to_string(),
                     0,
                 )),
             ],
