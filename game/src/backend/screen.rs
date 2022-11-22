@@ -2,13 +2,13 @@ use crate::backend::utils::get_scale;
 use crate::error::RLError;
 use crate::main_menu::mainmenu::MainMenu;
 use crate::{draw, RLResult};
+use ggez::conf::FullscreenType::True;
+use ggez::glam::vec2;
 use ggez::graphics::{Color, Text};
 use ggez::{event, graphics, Context};
 use std::fmt::Debug;
 use std::sync::mpsc::{channel, Receiver, Sender};
 use std::time::Instant;
-use ggez::conf::FullscreenType::True;
-use ggez::glam::vec2;
 
 /// A screen is every drawable object in the game, so the main menu is a screen too
 pub trait Screen: Debug {
@@ -75,8 +75,8 @@ impl Screenstack {
                 graphics::Rect::new(0., 0., x + 3., y + 3.),
                 Color::from_rgb(24, 26, 25),
             )?;
-            draw!(canvas, &rect,vec2(0., pos as f32 * 100.), scale);
-            draw!(canvas, &outer,vec2(0., pos as f32 * 100.), scale);
+            draw!(canvas, &rect, vec2(0., pos as f32 * 100.), scale);
+            draw!(canvas, &outer, vec2(0., pos as f32 * 100.), scale);
             canvas.draw(
                 &text,
                 graphics::DrawParam::default()
