@@ -16,7 +16,7 @@ pub trait Screen: Debug {
     /// Used for drawing the last screen in the game.
     fn draw(&self, ctx: &mut Context) -> RLResult;
     /// Set sender of the screen
-    fn set_sender(&mut self, sender: Sender<StackCommand>) {}
+    fn set_sender(&mut self, _sender: Sender<StackCommand>) {}
 }
 
 /// A Screenstack contains multiple screens, the first one of which is the current screen

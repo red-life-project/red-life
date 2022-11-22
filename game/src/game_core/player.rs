@@ -66,7 +66,7 @@ impl Player {
             self.resources.life,
         ) {
             // If Player has full life and is healing, stop healing, reset last damage
-            (change_life, _, u16::MAX) if change_life > 0 => {
+            (change_life, _, u16::MAX) if change_life >= 0 => {
                 self.resources_change.life = 0;
                 self.last_damage = 0;
             }
