@@ -56,7 +56,7 @@ impl Player {
                 self.last_damage = 0;
             }
             // If player does not take damage and 5 seconds have passed, start healing
-            (0, last_damage, _) if last_damage >= 800 => {
+            (0, last_damage, _) if last_damage >= 400 => {
                 self.resources_change.life += 5;
                 self.last_damage = 0;
                 let mut popup =
