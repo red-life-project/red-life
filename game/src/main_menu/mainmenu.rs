@@ -77,7 +77,7 @@ impl Screen for MainMenu {
             match msg {
                 Exit => std::process::exit(0),
                 NewGame => {
-                    GameState::delete_saves().expect("all saves to be deleted");
+                    GameState::delete_saves()?;
                     Ok(StackCommand::Push(Box::new(GameState::new(ctx)?)))
                 }
                 Start => Ok(StackCommand::Push(Box::new({

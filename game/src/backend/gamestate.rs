@@ -191,13 +191,13 @@ impl GameState {
         if existing_files.is_err() {
             return Ok(());
         }
-        for entry in existing_files.unwrap() {
+        for entry in existing_files? {
             let file = entry.unwrap();
             if file.metadata().unwrap().is_file() {
-                fs::remove_file(file.path()).expect("one savefile to be deleted");
+                fs::remove_file(file.path())?;
             }
         }
-        return Ok(());
+         Ok(())
     }
 }
 
