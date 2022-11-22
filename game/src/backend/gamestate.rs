@@ -33,7 +33,7 @@ pub struct GameState {
     #[serde(skip)]
     assets: HashMap<String, graphics::Image>,
     #[serde(skip)]
-    areas: Vec<Box<dyn Area>>,
+    pub areas: Vec<Box<dyn Area>>,
     #[serde(skip)]
     screen_sender: Option<Sender<StackCommand>>,
 }
@@ -178,7 +178,7 @@ impl GameState {
             || Self::border_collision_detection(next_player_pos)
     }
     /// Returns the asset if it exists
-    fn get_asset(&self, name: &str) -> RLResult<&Image> {
+    pub fn get_asset(&self, name: &str) -> RLResult<&Image> {
         self.assets.get(name).ok_or(RLError::AssetError(format!(
             "Could not find asset with name {}",
             name

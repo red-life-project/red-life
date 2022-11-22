@@ -10,6 +10,8 @@ use ggez::graphics::{Image, Rect};
 use serde_yaml::Value::Null;
 use std::ptr::null;
 use std::sync::mpsc::Sender;
+use ggez::winit::event::VirtualKeyCode::G;
+use crate::RLResult;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum State {
@@ -26,20 +28,27 @@ pub struct Maschine {
 
     interaction_area: Rect,
     state: State,
-    sprite: MaschineSprite,
+    //sprite: MaschineSprite,
+    test: *Image,
+    blabla : *GameState,
     trades: Vec<Trade>,
     running_recources: Resources<i16>,
     // sender:Sender<Resource>,
 }
-impl Default for Maschine {
-    fn default() -> Self {
+impl Maschine {
+    fn default(gs:GameState) -> Self {
+        let sprite: &Image = GameState::get_asset(GameState, "test_Maschiene")?;
+
+        //let test : &Sender<Resources<i16>> = GameState::
         Self {
             //gamestate:GameState::default(),
             name: "Maschine ohne namen".to_string(),
             hitbox: Rect::default(),
             interaction_area: Rect::default(),
             state: State::Broken,
-            sprite: MaschineSprite::default(),
+           // sprite: MaschineSprite::default(),
+            test: sprite,
+            blabla: gs,
             trades: vec![],
             running_recources: Resources {
                 oxygen: 0,
@@ -51,8 +60,10 @@ impl Default for Maschine {
 }
 
 impl Maschine {
-    pub fn test_maschine(img:MaschineSprite) -> Maschine {
+    pub fn test_maschine(gs :&GameState) -> Maschine {
         //let msSprite =  get_asset("player.png")?;
+        let sprite: &Image = gs.get_asset( "test_Maschiene")?;
+
 
         Self {
             //gamestate:gs,
@@ -70,7 +81,9 @@ impl Maschine {
                 h: 50.0,
             },
             state: State::Broken,
-            sprite: Default::default(),
+            //sprite: MaschineSprite::default(),
+            test: sprite,
+            blabla: gs,
             trades: vec![],
             running_recources: Resources {
                 oxygen: 0,
@@ -100,7 +113,7 @@ impl Maschine {
     */
 
     pub fn no_energy(&mut self) {
-        self.state = State::Idel;
+        self.state = State::Idel;y
         //timer pausiren
     }
 }
