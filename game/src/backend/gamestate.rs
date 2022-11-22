@@ -200,7 +200,7 @@ impl GameState {
     fn get_current_milestone(&mut self) {
         match self.player.milestone {
             1 => {
-                self.player.resources_change.air = -1;
+                self.player.resources_change.oxygen = -1;
                 self.player.resources_change.energy = -1;
                 self.player.last_damage = 0;
                 self.check_on_milestone(vec![
