@@ -68,13 +68,13 @@ impl Screenstack {
                 ctx,
                 graphics::DrawMode::fill(),
                 graphics::Rect::new(0., 0., x + 2., y + 2.),
-                Color::from_rgb(148, 147, 143),
+                RLColor::LIGHT_GREY,
             )?;
             let outer = graphics::Mesh::new_rectangle(
                 ctx,
                 graphics::DrawMode::stroke(3.),
                 graphics::Rect::new(0., 0., x + 3., y + 3.),
-                Color::from_rgb(24, 26, 25),
+                RLColor::BLACK,
             )?;
             draw!(canvas, &rect, vec2(0., pos as f32 * 100.), scale);
             draw!(canvas, &outer, vec2(0., pos as f32 * 100.), scale);

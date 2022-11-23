@@ -86,10 +86,13 @@ impl GameState {
             .into_iter()
             .enumerate()
             .map(|(i, resource)| -> RLResult<()> {
+                let mut color = COLORS[i];
+                if i == 2 && self.player.resources_change.life > 0 {
+                    color = RLColor::GREEN;
+                };
                 let scale = get_scale(ctx);
                 let rect = Rect::new(RESOURCE_POSITION[i], 961.0, resource as f32 * 0.00435, 12.6);
-                let mesh =
-                    Mesh::new_rounded_rectangle(ctx, DrawMode::fill(), rect, 3.0, COLORS[i])?;
+                let mesh = Mesh::new_rounded_rectangle(ctx, DrawMode::fill(), rect, 3.0, color)?;
                 draw!(canvas, &mesh, scale);
                 let text = graphics::Text::new(format!(
                     "{}: {:.1}",
@@ -196,9 +199,12 @@ impl GameState {
     fn get_current_milestone(&mut self) {
         match self.player.milestone {
             1 => {
-                self.player.resources_change.oxygen = -1;
-                self.player.resources_change.energy = -1;
-                self.player.last_damage = 0;
+                if self.player.match_milestone == 0 {
+                    self.player.resources_change.oxygen = -1;
+                    self.player.resources_change.energy = -1;
+                    self.player.last_damage = 0;
+                    self.player.match_milestone = 1;
+                }
                 self.check_on_milestone(vec![
                     "Sauerstoffgenerator".to_string(),
                     "Stromgenerator".to_string(),

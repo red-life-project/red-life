@@ -20,6 +20,7 @@ pub struct Player {
     /// The current milestone the player has reached.
     pub milestone: usize,
     pub(crate) last_damage: u32,
+    pub(crate) match_milestone: i8,
 }
 impl Default for Player {
     fn default() -> Self {
@@ -58,6 +59,7 @@ impl Default for Player {
             },
             milestone: 0,
             last_damage: 0,
+            match_milestone: 0,
         }
     }
 }
@@ -80,7 +82,7 @@ impl Player {
                 self.last_damage = 0;
             }
             // If player does not take damage and 5 seconds have passed, start healing
-            (0, last_damage, _) if last_damage >= 400 => {
+            (0, last_damage, _) if last_damage >= 900 => {
                 self.resources_change.life += 5;
                 self.last_damage = 0;
                 let mut popup = Popup::new(RLColor::GREEN, GAME_INFO[0].to_string(), 5);
@@ -147,11 +149,11 @@ mod test {
         let (mut gamestate, _) = setup_gamestate();
         let mut player = Player::default();
         player.resources.life = 20000;
-        player.last_damage = 300;
+        player.last_damage = 400;
         player.resources_change.life = 0;
         player.life_regeneration(gamestate.screen_sender.as_ref().unwrap().clone());
         assert_eq!(player.resources_change.life, 0);
-        assert_eq!(player.last_damage, 301);
+        assert_eq!(player.last_damage, 401);
     }
 
     #[test]
