@@ -16,9 +16,9 @@ use ggez::graphics::{DrawMode, Mesh, Rect};
 use ggez::{graphics, Context};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::fs;
 use std::fs::read_dir;
 use std::sync::mpsc::Sender;
+use std::{fs, io};
 
 const RESOURCE_POSITION: [f32; 3] = [316.0, 639.0, 1373.0];
 const RESOURCE_NAME: [&str; 3] = ["Luft", "Energie", "Leben"];
@@ -52,7 +52,7 @@ impl GameState {
         result.load_assets(ctx)?;
         Ok(result)
     }
-    pub fn tick(&mut self) -> Option<StackCommand> {
+    pub fn tick(&mut self) -> RLResult {
         // Iterate over every resource and add the change rate to the current value
         self.get_current_milestone();
         self.player.resources = Resources::from_iter(
@@ -71,12 +71,17 @@ impl GameState {
             if self.player.resources.life == 0 {
                 let gamestate = GameState::load(true).unwrap_or_default();
                 gamestate.save(false).unwrap();
-                return Some(StackCommand::Push(Box::new(DeathScreen::new(
-                    empty_resource,
-                ))));
+                let cloned_sender = self.screen_sender.as_mut().unwrap().clone();
+                self.screen_sender
+                    .as_mut()
+                    .expect("No screen sender")
+                    .send(StackCommand::Push(Box::new(DeathScreen::new(
+                        empty_resource,
+                        cloned_sender,
+                    ))))?;
             };
         }
-        None
+        Ok(())
     }
 
     /// Paints the current resource level of air, energy and life as a bar on the screen.
@@ -220,15 +225,13 @@ impl GameState {
 
 impl Screen for GameState {
     /// Updates the game and handles input. Returns StackCommand::Pop when Escape is pressed.
-    fn update(&mut self, ctx: &mut Context) -> RLResult<StackCommand> {
+    fn update(&mut self, ctx: &mut Context) -> RLResult {
         const DESIRED_FPS: u32 = 60;
         if ctx.time.check_update_time(DESIRED_FPS) {
-            if let Some(death) = self.tick() {
-                return Ok(death);
-            }
-            return self.move_player(ctx);
+            self.tick();
+            self.move_player(ctx)?;
         }
-        Ok(StackCommand::None)
+        Ok(())
     }
     /// Draws the game state to the screen.
     fn draw(&self, ctx: &mut Context) -> RLResult {

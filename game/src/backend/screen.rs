@@ -1,4 +1,3 @@
-use crate::backend::rlcolor::RLColor;
 use crate::backend::utils::get_scale;
 use crate::error::RLError;
 use crate::main_menu::mainmenu::MainMenu;
@@ -15,11 +14,11 @@ use std::time::Instant;
 pub trait Screen: Debug {
     /// Used for updating the screen. Returns a StackCommand used to either push a new screen or pop
     /// the current one.
-    fn update(&mut self, ctx: &mut Context) -> RLResult<StackCommand>;
+    fn update(&mut self, ctx: &mut Context) -> RLResult;
     /// Used for drawing the last screen in the game.
     fn draw(&self, ctx: &mut Context) -> RLResult;
     /// Set sender of the screen
-    fn set_sender(&mut self, _sender: Sender<StackCommand>) {}
+    fn set_sender(&mut self, sender: Sender<StackCommand>);
 }
 
 /// A Screenstack contains multiple screens, the first one of which is the current screen
@@ -153,7 +152,7 @@ impl Default for Screenstack {
     fn default() -> Self {
         let (sender, receiver) = channel();
         Self {
-            screens: vec![Box::<MainMenu>::default()],
+            screens: vec![Box::new(MainMenu::new(sender.clone()))],
             popup: vec![],
             receiver,
             sender,

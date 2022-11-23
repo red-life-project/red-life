@@ -1,4 +1,3 @@
-use crate::backend::rlcolor::RLColor;
 use crate::backend::{
     gamestate::GameState,
     screen::{Screen, StackCommand},
@@ -25,10 +24,59 @@ pub struct MainMenu {
     buttons: Vec<Button>,
     receiver: Receiver<Message>,
     sender: Sender<Message>,
+    screen_sender: Sender<StackCommand>,
 }
 
-impl Default for MainMenu {
-    fn default() -> Self {
+impl Screen for MainMenu {
+    fn update(&mut self, ctx: &mut Context) -> RLResult {
+        let scale = get_scale(ctx);
+        //handle buttons
+        if ctx.mouse.button_pressed(MouseButton::Left) {
+            let current_position = ctx.mouse.position();
+            dbg!(format!("Current mouse position: {current_position:?}"));
+            self.buttons
+                .iter_mut()
+                .for_each(|btn| btn.click(current_position, scale));
+        }
+        if let Ok(msg) = self.receiver.try_recv() {
+            match msg {
+                Exit => std::process::exit(0),
+                NewGame => {
+                    fs::remove_file("./saves/autosave.yaml");
+                    fs::remove_file("./saves/milestone.yaml");
+                    self.screen_sender
+                        .send(StackCommand::Push(Box::new(GameState::new(ctx)?)))?;
+                }
+                Start => self.screen_sender.send(StackCommand::Push(Box::new({
+                    let mut gamestate = GameState::load(false).unwrap_or_default();
+                    gamestate.load_assets(ctx)?;
+                    gamestate
+                })))?,
+            }
+        }
+        Ok(())
+    }
+
+    fn draw(&self, ctx: &mut Context) -> RLResult {
+        let scale = get_scale(ctx);
+        let mut canvas = graphics::Canvas::from_frame(ctx, RLColor::DARK_BLUE);
+        let background =
+            graphics::Image::from_bytes(ctx, include_bytes!("../../../assets/mainmenu.png"))?;
+        canvas.draw(&background, graphics::DrawParam::default().scale(scale));
+
+        for btn in self.buttons.iter() {
+            btn.draw_button(ctx, &mut canvas)?;
+        }
+        canvas.finish(ctx)?;
+
+        Ok(())
+    }
+
+    fn set_sender(&mut self, sender: Sender<StackCommand>) {}
+}
+
+impl MainMenu {
+    pub(crate) fn new(screen_sender: Sender<StackCommand>) -> MainMenu {
         let (sender, receiver) = channel();
 
         let start_button = Button::new(
@@ -59,52 +107,7 @@ impl Default for MainMenu {
             buttons: vec![start_button, new_game_button, exit_button],
             receiver,
             sender,
+            screen_sender,
         }
-    }
-}
-
-impl Screen for MainMenu {
-    fn update(&mut self, ctx: &mut Context) -> RLResult<StackCommand> {
-        let scale = get_scale(ctx);
-        //handle buttons
-        if ctx.mouse.button_pressed(MouseButton::Left) {
-            let current_position = ctx.mouse.position();
-            dbg!(format!("Current mouse position: {current_position:?}"));
-            self.buttons
-                .iter_mut()
-                .for_each(|btn| btn.click(current_position, scale));
-        }
-        if let Ok(msg) = self.receiver.try_recv() {
-            match msg {
-                Exit => std::process::exit(0),
-                NewGame => {
-                    fs::remove_file("./saves/autosave.yaml");
-                    fs::remove_file("./saves/milestone.yaml");
-                    Ok(StackCommand::Push(Box::new(GameState::new(ctx)?)))
-                }
-                Start => Ok(StackCommand::Push(Box::new({
-                    let mut gamestate = GameState::load(false).unwrap_or_default();
-                    gamestate.load_assets(ctx)?;
-                    gamestate
-                }))),
-            }
-        } else {
-            Ok(StackCommand::None)
-        }
-    }
-
-    fn draw(&self, ctx: &mut Context) -> RLResult {
-        let scale = get_scale(ctx);
-        let mut canvas = graphics::Canvas::from_frame(ctx, RLColor::DARK_BLUE);
-        let background =
-            graphics::Image::from_bytes(ctx, include_bytes!("../../../assets/mainmenu.png"))?;
-        canvas.draw(&background, graphics::DrawParam::default().scale(scale));
-
-        for btn in self.buttons.iter() {
-            btn.draw_button(ctx, &mut canvas)?;
-        }
-        canvas.finish(ctx)?;
-
-        Ok(())
     }
 }
