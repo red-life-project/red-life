@@ -1,10 +1,8 @@
-use crate::backend::gamestate;
 use crate::backend::popup_messages::{GAME_INFO, WARNINGS};
 use crate::backend::rlcolor::RLColor;
-use crate::backend::screen::{Popup, Screenstack, StackCommand};
+use crate::backend::screen::{Popup, StackCommand};
 use crate::game_core::item::{Item, BENZIN, GEDRUCKTESTEIL, SUPER_GLUE};
 use crate::game_core::resources::Resources;
-use ggez::graphics::Color;
 use serde::{Deserialize, Serialize};
 use std::sync::mpsc::Sender;
 

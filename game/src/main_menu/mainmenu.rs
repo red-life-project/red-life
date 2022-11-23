@@ -1,3 +1,4 @@
+use crate::backend::rlcolor::RLColor;
 use crate::backend::{
     gamestate::GameState,
     screen::{Screen, StackCommand},
@@ -7,7 +8,6 @@ use crate::main_menu::button::Button;
 use crate::main_menu::mainmenu::Message::{Exit, NewGame, Start};
 use crate::RLResult;
 use ggez::event::MouseButton;
-use ggez::graphics::Color;
 use ggez::{graphics, Context};
 use std::fs;
 use std::sync::mpsc::{channel, Receiver, Sender};

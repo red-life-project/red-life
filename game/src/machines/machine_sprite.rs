@@ -1,4 +1,3 @@
-use ggez::graphics::Image;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

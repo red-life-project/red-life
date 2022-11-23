@@ -7,8 +7,8 @@ use crate::game_core::deathscreen::DeathScreen;
 use crate::game_core::event::Event;
 use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
+use crate::machines::machine::Maschine;
 use crate::machines::machine::State::Broken;
-use crate::machines::machine::{Maschine, State};
 use crate::{draw, RLResult};
 use ggez::glam::Vec2;
 use ggez::graphics::{Canvas, Color, Image};
@@ -16,9 +16,9 @@ use ggez::graphics::{DrawMode, Mesh, Rect};
 use ggez::{graphics, Context};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::fs;
 use std::fs::read_dir;
 use std::sync::mpsc::Sender;
-use std::{fs, io};
 
 const RESOURCE_POSITION: [f32; 3] = [316.0, 639.0, 1373.0];
 const RESOURCE_NAME: [&str; 3] = ["Luft", "Energie", "Leben"];
@@ -228,7 +228,7 @@ impl Screen for GameState {
     fn update(&mut self, ctx: &mut Context) -> RLResult {
         const DESIRED_FPS: u32 = 60;
         if ctx.time.check_update_time(DESIRED_FPS) {
-            self.tick();
+            self.tick()?;
             self.move_player(ctx)?;
         }
         Ok(())
