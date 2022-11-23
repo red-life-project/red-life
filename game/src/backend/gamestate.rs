@@ -158,7 +158,7 @@ impl GameState {
 
     /// Returns if the player would collide with a border if they moved in the given direction
     fn border_collision_detection(next_player_pos: (usize, usize)) -> bool {
-        next_player_pos.0 >= 1750// Right border
+        next_player_pos.0 >= 1750 // Right border
             || next_player_pos.1 >= 850 // Bottom border
             || next_player_pos.0 <= 255 // Left border
             || next_player_pos.1 <= 220 // Top border
