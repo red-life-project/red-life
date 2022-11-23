@@ -8,7 +8,7 @@ use crate::RLResult;
 use ggez::winit::event::VirtualKeyCode;
 use ggez::Context;
 
-const MOVEMENT_SPEED: usize = 5;
+const MOVEMENT_SPEED: usize = 10;
 
 impl GameState {
     pub fn move_player(&mut self, ctx: &mut Context) -> RLResult<StackCommand> {
