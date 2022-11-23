@@ -15,6 +15,8 @@ pub struct Button {
     pub(crate) sender: Sender<Message>,
     pub(crate) rect: graphics::Rect,
     pub(crate) color: Color,
+    pub(crate) hover_color: Color,
+    pub(crate) current_color: Color,
 }
 
 impl Button {
@@ -24,6 +26,7 @@ impl Button {
         sender: Sender<Message>,
         rect: graphics::Rect,
         color: Color,
+        hover_color: Color,
     ) -> Self {
         Self {
             text: Text::new(TextFragment::new(text).color(Color::BLACK)),
@@ -31,6 +34,8 @@ impl Button {
             sender,
             rect,
             color,
+            hover_color,
+            current_color: color,
         }
     }
 
@@ -48,12 +53,20 @@ impl Button {
         }
     }
 
+    pub(crate) fn mouse_hover(&mut self, mouse_pos: Point2<f32>, scale: Vec2) {
+        if self.is_clicked(mouse_pos, scale) {
+            self.current_color = self.hover_color;
+        } else {
+            self.current_color = self.color;
+        }
+    }
+
     pub(crate) fn draw_button(&self, ctx: &mut Context, canvas: &mut Canvas) -> RLResult {
         let mb = &mut graphics::MeshBuilder::new();
         let scale = get_scale(ctx);
 
         // Background
-        mb.rounded_rectangle(graphics::DrawMode::fill(), self.rect, 10.0, self.color)?;
+        mb.rounded_rectangle(graphics::DrawMode::fill(), self.rect, 10.0, self.current_color)?;
         // Border
         mb.rounded_rectangle(
             graphics::DrawMode::stroke(8.0),

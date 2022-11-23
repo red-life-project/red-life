@@ -37,6 +37,7 @@ impl Default for MainMenu {
             sender.clone(),
             graphics::Rect::new(1322., 350., 450., 120.),
             RLColor::GREY,
+            RLColor::DARK_GREY,
         );
 
         let new_game_button = Button::new(
@@ -45,6 +46,7 @@ impl Default for MainMenu {
             sender.clone(),
             graphics::Rect::new(1322., 490., 450., 120.),
             RLColor::GREY,
+            RLColor::DARK_GREY,
         );
 
         let exit_button = Button::new(
@@ -53,6 +55,7 @@ impl Default for MainMenu {
             sender.clone(),
             graphics::Rect::new(1322., 630., 450., 120.),
             RLColor::GREY,
+            RLColor::DARK_GREY,
         );
 
         Self {
@@ -66,6 +69,9 @@ impl Default for MainMenu {
 impl Screen for MainMenu {
     fn update(&mut self, ctx: &mut Context) -> RLResult<StackCommand> {
         let scale = get_scale(ctx);
+        self.buttons.iter_mut().for_each(|btn| {
+            btn.mouse_hover(ctx.mouse.position(), scale);
+        });
         //handle buttons
         if ctx.mouse.button_pressed(MouseButton::Left) {
             let current_position = ctx.mouse.position();
