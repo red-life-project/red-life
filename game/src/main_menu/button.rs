@@ -62,7 +62,7 @@ impl Button {
 
     // payload of button
     fn click(&mut self) {
-        dbg(format!("Pressed {:?}", self.message));
+        dbg!(format!("Pressed {:?}", self.message));
         self.sender.send(self.message).unwrap();
     }
 
