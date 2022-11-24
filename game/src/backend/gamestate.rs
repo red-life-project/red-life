@@ -115,23 +115,29 @@ impl GameState {
         Ok(())
     }
     fn draw_items(&self, canvas: &mut Canvas, ctx: &mut Context) -> RLResult {
-        self.player.inventory.clone().into_iter().enumerate().map(|(i,(item, amount))| {
-            let img = self.assets.get(item.img.as_str()).unwrap();
-            let position = (990., 955.);
-            let scale = get_scale(ctx);
-            draw!(
-                canvas,
-                img,
-                Vec2::new(position.0 + (i*65) as f32, position.1),
-                scale
-            );
-            draw!(
-                canvas,
-                &graphics::Text::new(format!("{}",amount)),
-                Vec2::new(position.0 + (i*63) as f32, position.1),
-                scale
-            );
-       }).for_each(drop);
+        self.player
+            .inventory
+            .clone()
+            .into_iter()
+            .enumerate()
+            .map(|(i, (item, amount))| {
+                let img = self.assets.get(item.img.as_str()).unwrap();
+                let position = (990., 955.);
+                let scale = get_scale(ctx);
+                draw!(
+                    canvas,
+                    img,
+                    Vec2::new(position.0 + (i * 65) as f32, position.1),
+                    scale
+                );
+                draw!(
+                    canvas,
+                    &graphics::Text::new(format!("{}", amount)),
+                    Vec2::new(position.0 + (i * 63) as f32, position.1),
+                    scale
+                );
+            })
+            .for_each(drop);
         Ok(())
     }
     /// Loads the assets. Has to be called before drawing the game.
