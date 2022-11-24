@@ -41,7 +41,7 @@ impl Event {
 
     /// if no Event is active it either chooses a random event of the Event enum or nothing every 60 seconds
     pub fn event_generator() -> Option<Event> {
-        let mut rng = fastrand::Rng::new();
+        let rng = fastrand::Rng::new();
         let event = rng.usize(..50);
         match event {
             0 => Some(Event::new(KOMETENEINSCHLAG)),

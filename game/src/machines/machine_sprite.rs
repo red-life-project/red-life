@@ -1,4 +1,3 @@
-use ggez::graphics::Image;
 use serde::{Deserialize, Serialize};
 use tracing::info;
 

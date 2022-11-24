@@ -8,14 +8,10 @@ use crate::backend::{error, screen::Screenstack};
 use chrono::Utc;
 use ggez::conf::FullscreenType;
 use ggez::{event, Context};
-use std::any::Any;
+use std::fs::File;
 use std::sync::Mutex;
-use std::{fs::File, io, sync::Arc};
-use tracing::instrument::WithSubscriber;
-use tracing::{error, info, warn, Level};
-use tracing_subscriber::layer::SubscriberExt;
-use tracing_subscriber::{filter, prelude::*};
-use tracing_subscriber::{fmt, FmtSubscriber};
+use tracing::{info, Level};
+use tracing_subscriber::prelude::*;
 
 /// Our own Result Type for custom Error handling.
 pub type RLResult<T = ()> = Result<T, error::RLError>;
@@ -34,7 +30,7 @@ pub fn main() -> RLResult {
     if !std::path::Path::new("logs").exists() {
         std::fs::create_dir("logs").expect("Could not create log folder");
     }
-    let mut filename = format!("logs/RL-{}.log", Utc::now().format("%Y-%m-%d_%H-%M-%S"));
+    let filename = format!("logs/RL-{}.log", Utc::now().format("%Y-%m-%d_%H-%M-%S"));
     let log_file = File::create(filename).unwrap();
     let subscriber = tracing_subscriber::fmt()
         .with_max_level(Level::TRACE)

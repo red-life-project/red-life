@@ -3,9 +3,9 @@ use crate::backend::utils::get_scale;
 use crate::error::RLError;
 use crate::main_menu::mainmenu::MainMenu;
 use crate::{draw, RLResult};
-use ggez::conf::FullscreenType::True;
+
 use ggez::glam::vec2;
-use ggez::graphics::{Color, Text};
+use ggez::graphics::Color;
 use ggez::{event, graphics, Context};
 use std::fmt::Debug;
 use std::sync::mpsc::{channel, Receiver, Sender};

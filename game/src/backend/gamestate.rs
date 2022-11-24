@@ -7,8 +7,8 @@ use crate::game_core::deathscreen::DeathScreen;
 use crate::game_core::event::Event;
 use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
+use crate::machines::machine::Maschine;
 use crate::machines::machine::State::Broken;
-use crate::machines::machine::{Maschine, State};
 use crate::{draw, RLResult};
 use ggez::glam::Vec2;
 use ggez::graphics::{Canvas, Color, Image};
@@ -82,7 +82,7 @@ impl GameState {
     }
 
     /// Paints the current resource level of air, energy and life as a bar on the screen.
-    fn draw_resources(&self, canvas: &mut Canvas, scale: Vec2, ctx: &mut Context) -> RLResult {
+    fn draw_resources(&self, canvas: &mut Canvas, _scale: Vec2, ctx: &mut Context) -> RLResult {
         self.player
             .resources
             .into_iter()
