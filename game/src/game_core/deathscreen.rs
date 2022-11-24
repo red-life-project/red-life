@@ -18,12 +18,14 @@ use tracing::info;
 pub enum DeathReason {
     Oxygen,
     Energy,
+    Both,
 }
 impl Display for DeathReason {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             DeathReason::Oxygen => write!(f, "Luft"),
             DeathReason::Energy => write!(f, "Energie"),
+            DeathReason::Both => write!(f, "Luft und Energie"),
         }
     }
 }
