@@ -55,9 +55,9 @@ impl GameState {
         result.load_assets(ctx)?;
         Ok(result)
     }
-    pub fn tick(&mut self) -> RLResult {
+    pub fn tick(&mut self, ctx: &mut Context) -> RLResult {
         // Iterate over every resource and add the change rate to the current value
-        self.get_current_milestone();
+        self.get_current_milestone(ctx);
         self.player.resources = Resources::from_iter(
             self.player
                 .resources
@@ -238,14 +238,22 @@ impl GameState {
             self.save(true).unwrap();
         }
     }
-    fn get_current_milestone(&mut self) {
+    fn get_current_milestone(&mut self, ctx: &mut Context) {
         match self.player.milestone {
             1 => {
                 if self.player.match_milestone == 0 {
                     self.player.resources_change.oxygen = -1;
                     self.player.resources_change.energy = -1;
                     self.player.last_damage = 0;
+                    self.events = None;
                     self.player.match_milestone = 1;
+                }
+                if ctx.time.ticks() % 5000 == 0 {
+                    if self.events.is_none() {
+                        self.events = Event::event_generator()
+                    } else {
+                        self.events = Event::restore_event()
+                    }
                 }
                 self.check_on_milestone(vec![
                     "Sauerstoffgenerator".to_string(),
@@ -280,7 +288,7 @@ impl Screen for GameState {
     fn update(&mut self, ctx: &mut Context) -> RLResult {
         const DESIRED_FPS: u32 = 60;
         if ctx.time.check_update_time(DESIRED_FPS) {
-            self.tick()?;
+            self.tick(ctx)?;
             self.move_player(ctx)?;
         }
         Ok(())
