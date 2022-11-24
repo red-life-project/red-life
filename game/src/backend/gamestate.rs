@@ -248,9 +248,9 @@ impl GameState {
                     self.events = None;
                     self.player.match_milestone = 1;
                 }
-                if ctx.time.ticks() % 5000 == 0 {
+                if ctx.time.ticks() % 5 == 0 {
                     if self.events.is_none() {
-                        self.events = Event::event_generator()
+                        self.events = Event::event_generator(self.screen_sender.as_ref().unwrap().clone())
                     } else {
                         self.events = Event::restore_event()
                     }

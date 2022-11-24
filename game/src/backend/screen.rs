@@ -81,13 +81,13 @@ impl Screenstack {
                 graphics::Rect::new(0., 0., x + 3., y + 3.),
                 RLColor::BLACK,
             )?;
-            draw!(canvas, &rect, vec2(0., pos as f32 * 100.), scale);
-            draw!(canvas, &outer, vec2(0., pos as f32 * 100.), scale);
+            draw!(canvas, &rect, vec2(0., pos as f32 * (y + 3.)), scale);
+            draw!(canvas, &outer, vec2(0., pos as f32 * (y + 3.)), scale);
             canvas.draw(
                 &text,
                 graphics::DrawParam::default()
                     .scale(scale)
-                    .dest([0., pos as f32 * 100. * scale.y])
+                    .dest([0., pos as f32 * (y + 3.) * scale.y])
                     .color(popup.color),
             );
         }

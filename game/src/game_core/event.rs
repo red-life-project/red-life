@@ -1,5 +1,10 @@
+use std::sync::mpsc::Sender;
+use ggez::Context;
 use serde::{Deserialize, Serialize};
 use tracing::info;
+use crate::backend::popup_messages::NASA_INFO;
+use crate::backend::rlcolor::RLColor;
+use crate::backend::screen::{Popup, StackCommand};
 
 pub const KOMETENEINSCHLAG: [&str; 2] = [
     "KOMETENEINSCHLAG",
@@ -27,7 +32,10 @@ pub(crate) struct Event {
     info_text: String,
 }
 impl Event {
-    pub fn new(event: [&str; 2]) -> Self {
+    pub fn new(event: [&str; 2], sender: Sender<StackCommand>, popup_message: &str) -> Self {
+        let popup = Popup::new(RLColor::RED, popup_message.to_string(), 5);
+        sender.send(StackCommand::Popup(popup)).unwrap();
+        info!("Event Popup sent: name: {}, Popup-Message: {}", event[0], popup_message.to_string());
         info!(
             "New event created: {}, info text: {}",
             event[0].to_string(),
@@ -40,15 +48,15 @@ impl Event {
     }
 
     /// if no Event is active it either chooses a random event of the Event enum or nothing every 60 seconds
-    pub fn event_generator() -> Option<Event> {
+    pub fn event_generator(sender: Sender<StackCommand>) -> Option<Event> {
         let rng = fastrand::Rng::new();
         let event = rng.usize(..50);
         match event {
-            0 => Some(Event::new(KOMETENEINSCHLAG)),
-            11 => Some(Event::new(INFORMATIONSPOPUP_NASA)),
-            22 => Some(Event::new(SANDSTURM)),
-            33 => Some(Event::new(STROMAUSFALL)),
-            44 => Some(Event::new(INFORMATIONSPOPUP_MARS)),
+            0 => Some(Event::new(KOMETENEINSCHLAG, sender, "Hallo")),
+            11 => Some(Event::new(INFORMATIONSPOPUP_NASA, sender, NASA_INFO[rng.usize(..5)])),
+            22 => Some(Event::new(SANDSTURM, sender, "Hallo")),
+            33 => Some(Event::new(STROMAUSFALL, sender, "Hallo")),
+            44 => Some(Event::new(INFORMATIONSPOPUP_MARS, sender, "Hallo")),
             _ => None,
         }
     }
