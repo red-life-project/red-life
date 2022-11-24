@@ -7,8 +7,7 @@ use crate::backend::{
 use crate::main_menu::button::Button;
 use crate::main_menu::mainmenu::Message::{Exit, NewGame, Start};
 use crate::RLResult;
-use ggez::event::MouseButton;
-use ggez::graphics::Color;
+
 use ggez::{graphics, Context};
 use std::fs;
 use std::sync::mpsc::{channel, Receiver, Sender};
@@ -25,10 +24,11 @@ pub struct MainMenu {
     buttons: Vec<Button>,
     receiver: Receiver<Message>,
     sender: Sender<Message>,
+    screen_sender: Sender<StackCommand>,
 }
 
-impl Default for MainMenu {
-    fn default() -> Self {
+impl MainMenu {
+    pub(crate) fn new(screen_sender: Sender<StackCommand>) -> MainMenu {
         let (sender, receiver) = channel();
 
         let start_button = Button::new(
@@ -62,12 +62,12 @@ impl Default for MainMenu {
             buttons: vec![start_button, new_game_button, exit_button],
             receiver,
             sender,
+            screen_sender,
         }
     }
 }
-
 impl Screen for MainMenu {
-    fn update(&mut self, ctx: &mut Context) -> RLResult<StackCommand> {
+    fn update(&mut self, ctx: &mut Context) -> RLResult {
         let scale = get_scale(ctx);
         self.buttons.iter_mut().for_each(|btn| {
             btn.action(ctx, scale);
@@ -77,19 +77,18 @@ impl Screen for MainMenu {
             match msg {
                 Exit => std::process::exit(0),
                 NewGame => {
-                    fs::remove_file("./saves/autosave.yaml");
-                    fs::remove_file("./saves/milestone.yaml");
-                    Ok(StackCommand::Push(Box::new(GameState::new(ctx)?)))
+                    GameState::delete_saves()?;
+                    self.screen_sender
+                        .send(StackCommand::Push(Box::new(GameState::new(ctx)?)))?;
                 }
-                Start => Ok(StackCommand::Push(Box::new({
+                Start => self.screen_sender.send(StackCommand::Push(Box::new({
                     let mut gamestate = GameState::load(false).unwrap_or_default();
                     gamestate.load_assets(ctx)?;
                     gamestate
-                }))),
+                })))?,
             }
-        } else {
-            Ok(StackCommand::None)
         }
+        Ok(())
     }
 
     fn draw(&self, ctx: &mut Context) -> RLResult {
@@ -106,4 +105,6 @@ impl Screen for MainMenu {
 
         Ok(())
     }
+
+    fn set_sender(&mut self, _sender: Sender<StackCommand>) {}
 }

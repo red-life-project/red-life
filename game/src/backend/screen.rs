@@ -3,23 +3,24 @@ use crate::backend::utils::get_scale;
 use crate::error::RLError;
 use crate::main_menu::mainmenu::MainMenu;
 use crate::{draw, RLResult};
-use ggez::conf::FullscreenType::True;
+
 use ggez::glam::vec2;
-use ggez::graphics::{Color, Text};
+use ggez::graphics::Color;
 use ggez::{event, graphics, Context};
 use std::fmt::Debug;
 use std::sync::mpsc::{channel, Receiver, Sender};
 use std::time::Instant;
+use tracing::info;
 
 /// A screen is every drawable object in the game, so the main menu is a screen too
 pub trait Screen: Debug {
     /// Used for updating the screen. Returns a StackCommand used to either push a new screen or pop
     /// the current one.
-    fn update(&mut self, ctx: &mut Context) -> RLResult<StackCommand>;
+    fn update(&mut self, ctx: &mut Context) -> RLResult;
     /// Used for drawing the last screen in the game.
     fn draw(&self, ctx: &mut Context) -> RLResult;
     /// Set sender of the screen
-    fn set_sender(&mut self, _sender: Sender<StackCommand>) {}
+    fn set_sender(&mut self, sender: Sender<StackCommand>);
 }
 
 /// A Screenstack contains multiple screens, the first one of which is the current screen
@@ -38,15 +39,19 @@ pub struct Popup {
 }
 impl Popup {
     pub fn nasa(text: String) -> Self {
+        info!("New NASA popup created");
         Self::new(RLColor::LIGHT_BLUE, text, 10)
     }
     pub fn mars(text: String) -> Self {
+        info!("New MARS popup created");
         Self::new(RLColor::LIGHT_GREY, text, 10)
     }
     pub fn warning(text: String) -> Self {
+        info!("New WARNING popup created");
         Self::new(RLColor::RED, text, 10)
     }
     pub(crate) fn new(color: Color, text: String, duration: u64) -> Self {
+        info!("New popup created: text: {}, duration: {}", text, duration);
         Self {
             color,
             text,
@@ -124,12 +129,10 @@ impl event::EventHandler<RLError> for Screenstack {
     // Redirect the update function to the last screen and handle the returned StackCommand
     fn update(&mut self, ctx: &mut Context) -> RLResult {
         self.remove_popups();
-        let command = self
-            .screens
+        self.screens
             .last_mut()
             .expect("Failed to get a screen")
             .update(ctx)?;
-        self.process_command(command);
         if let Ok(message) = self.receiver.try_recv() {
             self.process_command(message);
         }
@@ -146,16 +149,16 @@ impl event::EventHandler<RLError> for Screenstack {
     }
     /// Override the quit event so we don't actually quit the game.
     fn quit_event(&mut self, ctx: &mut Context) -> RLResult<bool> {
-        self.screens.last_mut().unwrap().update(ctx)?;
         Ok(true)
     }
 }
 
 impl Default for Screenstack {
     fn default() -> Self {
+        info!("Default Screenstack created");
         let (sender, receiver) = channel();
         Self {
-            screens: vec![Box::<MainMenu>::default()],
+            screens: vec![Box::new(MainMenu::new(sender.clone()))],
             popup: vec![],
             receiver,
             sender,

@@ -5,6 +5,7 @@ use ggez::graphics::Image;
 use serde::{Deserialize, Serialize};
 use crate::backend::gamestate::GameState;
 use crate::machines::machine::Mashine;
+use tracing::info;
 
 
 #[derive(Debug, Clone)]
@@ -33,12 +34,12 @@ impl Default for MaschineSprite {
 }
 
 impl MaschineSprite {
-
-    pub(crate) fn default(gs: &GameState) -> Self {
+        pub(crate) fn default(gs: &GameState) -> Self {
         MaschineSprite::new(gs,"test")
     }
     pub fn new(gs: &GameState, name: &str) -> Self {
         //test_Broken.png
+        info!("Creating new MachineSprite: name: {}",name);
 
         let broken = gs.get_asset( format!("{}_Broken.png", name).as_str() ).unwrap().clone();
         let idel = gs.get_asset( format!("{}_Idel.png", name).as_str()).unwrap().clone();

@@ -8,18 +8,23 @@ use crate::machines::machine::State::Running;
 use crate::RLResult;
 use ggez::winit::event::VirtualKeyCode;
 use ggez::Context;
+use tracing::info;
 
-const MOVEMENT_SPEED: usize = 5;
+const MOVEMENT_SPEED: usize = 10;
 
 impl GameState {
-    pub fn move_player(&mut self, ctx: &mut Context) -> RLResult<StackCommand> {
+    pub fn move_player(&mut self, ctx: &mut Context) -> RLResult {
+        if ctx.keyboard.is_key_just_pressed(VirtualKeyCode::Escape) {
+            info!("Exiting...");
+            self.save(false)?;
+            self.screen_sender
+                .as_mut()
+                .unwrap()
+                .send(StackCommand::Pop)?;
+        }
         let keys = ctx.keyboard.pressed_keys();
         for key in keys.iter() {
             match key {
-                VirtualKeyCode::Escape => {
-                    self.save(false)?;
-                    return Ok(StackCommand::Pop);
-                }
                 VirtualKeyCode::W => {
                     if !self.collision_detection((
                         self.player.position.0,
@@ -58,13 +63,14 @@ impl GameState {
                 }
                 // TODO: Interact with the possible area
                 VirtualKeyCode::E => {
+                    info!("In interaction area: {:?}", self.get_interactable());
                     let player_ref = &self.player.clone();
-                    self.get_interactable().unwrap().interact();
+                    self.get_interactable().unwrap().interact(player_ref);
                 }
                 _ => {}
             }
         }
 
-        Ok(StackCommand::None)
+        Ok(())
     }
 }

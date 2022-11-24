@@ -1,16 +1,15 @@
 use serde::{Deserialize, Serialize};
 
 use crate::backend::area::Area;
-use crate::backend::gamestate::GameState;
+
 use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
 use crate::machines::machine_sprite::MaschineSprite;
 use crate::machines::trade::Trade;
+use tracing::info;
 use ggez::graphics::{Image, Rect};
-use serde_yaml::Value::Null;
-use std::ptr::null;
 use std::sync::mpsc::Sender;
-use ggez::winit::event::VirtualKeyCode::G;
+use crate::backend::gamestate::GameState;
 use crate::machines::machine::State::{Broken, Idel, Running};
 use crate::RLResult;
 
@@ -54,6 +53,7 @@ impl Mashine {
     }
 
     pub fn new(gs: &GameState, name: String,hitbox:Rect,interaction_area:Rect) -> Self {
+        info!("Creating test machine: name: test_machine");
         // let sprite = Some(gs.get_asset( "test_mashine.png").unwrap().clone());
         let sprite = MaschineSprite::new(gs, name.as_str());
         //let test : &Sender<Resources<i16>> = GameState::
@@ -150,11 +150,11 @@ impl Area for Mashine {
     }
 
     fn get_collision_area(&self) -> Rect {
-        return self.hitbox;
+        self.hitbox
     }
 
     fn get_interaction_area(&self) -> Rect {
-        return self.interaction_area;
+        self.interaction_area
     }
 
     fn get_graphic(&self) -> Image {
