@@ -5,7 +5,7 @@ mod machines;
 mod main_menu;
 
 use crate::backend::{error, screen::Screenstack};
-use chrono::Utc;
+use chrono::{Local, Utc};
 use ggez::conf::FullscreenType;
 use ggez::{event, Context};
 use std::fs::File;
@@ -30,7 +30,7 @@ pub fn main() -> RLResult {
     if !std::path::Path::new("logs").exists() {
         std::fs::create_dir("logs").expect("Could not create log folder");
     }
-    let filename = format!("logs/RL-{}.log", Utc::now().format("%Y-%m-%d_%H-%M-%S"));
+    let filename = format!("logs/RL-{}.log", Local::now().format("%Y-%m-%d_%H-%M-%S"));
     let log_file = File::create(filename).unwrap();
     let subscriber = tracing_subscriber::fmt()
         .with_max_level(Level::TRACE)
