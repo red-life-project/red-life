@@ -11,6 +11,6 @@ pub trait Area: DynClone + Debug {
     }
     fn get_collision_area(&self) -> Rect;
     fn get_interaction_area(&self) -> Rect;
-    fn get_graphic(&self)->&Image;
+    fn get_graphic(&self)->Image;
     fn check(&self)->bool;
 }

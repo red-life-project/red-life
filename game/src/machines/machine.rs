@@ -38,7 +38,7 @@ pub struct Mashine {
 impl Mashine{
 
     fn default(gs:GameState) -> Self {
-        let sprite = Some(gs.get_asset( "test_Maschiene").unwrap().clone());
+        let sprite = Some(gs.get_asset( "test_mashine.png").unwrap().clone());
         //let test : &Sender<Resources<i16>> = GameState::
         Self {
 
@@ -61,7 +61,17 @@ impl Mashine{
 
     pub fn test_mashine(gs :&GameState) -> Mashine {
         //let msSprite =  get_asset("player.png")?;
-        let sprite = Some(gs.get_asset( "test_Maschiene").unwrap().clone());
+        let sprite =
+            Some(
+                gs.get_asset( "test_mashine.png")
+
+                    .unwrap()
+
+
+                    .clone()
+
+
+            );
        // todo!("Check if sprite is none");
 
 
@@ -131,13 +141,15 @@ impl Area for Mashine {
         return self.interaction_area;
     }
 
-    fn get_graphic(&self) -> &Image {
-        todo!();
+    fn get_graphic(&self) -> Image {
+        //todo!();
         //TODO:
         // switch case
         // if state is a b c
         // return maschinen sprite.a .b .c
-        return &self.test.unwrap()
+        return self.test
+            .clone()
+            .unwrap()
     }
 
     fn check(&self) -> bool {

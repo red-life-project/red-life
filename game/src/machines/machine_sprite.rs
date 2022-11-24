@@ -1,5 +1,6 @@
 use ggez::graphics::Image;
 use serde::{Deserialize, Serialize};
+use crate::backend::gamestate::GameState;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct MaschineSprite {
@@ -21,12 +22,15 @@ impl Default for MaschineSprite {
 }
 
 impl MaschineSprite {
-    pub fn new(name: String, idel: String, broken: String, running: String) -> Self {
+    pub fn new(gs:GameState,name: String) -> Self {
+
+
         Self {
             name,
-            idel,
-            broken,
-            running,
+
+            idel: "".to_string(),
+            broken: "".to_string(),
+            running: "".to_string()
         }
     }
 }
