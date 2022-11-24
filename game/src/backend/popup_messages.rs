@@ -19,3 +19,4 @@ pub const NASA_INFO: [&str; 5] = [
     "Die NASA hat ihren Sitz in Washington D.C.",
     "Im Rahmen der Apollo-Missionen gelang es der NASA, den ersten Menschen auf den Mond zu bringen"," Die NASA hat über 17.000 Mitarbeiter"
 ];
+pub const GAME_INFO: [&str; 1] = ["Lebensregeneration gestartet"];

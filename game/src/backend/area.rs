@@ -1,7 +1,6 @@
 use crate::backend::utils::is_colliding;
 use crate::game_core::player::Player;
 use dyn_clone::DynClone;
-use ggez::glam::Vec2;
 use ggez::graphics::{Image, Rect};
 use std::fmt::Debug;
 

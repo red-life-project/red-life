@@ -23,13 +23,13 @@ pub enum State {
 #[derive(Debug, Clone)]
 pub struct Mashine {
     //gamestate:GameState,
-    name: String,
+    pub name: String,
     hitbox: Rect,
-
     interaction_area: Rect,
-    state: State,
     //sprite: MaschineSprite,
     test: Image,
+    pub state: State,
+    sprite: MaschineSprite,
     trades: Vec<Trade>,
     running_recources: Resources<i16>,
     // sender:Sender<Resource>,
@@ -110,7 +110,7 @@ impl Mashine{
 
     pub fn no_energy(&mut self) {
         self.state = State::Idel;
-        //timer pausiren
+        //timer pausieren
     }
 }
 
