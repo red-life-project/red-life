@@ -7,8 +7,8 @@ use ggez::glam::Vec2;
 use ggez::winit::event::VirtualKeyCode;
 use ggez::{graphics, Context};
 use std::fmt::{Debug, Display, Formatter};
-use tracing::info;
 use std::sync::mpsc::Sender;
+use tracing::info;
 
 /// Create DeathScreen using deathscreen::new() and pass reason of death from DeathReason enum.
 /// # Example

@@ -87,7 +87,7 @@ impl GameState {
     }
 
     /// Paints the current resource level of air, energy and life as a bar on the screen.
-    fn draw_resources(&self, canvas: &mut Canvas, _scale: Vec2, ctx: &mut Context) -> RLResult {
+    fn draw_resources(&self, canvas: &mut Canvas, scale: Vec2, ctx: &mut Context) -> RLResult {
         self.player
             .resources
             .into_iter()

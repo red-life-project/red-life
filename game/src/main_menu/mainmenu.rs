@@ -28,9 +28,8 @@ pub struct MainMenu {
     screen_sender: Sender<StackCommand>,
 }
 
-impl Default for MainMenu {
-    fn default() -> Self {
-        info!("MainMenu created");
+impl MainMenu {
+    pub(crate) fn new(screen_sender: Sender<StackCommand>) -> MainMenu {
         let (sender, receiver) = channel();
 
         let start_button = Button::new(
