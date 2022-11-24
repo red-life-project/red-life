@@ -8,7 +8,7 @@ use crate::game_core::event::Event;
 use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
 use crate::machines::machine::State::Broken;
-use crate::machines::machine::{Maschine, State};
+use crate::machines::machine::{Mashine, State};
 use crate::{draw, RLResult};
 use ggez::glam::Vec2;
 use ggez::graphics::{Canvas, Color, Image};
@@ -28,7 +28,7 @@ const COLORS: [Color; 3] = [RLColor::BLUE, RLColor::GOLD, RLColor::DARK_RED];
 pub struct GameState {
     /// Contains the current player position, resources(air, energy, life) and the inventory and their change rates
     pub player: Player,
-    pub machines: Vec<Maschine>,
+    pub machines: Vec<Mashine>,
     events: Option<Event>,
     #[serde(skip)]
     assets: HashMap<String, Image>,
@@ -42,7 +42,7 @@ impl PartialEq for GameState {
     fn eq(&self, other: &Self) -> bool {
         self.player == other.player
             && self.player.milestone == other.player.milestone
-            && self.machines == other.machines
+            //&& self.machines == other.machines
     }
 }
 
@@ -186,7 +186,7 @@ impl GameState {
         let running_machine = self
             .machines
             .iter()
-            .filter(|machine| machine.state != Broken)
+            .filter(|machine| machine.check())
             .map(|m| m.name.clone())
             .collect::<Vec<String>>();
         if milestone_machines

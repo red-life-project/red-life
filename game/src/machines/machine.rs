@@ -11,6 +11,7 @@ use serde_yaml::Value::Null;
 use std::ptr::null;
 use std::sync::mpsc::Sender;
 use ggez::winit::event::VirtualKeyCode::G;
+use crate::machines::machine::State::Broken;
 use crate::RLResult;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -20,23 +21,24 @@ pub enum State {
     Running,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Mashine {
-    //gamestate:GameState,
     pub name: String,
+    pub state: State,
     hitbox: Rect,
     interaction_area: Rect,
-    //sprite: MaschineSprite,
-    test: Image,
-    pub state: State,
+    #[serde(skip)]
+    test: Option<Image> ,
+    #[serde(skip)]
     sprite: MaschineSprite,
     trades: Vec<Trade>,
     running_recources: Resources<i16>,
     // sender:Sender<Resource>,
 }
 impl Mashine{
+
     fn default(gs:GameState) -> Self {
-       let mut sprite: Image = gs.get_asset( "test_Maschiene").unwrap().clone();
+        let sprite = Some(gs.get_asset( "test_Maschiene").unwrap().clone());
         //let test : &Sender<Resources<i16>> = GameState::
         Self {
 
@@ -53,13 +55,14 @@ impl Mashine{
                 energy: 0,
                 life: 0,
             }, //  sender: ()
+            sprite: Default::default()
         }
     }
 
     pub fn test_mashine(gs :&GameState) -> Mashine {
         //let msSprite =  get_asset("player.png")?;
-        let sprite: Image = gs.get_asset( "test_Maschiene").unwrap().clone();
-        todo!("Check if sprite is none");
+        let sprite = Some(gs.get_asset( "test_Maschiene").unwrap().clone());
+       // todo!("Check if sprite is none");
 
 
         Self {
@@ -86,6 +89,7 @@ impl Mashine{
                 energy: 0,
                 life: 0,
             },
+            sprite: Default::default()
         }
     }
     /*
@@ -133,6 +137,10 @@ impl Area for Mashine {
         // switch case
         // if state is a b c
         // return maschinen sprite.a .b .c
-        return &self.test
+        return &self.test.unwrap()
+    }
+
+    fn check(&self) -> bool {
+        return self.state != Broken;
     }
 }

@@ -1,7 +1,7 @@
 use ggez::graphics::Image;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct MaschineSprite {
     name: String,
     idel: String,    //temp img for later
