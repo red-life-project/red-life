@@ -3,6 +3,7 @@ use crate::backend::rlcolor::RLColor;
 use crate::backend::screen::StackCommand;
 use crate::backend::utils::{get_scale, is_colliding};
 use crate::backend::{error::RLError, screen::Screen};
+use crate::game_core::deathscreen::DeathReason::Both;
 use crate::game_core::deathscreen::DeathScreen;
 use crate::game_core::event::Event;
 use crate::game_core::player::Player;
@@ -69,7 +70,10 @@ impl GameState {
             .life_regeneration(self.screen_sender.as_ref().unwrap().clone());
         // Check if the player is dead
         if let Some(empty_resource) = Resources::get_death_reason(&self.player.resources) {
-            self.player.resources_change.life = -10;
+            match empty_resource {
+                Both => self.player.resources_change.life = -20,
+                _ => self.player.resources_change.life = -10,
+            }
             if self.player.resources.life == 0 {
                 let gamestate = GameState::load(true).unwrap_or_default();
                 gamestate.save(false).unwrap();
