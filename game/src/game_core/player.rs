@@ -1,10 +1,9 @@
-use crate::backend::gamestate;
+use crate::backend::gamestate::GameState;
 use crate::backend::popup_messages::{GAME_INFO, WARNINGS};
 use crate::backend::rlcolor::RLColor;
-use crate::backend::screen::{Popup, Screenstack, StackCommand};
+use crate::backend::screen::{Popup, StackCommand};
 use crate::game_core::item::{Item, BENZIN, GEDRUCKTESTEIL, SUPER_GLUE};
 use crate::game_core::resources::Resources;
-use ggez::graphics::Color;
 use serde::{Deserialize, Serialize};
 use std::sync::mpsc::Sender;
 
@@ -70,7 +69,7 @@ impl Player {
             (0, last_damage, _) if last_damage >= 900 => {
                 self.resources_change.life += 5;
                 self.last_damage = 0;
-                let mut popup = Popup::new(RLColor::GREEN, GAME_INFO[0].to_string(), 5);
+                let popup = Popup::new(RLColor::GREEN, GAME_INFO[0].to_string(), 5);
                 sender.send(StackCommand::Popup(popup)).unwrap();
             }
             // If player takes damage, increase last damage point
@@ -96,7 +95,7 @@ mod test {
     use std::sync::mpsc::{channel, Receiver};
 
     fn setup_gamestate() -> (GameState, Receiver<StackCommand>) {
-        let mut gamestate = gamestate::GameState::default();
+        let mut gamestate = GameState::default();
         let mut channel = channel();
         gamestate.set_sender(channel.0);
         (gamestate, channel.1)

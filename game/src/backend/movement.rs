@@ -1,9 +1,5 @@
 use crate::backend::gamestate::GameState;
 use crate::backend::screen::StackCommand;
-use crate::backend::utils::get_scale;
-use crate::game_core::resources::Resources;
-use crate::machines::machine::Maschine;
-use crate::machines::machine::State::Running;
 use crate::RLResult;
 use ggez::winit::event::VirtualKeyCode;
 use ggez::Context;
@@ -11,13 +7,16 @@ use ggez::Context;
 const MOVEMENT_SPEED: usize = 5;
 
 impl GameState {
-    pub fn move_player(&mut self, ctx: &mut Context) -> RLResult<StackCommand> {
+    pub fn move_player(&mut self, ctx: &mut Context) -> RLResult {
         let keys = ctx.keyboard.pressed_keys();
         for key in keys.iter() {
             match key {
                 VirtualKeyCode::Escape => {
                     self.save(false)?;
-                    return Ok(StackCommand::Pop);
+                    self.screen_sender
+                        .as_mut()
+                        .unwrap()
+                        .send(StackCommand::Pop)?;
                 }
                 VirtualKeyCode::W => {
                     if !self.collision_detection((
@@ -63,6 +62,6 @@ impl GameState {
             }
         }
 
-        Ok(StackCommand::None)
+        Ok(())
     }
 }
