@@ -10,6 +10,7 @@ use ggez::graphics::Rect;
 use serde_yaml::Value::Null;
 use std::ptr::null;
 use std::sync::mpsc::Sender;
+use tracing::info;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum State {
@@ -32,6 +33,7 @@ pub struct Maschine {
 }
 impl Default for Maschine {
     fn default() -> Self {
+        info!("Creating default Maschine");
         Self {
             //gamestate:GameState::default(),
             name: "Maschine ohne namen".to_string(),
@@ -52,7 +54,7 @@ impl Default for Maschine {
 impl Maschine {
     pub fn test_maschine(/*gs:GameState*/) -> Maschine {
         //let msSprite =  get_asset("player.png")?;
-
+        info!("Creating test machine: name: test_machine");
         Self {
             //gamestate:gs,
             name: "test_Maschiene".to_string(),
@@ -80,7 +82,6 @@ impl Maschine {
     }
     /*
     pub fn new(/*gs:GameState,*/namen: String, trades: Vec<Trade>) -> Maschine {
-
         //let loadedSprite: MaschineSprite =  AssetService::get(name);
         //let loded = GameState
 

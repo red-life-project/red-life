@@ -6,6 +6,7 @@ use ggez::graphics::{Canvas, Color, Text, TextFragment};
 use ggez::mint::Point2;
 use ggez::{graphics, Context};
 use std::sync::mpsc::Sender;
+use tracing::info;
 
 /// Clickable button
 #[derive(Debug)]
@@ -28,6 +29,7 @@ impl Button {
         color: Color,
         hover_color: Color,
     ) -> Self {
+        info!("New Button created: text: {}, message: {:?}", text, message);
         Self {
             text: Text::new(TextFragment::new(text).color(Color::BLACK)),
             message,
@@ -42,6 +44,7 @@ impl Button {
     // processing button interaction: click, hover
     // determines if button is clicked
     pub(crate) fn action(&mut self, ctx: &Context, scale: Vec2) {
+        info!("User clicked: mouse position: {:?}", ctx.mouse.position());
         if self.in_area(ctx.mouse.position(), scale) {
             self.current_color = self.hover_color;
             if ctx.mouse.button_pressed(ggez::event::MouseButton::Left) {

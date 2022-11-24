@@ -12,6 +12,7 @@ use ggez::graphics::Color;
 use ggez::{graphics, Context};
 use std::fs;
 use std::sync::mpsc::{channel, Receiver, Sender};
+use tracing::info;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum Message {
@@ -29,6 +30,7 @@ pub struct MainMenu {
 
 impl Default for MainMenu {
     fn default() -> Self {
+        info!("MainMenu created");
         let (sender, receiver) = channel();
 
         let start_button = Button::new(

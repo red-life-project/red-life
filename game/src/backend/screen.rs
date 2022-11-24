@@ -10,6 +10,7 @@ use ggez::{event, graphics, Context};
 use std::fmt::Debug;
 use std::sync::mpsc::{channel, Receiver, Sender};
 use std::time::Instant;
+use tracing::info;
 
 /// A screen is every drawable object in the game, so the main menu is a screen too
 pub trait Screen: Debug {
@@ -38,15 +39,19 @@ pub struct Popup {
 }
 impl Popup {
     pub fn nasa(text: String) -> Self {
+        info!("New NASA popup created");
         Self::new(RLColor::LIGHT_BLUE, text, 10)
     }
     pub fn mars(text: String) -> Self {
+        info!("New MARS popup created");
         Self::new(RLColor::LIGHT_GREY, text, 10)
     }
     pub fn warning(text: String) -> Self {
+        info!("New WARNING popup created");
         Self::new(RLColor::RED, text, 10)
     }
     pub(crate) fn new(color: Color, text: String, duration: u64) -> Self {
+        info!("New popup created: text: {}, duration: {}", text, duration);
         Self {
             color,
             text,
@@ -153,6 +158,7 @@ impl event::EventHandler<RLError> for Screenstack {
 
 impl Default for Screenstack {
     fn default() -> Self {
+        info!("Default Screenstack created");
         let (sender, receiver) = channel();
         Self {
             screens: vec![Box::<MainMenu>::default()],

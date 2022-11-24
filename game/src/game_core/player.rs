@@ -7,6 +7,7 @@ use crate::game_core::resources::Resources;
 use ggez::graphics::Color;
 use serde::{Deserialize, Serialize};
 use std::sync::mpsc::Sender;
+use tracing::info;
 
 /// The current game player, containing its inventory and the current position, air and energy,
 /// along with their change rate
@@ -24,6 +25,7 @@ pub struct Player {
 }
 impl Default for Player {
     fn default() -> Self {
+        info!("Default Player created");
         Self {
             inventory: vec![
                 (Item::new(SUPER_GLUE), 0),
@@ -59,6 +61,9 @@ impl Player {
         ) {
             // If Player has full life and is healing, stop healing, reset last damage
             (change_life, _, u16::MAX) if change_life >= 0 => {
+                if self.resources_change.life > 0 {
+                    info!("Player has full life, stopping healing");
+                }
                 self.resources_change.life = 0;
                 self.last_damage = 0;
             }
@@ -67,10 +72,11 @@ impl Player {
                 self.last_damage = 0;
             }
             // If player does not take damage and 5 seconds have passed, start healing
-            (0, last_damage, _) if last_damage >= 900 => {
+            (0, last_damage, _) if last_damage >= 600 => {
                 self.resources_change.life += 5;
                 self.last_damage = 0;
                 let mut popup = Popup::new(RLColor::GREEN, GAME_INFO[0].to_string(), 5);
+                info!("Player startet healing");
                 sender.send(StackCommand::Popup(popup)).unwrap();
             }
             // If player takes damage, increase last damage point

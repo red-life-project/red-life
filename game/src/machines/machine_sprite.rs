@@ -1,5 +1,6 @@
 use ggez::graphics::Image;
 use serde::{Deserialize, Serialize};
+use tracing::info;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct MaschineSprite {
@@ -22,6 +23,10 @@ impl Default for MaschineSprite {
 
 impl MaschineSprite {
     pub fn new(name: String, idel: String, broken: String, running: String) -> Self {
+        info!(
+            "Creating new MachineSprite: name: {}, idel: {}, broken: {}, running: {}",
+            name, idel, broken, running
+        );
         Self {
             name,
             idel,

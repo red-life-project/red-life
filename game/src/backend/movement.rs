@@ -1,12 +1,16 @@
+use crate::backend::error::RLError;
 use crate::backend::gamestate::GameState;
 use crate::backend::screen::StackCommand;
 use crate::backend::utils::get_scale;
+use crate::game_core::event::Event;
 use crate::game_core::resources::Resources;
 use crate::machines::machine::Maschine;
 use crate::machines::machine::State::Running;
+use crate::machines::machine_sprite::MaschineSprite;
 use crate::RLResult;
 use ggez::winit::event::VirtualKeyCode;
-use ggez::Context;
+use ggez::{Context, GameError};
+use tracing::{error, info};
 
 const MOVEMENT_SPEED: usize = 10;
 
@@ -16,6 +20,7 @@ impl GameState {
         for key in keys.iter() {
             match key {
                 VirtualKeyCode::Escape => {
+                    info!("Escape pressed");
                     self.save(false)?;
                     return Ok(StackCommand::Pop);
                 }
@@ -27,6 +32,8 @@ impl GameState {
                         self.player.position.1 =
                             self.player.position.1.saturating_sub(MOVEMENT_SPEED);
                     }
+                    //return Err(RLError::from(GameError::GraphicsInitializationError))
+                    //error!("Player position: {:?}", RLError::Ui(GameError::GraphicsInitializationError));
                 }
                 VirtualKeyCode::A => {
                     if !self.collision_detection((
@@ -57,7 +64,7 @@ impl GameState {
                 }
                 // TODO: Interact with the possible area
                 VirtualKeyCode::E => {
-                    dbg!(self.get_interactable());
+                    info!("In interaction area: {:?}", self.get_interactable());
                 }
                 _ => {}
             }

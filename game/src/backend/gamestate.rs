@@ -19,6 +19,7 @@ use std::collections::HashMap;
 use std::fs;
 use std::fs::read_dir;
 use std::sync::mpsc::Sender;
+use tracing::info;
 
 const RESOURCE_POSITION: [f32; 3] = [316.0, 639.0, 1373.0];
 const RESOURCE_NAME: [&str; 3] = ["Luft", "Energie", "Leben"];
@@ -48,6 +49,7 @@ impl PartialEq for GameState {
 
 impl GameState {
     pub fn new(ctx: &mut Context) -> RLResult<Self> {
+        info!("Creating new gamestate");
         let mut result = GameState::default();
         result.load_assets(ctx)?;
         Ok(result)
@@ -112,6 +114,7 @@ impl GameState {
     }
     /// Loads the assets. Has to be called before drawing the game.
     pub(crate) fn load_assets(&mut self, ctx: &mut Context) -> RLResult {
+        info!("Loading assets");
         read_dir("assets")?.for_each(|file| {
             let file = file.unwrap();
             let bytes = fs::read(file.path()).unwrap();
@@ -133,8 +136,10 @@ impl GameState {
         fs::create_dir_all("./saves")?;
         if milestone {
             fs::write("./saves/milestone.yaml", save_data)?;
+            info!("Saved gamestate as milestone");
         } else {
             fs::write("./saves/autosave.yaml", save_data)?;
+            info!("Saved gamestate as autosave");
         }
         Ok(())
     }
@@ -142,8 +147,10 @@ impl GameState {
     /// If the file doesn't exist, it will return a default game state.
     pub fn load(milestone: bool) -> RLResult<GameState> {
         let save_data = if milestone {
+            info!("Loading milestone...");
             fs::read_to_string("./saves/milestone.yaml")
         } else {
+            info!("Loading autosave...");
             fs::read_to_string("./saves/autosave.yaml")
         }?;
         let game_state: GameState = serde_yaml::from_str(&save_data)?;
@@ -193,6 +200,7 @@ impl GameState {
             .all(|machine| running_machine.contains(&machine.to_string()))
         {
             self.player.milestone += 1;
+            info!("Player reached milestone {}", self.player.milestone);
             self.save(true).unwrap();
         }
     }
