@@ -1,4 +1,3 @@
-use std::borrow::Borrow;
 use crate::backend::gamestate::GameState;
 use crate::backend::screen::StackCommand;
 use crate::backend::utils::get_scale;
@@ -8,6 +7,7 @@ use crate::machines::machine::State::Running;
 use crate::RLResult;
 use ggez::winit::event::VirtualKeyCode;
 use ggez::Context;
+use std::borrow::Borrow;
 use tracing::info;
 
 const MOVEMENT_SPEED: usize = 10;

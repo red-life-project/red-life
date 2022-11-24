@@ -8,7 +8,6 @@ use crate::game_core::deathscreen::DeathScreen;
 use crate::game_core::event::Event;
 use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
-use crate::machines::machine::Maschine;
 use crate::machines::machine::State::Broken;
 use crate::machines::machine::{Mashine, State};
 use crate::{draw, RLResult};
@@ -43,9 +42,8 @@ pub struct GameState {
 
 impl PartialEq for GameState {
     fn eq(&self, other: &Self) -> bool {
-        self.player == other.player
-            && self.player.milestone == other.player.milestone
-            //&& self.machines == other.machines
+        self.player == other.player && self.player.milestone == other.player.milestone
+        //&& self.machines == other.machines
     }
 }
 
@@ -54,7 +52,7 @@ impl GameState {
         info!("Creating new gamestate");
         let mut result = GameState::default();
         result.load_assets(ctx)?;
-        result.create_machine();//////////// SANDER TESTING TOBE RM
+        result.create_machine(); //////////// SANDER TESTING TOBE RM
         Ok(result)
     }
     pub fn tick(&mut self, ctx: &mut Context) -> RLResult {
