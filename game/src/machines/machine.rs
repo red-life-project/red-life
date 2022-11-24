@@ -1,11 +1,14 @@
 use serde::{Deserialize, Serialize};
 
 use crate::backend::area::Area;
+
 use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
 use crate::machines::machine_sprite::MaschineSprite;
 use crate::machines::trade::Trade;
 use ggez::graphics::Rect;
+
+use tracing::info;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum State {
@@ -48,7 +51,7 @@ impl Default for Maschine {
 impl Maschine {
     pub fn test_maschine(/*gs:GameState*/) -> Maschine {
         //let msSprite =  get_asset("player.png")?;
-
+        info!("Creating test machine: name: test_machine");
         Self {
             //gamestate:gs,
             name: "test_Maschiene".to_string(),
@@ -76,7 +79,6 @@ impl Maschine {
     }
     /*
     pub fn new(/*gs:GameState,*/namen: String, trades: Vec<Trade>) -> Maschine {
-
         //let loadedSprite: MaschineSprite =  AssetService::get(name);
         //let loded = GameState
 
@@ -101,15 +103,15 @@ impl Maschine {
 }
 
 impl Area for Maschine {
-    fn interact(&mut self, player: &Player) {
+    fn interact(&mut self, _player: &Player) {
         todo!()
     }
 
     fn get_collision_area(&self) -> Rect {
-        return self.hitbox;
+        self.hitbox
     }
 
     fn get_interaction_area(&self) -> Rect {
-        return self.interaction_area;
+        self.interaction_area
     }
 }
