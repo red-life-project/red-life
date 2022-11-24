@@ -1,11 +1,12 @@
-use crate::backend::gamestate::GameState;
-use crate::backend::popup_messages::{GAME_INFO, WARNINGS};
+use crate::backend::popup_messages::GAME_INFO;
 use crate::backend::rlcolor::RLColor;
 use crate::backend::screen::{Popup, StackCommand};
 use crate::game_core::item::{Item, BENZIN, GEDRUCKTESTEIL, SUPER_GLUE};
 use crate::game_core::resources::Resources;
+
 use serde::{Deserialize, Serialize};
 use std::sync::mpsc::Sender;
+use tracing::info;
 
 /// The current game player, containing its inventory and the current position, air and energy,
 /// along with their change rate
@@ -23,6 +24,7 @@ pub struct Player {
 }
 impl Default for Player {
     fn default() -> Self {
+        info!("Default Player created");
         Self {
             inventory: vec![
                 (Item::new(SUPER_GLUE), 0),
@@ -58,6 +60,9 @@ impl Player {
         ) {
             // If Player has full life and is healing, stop healing, reset last damage
             (change_life, _, u16::MAX) if change_life >= 0 => {
+                if self.resources_change.life > 0 {
+                    info!("Player has full life, stopping healing");
+                }
                 self.resources_change.life = 0;
                 self.last_damage = 0;
             }
@@ -66,10 +71,11 @@ impl Player {
                 self.last_damage = 0;
             }
             // If player does not take damage and 5 seconds have passed, start healing
-            (0, last_damage, _) if last_damage >= 900 => {
+            (0, last_damage, _) if last_damage >= 600 => {
                 self.resources_change.life += 5;
                 self.last_damage = 0;
                 let popup = Popup::new(RLColor::GREEN, GAME_INFO[0].to_string(), 5);
+                info!("Player startet healing");
                 sender.send(StackCommand::Popup(popup)).unwrap();
             }
             // If player takes damage, increase last damage point
@@ -96,13 +102,13 @@ mod test {
 
     fn setup_gamestate() -> (GameState, Receiver<StackCommand>) {
         let mut gamestate = GameState::default();
-        let mut channel = channel();
+        let channel = channel();
         gamestate.set_sender(channel.0);
         (gamestate, channel.1)
     }
     #[test]
     fn test_case_one_life_regeneration() {
-        let (mut gamestate, _) = setup_gamestate();
+        let (gamestate, _) = setup_gamestate();
         let mut player = Player::default();
         player.resources.life = u16::MAX;
         player.resources_change.life = 5;
@@ -114,7 +120,7 @@ mod test {
 
     #[test]
     fn test_case_two_life_regeneration() {
-        let (mut gamestate, _) = setup_gamestate();
+        let (gamestate, _) = setup_gamestate();
         let mut player = Player::default();
         player.resources.life = 1000;
         player.resources_change.life = 5;
@@ -125,7 +131,7 @@ mod test {
 
     #[test]
     fn test_case_three_life_regeneration() {
-        let (mut gamestate, _receiver) = setup_gamestate();
+        let (gamestate, _receiver) = setup_gamestate();
         let mut player = Player::default();
         player.resources.life = 1000;
         player.resources_change.life = 0;
@@ -137,7 +143,7 @@ mod test {
 
     #[test]
     fn test_case_four_life_regeneration() {
-        let (mut gamestate, _) = setup_gamestate();
+        let (gamestate, _) = setup_gamestate();
         let mut player = Player::default();
         player.resources.life = 20000;
         player.last_damage = 400;
@@ -150,7 +156,7 @@ mod test {
     #[test]
     fn test_case_five_life_regeneration() {
         let (mut gamestate, _) = setup_gamestate();
-        let mut channel = channel();
+        let channel = channel();
         gamestate.set_sender(channel.0);
         let mut player = Player::default();
         player.last_damage = 3;
