@@ -30,14 +30,10 @@ pub struct MainMenu {
 impl Screen for MainMenu {
     fn update(&mut self, ctx: &mut Context) -> RLResult {
         let scale = get_scale(ctx);
-        //handle buttons
-        if ctx.mouse.button_pressed(MouseButton::Left) {
-            let current_position = ctx.mouse.position();
-            dbg!(format!("Current mouse position: {current_position:?}"));
-            self.buttons
-                .iter_mut()
-                .for_each(|btn| btn.click(current_position, scale));
-        }
+        self.buttons.iter_mut().for_each(|btn| {
+            btn.action(ctx, scale);
+        });
+
         if let Ok(msg) = self.receiver.try_recv() {
             match msg {
                 Exit => std::process::exit(0),

@@ -29,7 +29,7 @@ pub struct GameState {
     /// Contains the current player position, resources(air, energy, life) and the inventory and their change rates
     pub player: Player,
     pub machines: Vec<Maschine>,
-    events: Vec<Event>,
+    events: Option<Event>,
     #[serde(skip)]
     assets: HashMap<String, Image>,
     #[serde(skip)]
@@ -54,7 +54,7 @@ impl GameState {
     }
     pub fn tick(&mut self) -> RLResult {
         // Iterate over every resource and add the change rate to the current value
-        self.get_current_milestone();
+        self.get_current_milestone(ctx);
         self.player.resources = Resources::from_iter(
             self.player
                 .resources
