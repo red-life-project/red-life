@@ -16,7 +16,8 @@ pub fn main() -> RLResult {
         .window_setup(
             ggez::conf::WindowSetup::default()
                 .icon("/icon.png")
-                .title("Red Life"),
+                .title("Red Life")
+                .vsync(true),
         );
     let (mut ctx, event_loop) = cb.build()?;
     window_setup(&mut ctx)?;
