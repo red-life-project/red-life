@@ -50,6 +50,7 @@ impl GameState {
     pub fn new(ctx: &mut Context) -> RLResult<Self> {
         let mut result = GameState::default();
         result.load_assets(ctx)?;
+        result.create_machien();//////////// SANDER TESTING TOBE RM
         Ok(result)
     }
     pub fn tick(&mut self) -> Option<StackCommand> {
@@ -183,6 +184,7 @@ impl GameState {
             "Could not find asset with name {}",
             name
         )))
+
     }
 }
 
@@ -209,6 +211,8 @@ impl Screen for GameState {
             scale
         );
         self.draw_resources(&mut canvas, scale, ctx)?;
+        self.draw_mashiens(&mut canvas, scale, ctx)?;
+
         canvas.finish(ctx)?;
         Ok(())
     }

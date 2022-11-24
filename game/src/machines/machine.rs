@@ -20,8 +20,8 @@ pub enum State {
     Running,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct Maschine {
+#[derive(Debug, Clone)]
+pub struct Mashine {
     //gamestate:GameState,
     name: String,
     hitbox: Rect,
@@ -29,18 +29,17 @@ pub struct Maschine {
     interaction_area: Rect,
     state: State,
     //sprite: MaschineSprite,
-    test: *Image,
-    blabla : *GameState,
+    test: Image,
     trades: Vec<Trade>,
     running_recources: Resources<i16>,
     // sender:Sender<Resource>,
 }
-impl Maschine {
+impl Mashine{
     fn default(gs:GameState) -> Self {
-        let sprite: &Image = GameState::get_asset(GameState, "test_Maschiene")?;
-
+       let mut sprite: Image = gs.get_asset( "test_Maschiene").unwrap().clone();
         //let test : &Sender<Resources<i16>> = GameState::
         Self {
+
             //gamestate:GameState::default(),
             name: "Maschine ohne namen".to_string(),
             hitbox: Rect::default(),
@@ -48,7 +47,6 @@ impl Maschine {
             state: State::Broken,
            // sprite: MaschineSprite::default(),
             test: sprite,
-            blabla: gs,
             trades: vec![],
             running_recources: Resources {
                 oxygen: 0,
@@ -57,12 +55,11 @@ impl Maschine {
             }, //  sender: ()
         }
     }
-}
 
-impl Maschine {
-    pub fn test_maschine(gs :&GameState) -> Maschine {
+    pub fn test_mashine(gs :&GameState) -> Mashine {
         //let msSprite =  get_asset("player.png")?;
-        let sprite: &Image = gs.get_asset( "test_Maschiene")?;
+        let sprite: Image = gs.get_asset( "test_Maschiene").unwrap().clone();
+        todo!("Check if sprite is none");
 
 
         Self {
@@ -83,7 +80,6 @@ impl Maschine {
             state: State::Broken,
             //sprite: MaschineSprite::default(),
             test: sprite,
-            blabla: gs,
             trades: vec![],
             running_recources: Resources {
                 oxygen: 0,
@@ -113,12 +109,12 @@ impl Maschine {
     */
 
     pub fn no_energy(&mut self) {
-        self.state = State::Idel;y
+        self.state = State::Idel;
         //timer pausiren
     }
 }
 
-impl Area for Maschine {
+impl Area for Mashine {
     fn interact(&mut self, player: &Player) {
         todo!()
     }
@@ -129,5 +125,14 @@ impl Area for Maschine {
 
     fn get_interaction_area(&self) -> Rect {
         return self.interaction_area;
+    }
+
+    fn get_graphic(&self) -> &Image {
+        todo!();
+        //TODO:
+        // switch case
+        // if state is a b c
+        // return maschinen sprite.a .b .c
+        return &self.test
     }
 }
