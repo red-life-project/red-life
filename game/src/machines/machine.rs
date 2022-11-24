@@ -11,7 +11,7 @@ use serde_yaml::Value::Null;
 use std::ptr::null;
 use std::sync::mpsc::Sender;
 use ggez::winit::event::VirtualKeyCode::G;
-use crate::machines::machine::State::Broken;
+use crate::machines::machine::State::{Broken, Idel, Running};
 use crate::RLResult;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -28,99 +28,111 @@ pub struct Mashine {
     hitbox: Rect,
     interaction_area: Rect,
     #[serde(skip)]
-    test: Option<Image> ,
-    #[serde(skip)]
     sprite: MaschineSprite,
     trades: Vec<Trade>,
     running_recources: Resources<i16>,
     // sender:Sender<Resource>,
 }
-impl Mashine{
 
-    fn default(gs:GameState) -> Self {
-        let sprite = Some(gs.get_asset( "test_mashine.png").unwrap().clone());
+impl Mashine {
+    pub fn default(gs: &GameState) -> Self
+    {
+        Mashine::new(gs,
+             "test".to_string(),
+                     Rect {
+                         x: 300.0,
+                         y: 300.0,
+                         w: 100.0,
+                         h: 100.0,
+                     },
+                      Rect {
+                         x: 300.0,
+                         y: 400.0,
+                         w: 100.0,
+                         h: 50.0,
+                     },)
+    }
+
+    pub fn new(gs: &GameState, name: String,hitbox:Rect,interaction_area:Rect) -> Self {
+        // let sprite = Some(gs.get_asset( "test_mashine.png").unwrap().clone());
+        let sprite = MaschineSprite::new(gs, name.as_str());
         //let test : &Sender<Resources<i16>> = GameState::
         Self {
 
             //gamestate:GameState::default(),
-            name: "Maschine ohne namen".to_string(),
-            hitbox: Rect::default(),
-            interaction_area: Rect::default(),
+            name,
+            hitbox,
+            interaction_area,
             state: State::Broken,
-           // sprite: MaschineSprite::default(),
-            test: sprite,
+            sprite,
             trades: vec![],
             running_recources: Resources {
                 oxygen: 0,
                 energy: 0,
                 life: 0,
             }, //  sender: ()
-            sprite: Default::default()
-        }
-    }
-
-    pub fn test_mashine(gs :&GameState) -> Mashine {
-        //let msSprite =  get_asset("player.png")?;
-        let sprite =
-            Some(
-                gs.get_asset( "test_mashine.png")
-
-                    .unwrap()
-
-
-                    .clone()
-
-
-            );
-       // todo!("Check if sprite is none");
-
-
-        Self {
-            //gamestate:gs,
-            name: "test_Maschiene".to_string(),
-            hitbox: Rect {
-                x: 300.0,
-                y: 300.0,
-                w: 100.0,
-                h: 100.0,
-            },
-            interaction_area: Rect {
-                x: 300.0,
-                y: 400.0,
-                w: 100.0,
-                h: 50.0,
-            },
-            state: State::Broken,
-            //sprite: MaschineSprite::default(),
-            test: sprite,
-            trades: vec![],
-            running_recources: Resources {
-                oxygen: 0,
-                energy: 0,
-                life: 0,
-            },
-            sprite: Default::default()
         }
     }
     /*
-    pub fn new(/*gs:GameState,*/namen: String, trades: Vec<Trade>) -> Maschine {
+        pub fn test_mashine(gs :&GameState) -> Mashine {
+            //let msSprite =  get_asset("player.png")?;
+            let sprite =
+                Some(
+                    gs.get_asset( "test_mashine.png")
+                        .unwrap()
+                        .clone()
 
-        //let loadedSprite: MaschineSprite =  AssetService::get(name);
-        //let loded = GameState
 
-        Self {
-           // gamestate: gs,
-            name: namen,
-            hitbox: Default::default(),
-            interaction_area: Default::default(),
-            state: State::Broken,
-            sprite: Default::default(),
-            trades,
-            running_recources: Resources::default(),
-         //   sender: ()
+                );
+           //("Check if sprite is none");
+
+
+            Self {
+                //gamestate:gs,
+                name: "test_Maschiene".to_string(),
+                hitbox: Rect {
+                    x: 300.0,
+                    y: 300.0,
+                    w: 100.0,
+                    h: 100.0,
+                },
+                interaction_area: Rect {
+                    x: 300.0,
+                    y: 400.0,
+                    w: 100.0,
+                    h: 50.0,
+                },
+                state: State::Broken,
+                //sprite: MaschineSprite::default(),
+
+                trades: vec![],
+                running_recources: Resources {
+                    oxygen: 0,
+                    energy: 0,
+                    life: 0,
+                },
+                sprite: Default::default()
+            }
         }
-    }
-    */
+
+        pub fn new(/*gs:GameState,*/namen: String, trades: Vec<Trade>) -> Maschine {
+
+            //let loadedSprite: MaschineSprite =  AssetService::get(name);
+            //let loded = GameState
+
+            Self {
+               // gamestate: gs,
+                name: namen,
+                hitbox: Default::default(),
+                interaction_area: Default::default(),
+                state: State::Broken,
+                sprite: Default::default(),
+                trades,
+                running_recources: Resources::default(),
+             //   sender: ()
+            }
+        }
+        */
 
     pub fn no_energy(&mut self) {
         self.state = State::Idel;
@@ -130,7 +142,11 @@ impl Mashine{
 
 impl Area for Mashine {
     fn interact(&mut self, player: &Player) {
-        todo!()
+        match self.state {
+            Broken => { self.state = Idel}
+            State::Idel => {self.state= Running}
+            State::Running => { self.state = Broken}
+        }
     }
 
     fn get_collision_area(&self) -> Rect {
@@ -142,14 +158,16 @@ impl Area for Mashine {
     }
 
     fn get_graphic(&self) -> Image {
-        //todo!();
         //TODO:
         // switch case
         // if state is a b c
         // return maschinen sprite.a .b .c
-        return self.test
-            .clone()
-            .unwrap()
+
+        match self.state {
+            Broken => {self.sprite.broken.clone()}
+            State::Idel => {self.sprite.idel.clone()}
+            State::Running => { self.sprite.running.clone()}
+        }
     }
 
     fn check(&self) -> bool {

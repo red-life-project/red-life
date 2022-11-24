@@ -12,7 +12,7 @@ impl GameState{
 
         dbg!(format!("create_machine", ));
 
-        let new_ms = Mashine::test_mashine(self);
+        let new_ms = Mashine::default(self);
         self.areas.push(Box::new(new_ms));
     }
 
@@ -35,7 +35,7 @@ impl GameState{
             canvas,
             &machine,
             pos,
-            scale*0.1
+            scale
         );
         }
     Ok(())

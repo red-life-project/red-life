@@ -151,9 +151,9 @@ impl GameState {
         Ok(game_state)
     }
 
-    pub(crate) fn get_interactable(&self) -> Option<&Box<dyn Area>> {
+    pub(crate) fn get_interactable(&mut self) -> Option<&mut Box<dyn Area>> {
         self.areas
-            .iter()
+            .iter_mut()
             .find(|area| area.is_interactable(self.player.position))
     }
 

@@ -1,3 +1,4 @@
+use std::borrow::Borrow;
 use crate::backend::gamestate::GameState;
 use crate::backend::screen::StackCommand;
 use crate::backend::utils::get_scale;
@@ -57,7 +58,8 @@ impl GameState {
                 }
                 // TODO: Interact with the possible area
                 VirtualKeyCode::E => {
-                    dbg!(self.get_interactable());
+                    let player_ref = &self.player.clone();
+                    self.get_interactable().unwrap().interact();
                 }
                 _ => {}
             }
