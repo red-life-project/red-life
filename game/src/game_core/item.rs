@@ -22,7 +22,7 @@ pub const BENZIN: [&str; 3] = [
 pub struct Item {
     pub name: String,
     info_text: String,
-    img: String,
+    pub img: String,
 }
 impl Item {
     pub(crate) fn new(item: [&str; 3]) -> Self {
