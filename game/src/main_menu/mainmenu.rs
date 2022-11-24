@@ -7,7 +7,6 @@ use crate::backend::{
 use crate::main_menu::button::Button;
 use crate::main_menu::mainmenu::Message::{Exit, NewGame, Start};
 use crate::RLResult;
-use ggez::event::MouseButton;
 use ggez::{graphics, Context};
 use std::fs;
 use std::sync::mpsc::{channel, Receiver, Sender};
@@ -81,6 +80,7 @@ impl MainMenu {
             sender.clone(),
             graphics::Rect::new(1322., 350., 450., 120.),
             RLColor::GREY,
+            RLColor::DARK_GREY,
         );
 
         let new_game_button = Button::new(
@@ -89,6 +89,7 @@ impl MainMenu {
             sender.clone(),
             graphics::Rect::new(1322., 490., 450., 120.),
             RLColor::GREY,
+            RLColor::DARK_GREY,
         );
 
         let exit_button = Button::new(
@@ -97,6 +98,7 @@ impl MainMenu {
             sender.clone(),
             graphics::Rect::new(1322., 630., 450., 120.),
             RLColor::GREY,
+            RLColor::DARK_GREY,
         );
 
         Self {

@@ -69,7 +69,7 @@ impl Player {
             (0, last_damage, _) if last_damage >= 900 => {
                 self.resources_change.life += 5;
                 self.last_damage = 0;
-                let mut popup = Popup::new(RLColor::GREEN, GAME_INFO[0].to_string(), 5);
+                let popup = Popup::new(RLColor::GREEN, GAME_INFO[0].to_string(), 5);
                 sender.send(StackCommand::Popup(popup)).unwrap();
             }
             // If player takes damage, increase last damage point

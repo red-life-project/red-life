@@ -54,7 +54,7 @@ impl GameState {
     }
     pub fn tick(&mut self) -> RLResult {
         // Iterate over every resource and add the change rate to the current value
-        self.get_current_milestone(ctx);
+        self.get_current_milestone();
         self.player.resources = Resources::from_iter(
             self.player
                 .resources
@@ -95,7 +95,6 @@ impl GameState {
                 if i == 2 && self.player.resources_change.life > 0 {
                     color = RLColor::GREEN;
                 };
-                let scale = get_scale(ctx);
                 let rect = Rect::new(RESOURCE_POSITION[i], 961.0, resource as f32 * 0.00435, 12.6);
                 let mesh = Mesh::new_rounded_rectangle(ctx, DrawMode::fill(), rect, 3.0, color)?;
                 draw!(canvas, &mesh, scale);
