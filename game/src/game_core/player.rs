@@ -1,5 +1,5 @@
-use crate::backend::gamestate::GameState;
-use crate::backend::popup_messages::{GAME_INFO, WARNINGS};
+
+use crate::backend::popup_messages::{GAME_INFO};
 use crate::backend::rlcolor::RLColor;
 use crate::backend::screen::{Popup, StackCommand};
 use crate::game_core::item::{Item, BENZIN, GEDRUCKTESTEIL, SUPER_GLUE};
@@ -103,13 +103,13 @@ mod test {
 
     fn setup_gamestate() -> (GameState, Receiver<StackCommand>) {
         let mut gamestate = GameState::default();
-        let mut channel = channel();
+        let channel = channel();
         gamestate.set_sender(channel.0);
         (gamestate, channel.1)
     }
     #[test]
     fn test_case_one_life_regeneration() {
-        let (mut gamestate, _) = setup_gamestate();
+        let (gamestate, _) = setup_gamestate();
         let mut player = Player::default();
         player.resources.life = u16::MAX;
         player.resources_change.life = 5;
@@ -121,7 +121,7 @@ mod test {
 
     #[test]
     fn test_case_two_life_regeneration() {
-        let (mut gamestate, _) = setup_gamestate();
+        let (gamestate, _) = setup_gamestate();
         let mut player = Player::default();
         player.resources.life = 1000;
         player.resources_change.life = 5;
@@ -132,7 +132,7 @@ mod test {
 
     #[test]
     fn test_case_three_life_regeneration() {
-        let (mut gamestate, _receiver) = setup_gamestate();
+        let (gamestate, _receiver) = setup_gamestate();
         let mut player = Player::default();
         player.resources.life = 1000;
         player.resources_change.life = 0;
@@ -144,7 +144,7 @@ mod test {
 
     #[test]
     fn test_case_four_life_regeneration() {
-        let (mut gamestate, _) = setup_gamestate();
+        let (gamestate, _) = setup_gamestate();
         let mut player = Player::default();
         player.resources.life = 20000;
         player.last_damage = 400;
@@ -157,7 +157,7 @@ mod test {
     #[test]
     fn test_case_five_life_regeneration() {
         let (mut gamestate, _) = setup_gamestate();
-        let mut channel = channel();
+        let channel = channel();
         gamestate.set_sender(channel.0);
         let mut player = Player::default();
         player.last_damage = 3;

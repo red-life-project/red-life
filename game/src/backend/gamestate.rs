@@ -273,7 +273,7 @@ mod test {
 
     #[test]
     fn test_gamestate() {
-        let gamestate = GameState::default();
+        let _gamestate = GameState::default();
     }
 
     #[test]
@@ -291,12 +291,12 @@ mod test {
     #[test]
     fn test_load_autosave() {
         GameState::default().save(false).unwrap();
-        let gamestate_loaded = GameState::load(false).unwrap();
+        let _gamestate_loaded = GameState::load(false).unwrap();
     }
 
     #[test]
     fn test_load_milestone() {
         GameState::default().save(true).unwrap();
-        let gamestate_loaded = GameState::load(true).unwrap();
+        let _gamestate_loaded = GameState::load(true).unwrap();
     }
 }

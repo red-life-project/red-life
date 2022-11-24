@@ -5,8 +5,8 @@ mod machines;
 mod main_menu;
 
 use crate::backend::{error, screen::Screenstack};
-use chrono::{Local, Utc};
-use ggez::conf::FullscreenType;
+use chrono::{Local};
+
 use ggez::{event, Context};
 use std::fs::File;
 use std::sync::Mutex;

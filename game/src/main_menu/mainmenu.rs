@@ -11,7 +11,7 @@ use crate::RLResult;
 use ggez::{graphics, Context};
 use std::fs;
 use std::sync::mpsc::{channel, Receiver, Sender};
-use tracing::info;
+
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum Message {
@@ -108,5 +108,5 @@ impl Screen for MainMenu {
         Ok(())
     }
 
-    fn set_sender(&mut self, sender: Sender<StackCommand>) {}
+    fn set_sender(&mut self, _sender: Sender<StackCommand>) {}
 }

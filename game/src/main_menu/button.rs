@@ -57,7 +57,7 @@ impl Button {
 
     // determines if mouse is hovering over button
     fn in_area(&self, mouse_pos: Point2<f32>, scale: Vec2) -> bool {
-        let mut button_rect = self.rect.clone();
+        let mut button_rect = self.rect;
         button_rect.x *= scale.x;
         button_rect.y *= scale.y;
         button_rect.contains(mouse_pos)

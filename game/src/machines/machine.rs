@@ -108,10 +108,10 @@ impl Area for Maschine {
     }
 
     fn get_collision_area(&self) -> Rect {
-        return self.hitbox;
+        self.hitbox
     }
 
     fn get_interaction_area(&self) -> Rect {
-        return self.interaction_area;
+        self.interaction_area
     }
 }
