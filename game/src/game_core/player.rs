@@ -1,5 +1,4 @@
-
-use crate::backend::popup_messages::{GAME_INFO};
+use crate::backend::popup_messages::GAME_INFO;
 use crate::backend::rlcolor::RLColor;
 use crate::backend::screen::{Popup, StackCommand};
 use crate::game_core::item::{Item, BENZIN, GEDRUCKTESTEIL, SUPER_GLUE};

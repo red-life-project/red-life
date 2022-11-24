@@ -5,7 +5,7 @@ mod machines;
 mod main_menu;
 
 use crate::backend::{error, screen::Screenstack};
-use chrono::{Local};
+use chrono::Local;
 
 use ggez::{event, Context};
 use std::fs::File;

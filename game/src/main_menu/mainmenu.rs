@@ -12,7 +12,6 @@ use ggez::{graphics, Context};
 use std::fs;
 use std::sync::mpsc::{channel, Receiver, Sender};
 
-
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum Message {
     Exit,
