@@ -192,8 +192,8 @@ impl GameState {
             return Ok(());
         }
         for entry in existing_files? {
-            let file = entry.unwrap();
-            if file.metadata().unwrap().is_file() {
+            let file = entry?;
+            if file.metadata()?.is_file() {
                 fs::remove_file(file.path())?;
             }
         }
