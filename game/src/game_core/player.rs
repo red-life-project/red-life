@@ -1,3 +1,4 @@
+use crate::backend::gamestate::GameState;
 use crate::backend::popup_messages::{GAME_INFO, WARNINGS};
 use crate::backend::rlcolor::RLColor;
 use crate::backend::screen::{Popup, StackCommand};
@@ -94,7 +95,7 @@ mod test {
     use std::sync::mpsc::{channel, Receiver};
 
     fn setup_gamestate() -> (GameState, Receiver<StackCommand>) {
-        let mut gamestate = gamestate::GameState::default();
+        let mut gamestate = GameState::default();
         let mut channel = channel();
         gamestate.set_sender(channel.0);
         (gamestate, channel.1)
