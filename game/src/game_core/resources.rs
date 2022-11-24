@@ -1,11 +1,11 @@
-use crate::game_core::deathscreen::{DeathReason, DeathScreen};
+use crate::game_core::deathscreen::DeathReason;
 use serde::{Deserialize, Serialize};
 use std::cmp::PartialOrd;
 use std::ops;
 
 /// This struct holds data for resources
 /// This is used to describe the current state and change rate of the player's resources.
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Copy, Default, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Resources<T: PartialOrd> {
     pub(crate) oxygen: T,
     pub(crate) energy: T,
@@ -22,7 +22,7 @@ impl FromIterator<u16> for Resources<u16> {
         }
     }
 }
-impl<T: std::cmp::PartialOrd> IntoIterator for Resources<T> {
+impl<T: PartialOrd> IntoIterator for Resources<T> {
     type Item = T;
     type IntoIter = std::array::IntoIter<T, 3>;
 
@@ -31,7 +31,7 @@ impl<T: std::cmp::PartialOrd> IntoIterator for Resources<T> {
     }
 }
 
-impl<T: std::ops::Add<Output = T> + std::cmp::PartialOrd> ops::Add<Resources<T>> for Resources<T> {
+impl<T: ops::Add<Output = T> + PartialOrd> ops::Add<Resources<T>> for Resources<T> {
     type Output = Self;
     fn add(self, rhs: Self) -> Self {
         Self {
@@ -42,7 +42,7 @@ impl<T: std::ops::Add<Output = T> + std::cmp::PartialOrd> ops::Add<Resources<T>>
     }
 }
 
-impl<T: std::ops::Sub<Output = T> + std::cmp::PartialOrd> ops::Sub<Resources<T>> for Resources<T> {
+impl<T: ops::Sub<Output = T> + PartialOrd> ops::Sub<Resources<T>> for Resources<T> {
     type Output = Self;
     fn sub(self, rhs: Self) -> Self {
         Self {
@@ -55,7 +55,7 @@ impl<T: std::ops::Sub<Output = T> + std::cmp::PartialOrd> ops::Sub<Resources<T>>
 impl Resources<u16> {
     // This function returns the value that reached zero first
     // If no value reached zero, it returns None
-    pub fn get_zero_values(&self) -> Option<DeathReason> {
+    pub fn get_death_reason(&self) -> Option<DeathReason> {
         if self.oxygen == 0 {
             Some(DeathReason::Oxygen)
         } else if self.energy == 0 {
@@ -68,7 +68,6 @@ impl Resources<u16> {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::game_core::resources::Resources;
 
     #[test]
     fn addition() {
@@ -83,20 +82,33 @@ mod test {
             life: 6,
         };
         let add_result = a + b;
-        let sub_result = a - b;
-        let add_controll = Resources {
-            oxygen: -3,
-            energy: -3,
-            life: -3,
-        };
-
-        let sub_controll = Resources {
+        let add_control = Resources {
             oxygen: 5,
             energy: 7,
             life: 9,
         };
-        assert_eq!(add_result, add_controll);
-        assert_eq!(sub_result, sub_controll)
+        assert_eq!(add_result, add_control);
+    }
+
+    #[test]
+    fn subtraction() {
+        let a = Resources {
+            oxygen: 1,
+            energy: 2,
+            life: 3,
+        };
+        let b = Resources {
+            oxygen: 4,
+            energy: 5,
+            life: 6,
+        };
+        let sub_result = a - b;
+        let sub_control = Resources {
+            oxygen: -3,
+            energy: -3,
+            life: -3,
+        };
+        assert_eq!(sub_result, sub_control);
     }
 
     #[test]

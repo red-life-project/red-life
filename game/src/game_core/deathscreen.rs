@@ -1,10 +1,14 @@
 use crate::backend::screen::{Screen, StackCommand};
 use crate::backend::utils::get_scale;
 use crate::main_menu::button::Button;
-use crate::RLResult;
+use crate::main_menu::mainmenu::MainMenu;
+use crate::{draw, RLResult};
+use ggez::glam::Vec2;
 use ggez::winit::event::VirtualKeyCode;
 use ggez::{graphics, Context};
-use std::fmt::{Debug, Formatter};
+use std::fmt::{Debug, Display, Formatter};
+use std::sync::mpsc::Sender;
+use tracing::info;
 
 /// Create DeathScreen using deathscreen::new() and pass reason of death from DeathReason enum.
 /// # Example
@@ -15,63 +19,79 @@ pub enum DeathReason {
     Oxygen,
     Energy,
 }
-
-const DEATH_MESSAGES: [&str; 2] = [
-    "You died because you ran out of oxygen!",
-    "You died because you ran out of energy!",
-];
-
+impl Display for DeathReason {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            DeathReason::Oxygen => write!(f, "Luft"),
+            DeathReason::Energy => write!(f, "Energie"),
+        }
+    }
+}
+/// Deathscreen, telling the user why they died.
 #[derive(Debug)]
 pub struct DeathScreen {
     buttons: Vec<Button>,
     death_reason: DeathReason,
     death_message: graphics::Text,
     additional_text: graphics::Text,
+    sender: Sender<StackCommand>,
 }
 
 impl DeathScreen {
-    pub fn new(death_reason: DeathReason) -> Self {
+    pub fn new(death_reason: DeathReason, sender: Sender<StackCommand>) -> Self {
+        info!("The player died due to a lack of : {:?}", death_reason);
         Self {
             buttons: vec![],
             death_reason,
-            death_message: graphics::Text::new(DEATH_MESSAGES[death_reason as usize]),
-            additional_text: graphics::Text::new("Press ESC to exit the game!"),
+            death_message: graphics::Text::new(format!("Dein Todesgrund: {death_reason}")),
+            additional_text: graphics::Text::new("Bitte drücke ESC!"),
+            sender,
         }
     }
 }
 
 impl Screen for DeathScreen {
-    fn update(&mut self, ctx: &mut Context) -> RLResult<StackCommand> {
+    fn update(&mut self, ctx: &mut Context) -> RLResult {
         let keys = ctx.keyboard.pressed_keys();
-        for key in keys.iter() {
+        if let Some(key) = keys.iter().next() {
+            info!(
+                "The player wants to return to the main menu with: {:?}",
+                key
+            );
             match key {
-                VirtualKeyCode::Escape => std::process::exit(0),
+                VirtualKeyCode::Escape => self.sender.send(StackCommand::Push(Box::new(
+                    MainMenu::new(self.sender.clone()),
+                )))?,
                 _ => {}
-            }
+            };
         }
-        Ok(StackCommand::None)
+        Ok(())
     }
 
     fn draw(&self, ctx: &mut Context) -> RLResult {
         let scale = get_scale(ctx);
         let mut canvas = graphics::Canvas::from_frame(ctx, graphics::Color::RED);
 
-        canvas.draw(
+        draw!(
+            canvas,
             &self.death_message,
-            graphics::DrawParam::default()
-                .dest([800., 400.])
-                .scale(scale),
+            Vec2::new(400., 200.),
+            2. * scale
         );
 
-        canvas.draw(
+        draw!(
+            canvas,
             &self.additional_text,
-            graphics::DrawParam::default()
-                .dest([845., 600.])
-                .scale(scale),
+            Vec2::new(422.5, 300.),
+            2. * scale
         );
 
         canvas.finish(ctx)?;
 
         Ok(())
+    }
+
+    fn set_sender(&mut self, sender: Sender<StackCommand>) {
+        self.sender = sender;
     }
 }
