@@ -256,6 +256,7 @@ impl GameState {
     }
     /// Deletes all files in the directory saves, returns Ok if saves directory does not exist
     pub(crate) fn delete_saves() -> RLResult {
+        info!("deleting saves");
         let existing_files = fs::read_dir("./saves");
         if existing_files.is_err() {
             return Ok(());

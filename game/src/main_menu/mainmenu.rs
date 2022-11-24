@@ -77,8 +77,7 @@ impl Screen for MainMenu {
             match msg {
                 Exit => std::process::exit(0),
                 NewGame => {
-                    fs::remove_file("./saves/autosave.yaml");
-                    fs::remove_file("./saves/milestone.yaml");
+                    GameState::delete_saves()?;
                     self.screen_sender
                         .send(StackCommand::Push(Box::new(GameState::new(ctx)?)))?;
                 }
