@@ -31,7 +31,6 @@ pub struct Maschine {
 }
 impl Default for Maschine {
     fn default() -> Self {
-        info!("Creating default Maschine");
         Self {
             //gamestate:GameState::default(),
             name: "Maschine ohne namen".to_string(),

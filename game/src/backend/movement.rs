@@ -9,14 +9,17 @@ use tracing::info;
 const MOVEMENT_SPEED: usize = 10;
 
 impl GameState {
-    pub fn move_player(&mut self, ctx: &mut Context) -> RLResult<StackCommand> {
+    pub fn move_player(&mut self, ctx: &mut Context) -> RLResult {
         let keys = ctx.keyboard.pressed_keys();
         for key in keys.iter() {
             match key {
                 VirtualKeyCode::Escape => {
                     info!("Escape pressed");
                     self.save(false)?;
-                    return Ok(StackCommand::Pop);
+                    self.screen_sender
+                        .as_mut()
+                        .unwrap()
+                        .send(StackCommand::Pop)?;
                 }
                 VirtualKeyCode::W => {
                     if !self.collision_detection((
@@ -26,8 +29,6 @@ impl GameState {
                         self.player.position.1 =
                             self.player.position.1.saturating_sub(MOVEMENT_SPEED);
                     }
-                    //return Err(RLError::from(GameError::GraphicsInitializationError))
-                    //error!("Player position: {:?}", RLError::Ui(GameError::GraphicsInitializationError));
                 }
                 VirtualKeyCode::A => {
                     if !self.collision_detection((
@@ -64,6 +65,6 @@ impl GameState {
             }
         }
 
-        Ok(StackCommand::None)
+        Ok(())
     }
 }

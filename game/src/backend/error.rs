@@ -1,5 +1,7 @@
+use crate::backend::screen::StackCommand;
 use ggez::GameError;
 use std::io;
+use std::sync::mpsc::SendError;
 use tracing::error;
 
 #[warn(clippy::enum_variant_names)]
@@ -29,5 +31,15 @@ impl From<io::Error> for RLError {
     fn from(e: io::Error) -> Self {
         error!("IO Error: {}", e);
         RLError::IO(e)
+    }
+}
+
+impl From<SendError<StackCommand>> for RLError {
+    fn from(value: SendError<StackCommand>) -> Self {
+        error!("Could not send StackCommand: {}", value);
+        RLError::IO(io::Error::new(
+            io::ErrorKind::Other,
+            format!("Could not send StackCommand: {}", value),
+        ))
     }
 }

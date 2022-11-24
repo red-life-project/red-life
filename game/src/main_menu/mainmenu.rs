@@ -25,6 +25,7 @@ pub struct MainMenu {
     buttons: Vec<Button>,
     receiver: Receiver<Message>,
     sender: Sender<Message>,
+    screen_sender: Sender<StackCommand>,
 }
 
 impl Default for MainMenu {
@@ -63,12 +64,12 @@ impl Default for MainMenu {
             buttons: vec![start_button, new_game_button, exit_button],
             receiver,
             sender,
+            screen_sender,
         }
     }
 }
-
 impl Screen for MainMenu {
-    fn update(&mut self, ctx: &mut Context) -> RLResult<StackCommand> {
+    fn update(&mut self, ctx: &mut Context) -> RLResult {
         let scale = get_scale(ctx);
         self.buttons.iter_mut().for_each(|btn| {
             btn.action(ctx, scale);
@@ -80,17 +81,17 @@ impl Screen for MainMenu {
                 NewGame => {
                     fs::remove_file("./saves/autosave.yaml");
                     fs::remove_file("./saves/milestone.yaml");
-                    Ok(StackCommand::Push(Box::new(GameState::new(ctx)?)))
+                    self.screen_sender
+                        .send(StackCommand::Push(Box::new(GameState::new(ctx)?)))?;
                 }
-                Start => Ok(StackCommand::Push(Box::new({
+                Start => self.screen_sender.send(StackCommand::Push(Box::new({
                     let mut gamestate = GameState::load(false).unwrap_or_default();
                     gamestate.load_assets(ctx)?;
                     gamestate
-                }))),
+                })))?,
             }
-        } else {
-            Ok(StackCommand::None)
         }
+        Ok(())
     }
 
     fn draw(&self, ctx: &mut Context) -> RLResult {
@@ -107,4 +108,6 @@ impl Screen for MainMenu {
 
         Ok(())
     }
+
+    fn set_sender(&mut self, sender: Sender<StackCommand>) {}
 }

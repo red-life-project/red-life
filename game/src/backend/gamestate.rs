@@ -54,9 +54,9 @@ impl GameState {
         result.load_assets(ctx)?;
         Ok(result)
     }
-    pub fn tick(&mut self, ctx: &mut Context) -> Option<StackCommand> {
+    pub fn tick(&mut self) -> RLResult {
         // Iterate over every resource and add the change rate to the current value
-        self.get_current_milestone(ctx);
+        self.get_current_milestone();
         self.player.resources = Resources::from_iter(
             self.player
                 .resources
@@ -73,12 +73,17 @@ impl GameState {
             if self.player.resources.life == 0 {
                 let gamestate = GameState::load(true).unwrap_or_default();
                 gamestate.save(false).unwrap();
-                return Some(StackCommand::Push(Box::new(DeathScreen::new(
-                    empty_resource,
-                ))));
+                let cloned_sender = self.screen_sender.as_mut().unwrap().clone();
+                self.screen_sender
+                    .as_mut()
+                    .expect("No screen sender")
+                    .send(StackCommand::Push(Box::new(DeathScreen::new(
+                        empty_resource,
+                        cloned_sender,
+                    ))))?;
             };
         }
-        None
+        Ok(())
     }
 
     /// Paints the current resource level of air, energy and life as a bar on the screen.
@@ -92,7 +97,6 @@ impl GameState {
                 if i == 2 && self.player.resources_change.life > 0 {
                     color = RLColor::GREEN;
                 };
-                let scale = get_scale(ctx);
                 let rect = Rect::new(RESOURCE_POSITION[i], 961.0, resource as f32 * 0.00435, 12.6);
                 let mesh = Mesh::new_rounded_rectangle(ctx, DrawMode::fill(), rect, 3.0, color)?;
                 draw!(canvas, &mesh, scale);
@@ -204,22 +208,14 @@ impl GameState {
             self.save(true).unwrap();
         }
     }
-    fn get_current_milestone(&mut self, ctx: &mut Context) {
+    fn get_current_milestone(&mut self) {
         match self.player.milestone {
             1 => {
                 if self.player.match_milestone == 0 {
-                    self.events = None;
                     self.player.resources_change.oxygen = -1;
                     self.player.resources_change.energy = -1;
                     self.player.last_damage = 0;
                     self.player.match_milestone = 1;
-                }
-                if ctx.time.ticks() % 5000 == 0 {
-                    if self.events.is_none() {
-                        self.events = Event::event_generator()
-                    } else {
-                        self.events = Event::restore_event()
-                    }
                 }
                 self.check_on_milestone(vec![
                     "Sauerstoffgenerator".to_string(),
@@ -236,15 +232,13 @@ impl GameState {
 
 impl Screen for GameState {
     /// Updates the game and handles input. Returns StackCommand::Pop when Escape is pressed.
-    fn update(&mut self, ctx: &mut Context) -> RLResult<StackCommand> {
+    fn update(&mut self, ctx: &mut Context) -> RLResult {
         const DESIRED_FPS: u32 = 60;
         if ctx.time.check_update_time(DESIRED_FPS) {
-            if let Some(death) = self.tick(ctx) {
-                return Ok(death);
-            }
-            return self.move_player(ctx);
+            self.tick()?;
+            self.move_player(ctx)?;
         }
-        Ok(StackCommand::None)
+        Ok(())
     }
     /// Draws the game state to the screen.
     fn draw(&self, ctx: &mut Context) -> RLResult {

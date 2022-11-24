@@ -16,11 +16,11 @@ use tracing::info;
 pub trait Screen: Debug {
     /// Used for updating the screen. Returns a StackCommand used to either push a new screen or pop
     /// the current one.
-    fn update(&mut self, ctx: &mut Context) -> RLResult<StackCommand>;
+    fn update(&mut self, ctx: &mut Context) -> RLResult;
     /// Used for drawing the last screen in the game.
     fn draw(&self, ctx: &mut Context) -> RLResult;
     /// Set sender of the screen
-    fn set_sender(&mut self, _sender: Sender<StackCommand>) {}
+    fn set_sender(&mut self, sender: Sender<StackCommand>);
 }
 
 /// A Screenstack contains multiple screens, the first one of which is the current screen
@@ -129,12 +129,10 @@ impl event::EventHandler<RLError> for Screenstack {
     // Redirect the update function to the last screen and handle the returned StackCommand
     fn update(&mut self, ctx: &mut Context) -> RLResult {
         self.remove_popups();
-        let command = self
-            .screens
+        self.screens
             .last_mut()
             .expect("Failed to get a screen")
             .update(ctx)?;
-        self.process_command(command);
         if let Ok(message) = self.receiver.try_recv() {
             self.process_command(message);
         }
@@ -161,7 +159,7 @@ impl Default for Screenstack {
         info!("Default Screenstack created");
         let (sender, receiver) = channel();
         Self {
-            screens: vec![Box::<MainMenu>::default()],
+            screens: vec![Box::new(MainMenu::new(sender.clone()))],
             popup: vec![],
             receiver,
             sender,
