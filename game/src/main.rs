@@ -7,10 +7,10 @@ mod main_menu;
 use crate::backend::{error, screen::Screenstack};
 use chrono::Local;
 
+use ggez::conf::FullscreenType;
 use ggez::{event, Context};
 use std::fs::File;
 use std::sync::Mutex;
-use ggez::conf::FullscreenType;
 use tracing::{info, Level};
 use tracing_subscriber::prelude::*;
 
