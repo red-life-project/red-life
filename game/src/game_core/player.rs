@@ -101,7 +101,7 @@ mod test {
     use std::sync::mpsc::{channel, Receiver};
 
     fn setup_gamestate() -> (GameState, Receiver<StackCommand>) {
-        let mut gamestate = gamestate::GameState::default();
+        let mut gamestate = GameState::default();
         let mut channel = channel();
         gamestate.set_sender(channel.0);
         (gamestate, channel.1)
