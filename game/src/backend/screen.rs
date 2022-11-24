@@ -149,7 +149,6 @@ impl event::EventHandler<RLError> for Screenstack {
     }
     /// Override the quit event so we don't actually quit the game.
     fn quit_event(&mut self, ctx: &mut Context) -> RLResult<bool> {
-        self.screens.last_mut().unwrap().update(ctx)?;
         Ok(true)
     }
 }
