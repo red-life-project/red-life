@@ -258,6 +258,21 @@ impl GameState {
             _ => {}
         }
     }
+    /// Deletes all files in the directory saves, returns Ok if saves directory does not exist
+    pub(crate) fn delete_saves() -> RLResult {
+        info!("deleting saves");
+        let existing_files = fs::read_dir("./saves");
+        if existing_files.is_err() {
+            return Ok(());
+        }
+        for entry in existing_files? {
+            let file = entry?;
+            if file.metadata()?.is_file() {
+                fs::remove_file(file.path())?;
+            }
+        }
+        Ok(())
+    }
 }
 
 impl Screen for GameState {
@@ -329,5 +344,9 @@ mod test {
     fn test_load_milestone() {
         GameState::default().save(true).unwrap();
         let _gamestate_loaded = GameState::load(true).unwrap();
+    }
+    #[test]
+    fn test_delete_saves() {
+        GameState::delete_saves().unwrap();
     }
 }
