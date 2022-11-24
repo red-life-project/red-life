@@ -1,4 +1,6 @@
 use serde::{Deserialize, Serialize};
+use tracing::info;
+
 pub const GEDRUCKTESTEIL: [&str; 3] = [
     "3D-gedrucktes-Teil",
     "Ein 3D-gedrucktes-Teil, welches zur Reparatur des Kommunikationsmoduls verwendet werden kann",
@@ -24,6 +26,10 @@ pub struct Item {
 }
 impl Item {
     pub(crate) fn new(item: [&str; 3]) -> Self {
+        info!(
+            "New Item created: name: {}, info_text: {}, img path: {}",
+            item[0], item[1], item[2]
+        );
         Self {
             name: item[0].to_string(),
             info_text: item[1].to_string(),

@@ -1,10 +1,12 @@
 use crate::backend::gamestate::GameState;
 use crate::backend::screen::StackCommand;
+
 use crate::RLResult;
 use ggez::winit::event::VirtualKeyCode;
 use ggez::Context;
+use tracing::info;
 
-const MOVEMENT_SPEED: usize = 5;
+const MOVEMENT_SPEED: usize = 10;
 
 impl GameState {
     pub fn move_player(&mut self, ctx: &mut Context) -> RLResult {
@@ -12,6 +14,7 @@ impl GameState {
         for key in keys.iter() {
             match key {
                 VirtualKeyCode::Escape => {
+                    info!("Escape pressed");
                     self.save(false)?;
                     self.screen_sender
                         .as_mut()
@@ -56,7 +59,7 @@ impl GameState {
                 }
                 // TODO: Interact with the possible area
                 VirtualKeyCode::E => {
-                    dbg!(self.get_interactable());
+                    info!("In interaction area: {:?}", self.get_interactable());
                 }
                 _ => {}
             }

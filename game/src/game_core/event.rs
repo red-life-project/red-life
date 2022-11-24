@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use tracing::info;
 
 pub const KOMETENEINSCHLAG: [&str; 2] = [
     "KOMETENEINSCHLAG",
@@ -27,6 +28,11 @@ pub(crate) struct Event {
 }
 impl Event {
     pub fn new(event: [&str; 2]) -> Self {
+        info!(
+            "New event created: {}, info text: {}",
+            event[0].to_string(),
+            event[1].to_string()
+        );
         Self {
             name: event[0].to_string(),
             info_text: event[1].to_string(),
@@ -47,7 +53,8 @@ impl Event {
         }
     }
     pub fn restore_event() -> Option<Event> {
-        //Sender is missing -> Should send reverse of event cr
+        info!("Event X restored"); // Fill missing parameters
+                                   //Sender is missing -> Should send reverse of event cr
         None
     }
 }

@@ -8,6 +8,7 @@ use ggez::winit::event::VirtualKeyCode;
 use ggez::{graphics, Context};
 use std::fmt::{Debug, Display, Formatter};
 use std::sync::mpsc::Sender;
+use tracing::info;
 
 /// Create DeathScreen using deathscreen::new() and pass reason of death from DeathReason enum.
 /// # Example
@@ -38,6 +39,7 @@ pub struct DeathScreen {
 
 impl DeathScreen {
     pub fn new(death_reason: DeathReason, sender: Sender<StackCommand>) -> Self {
+        info!("The player died due to a lack of : {:?}", death_reason);
         Self {
             buttons: vec![],
             death_reason,
@@ -52,6 +54,10 @@ impl Screen for DeathScreen {
     fn update(&mut self, ctx: &mut Context) -> RLResult {
         let keys = ctx.keyboard.pressed_keys();
         if let Some(key) = keys.iter().next() {
+            info!(
+                "The player wants to return to the main menu with: {:?}",
+                key
+            );
             match key {
                 VirtualKeyCode::Escape => self.sender.send(StackCommand::Push(Box::new(
                     MainMenu::new(self.sender.clone()),
