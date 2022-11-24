@@ -1,8 +1,5 @@
 use crate::game_core::item::Item;
-use ggez::glam::Vec2;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
-use std::path::Iter;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub(crate) struct Trade {

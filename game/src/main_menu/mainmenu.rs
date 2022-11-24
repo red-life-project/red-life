@@ -1,3 +1,4 @@
+use crate::backend::rlcolor::RLColor;
 use crate::backend::{
     gamestate::GameState,
     screen::{Screen, StackCommand},
@@ -6,8 +7,6 @@ use crate::backend::{
 use crate::main_menu::button::Button;
 use crate::main_menu::mainmenu::Message::{Exit, NewGame, Start};
 use crate::RLResult;
-use ggez::event::MouseButton;
-use ggez::graphics::Color;
 use ggez::{graphics, Context};
 use std::fs;
 use std::sync::mpsc::{channel, Receiver, Sender};
@@ -24,77 +23,37 @@ pub struct MainMenu {
     buttons: Vec<Button>,
     receiver: Receiver<Message>,
     sender: Sender<Message>,
-}
-
-impl Default for MainMenu {
-    fn default() -> Self {
-        let (sender, receiver) = channel();
-
-        let start_button = Button::new(
-            "Start".to_string(),
-            Start,
-            sender.clone(),
-            graphics::Rect::new(1322., 350., 450., 120.),
-            Color::from_rgba(195, 195, 195, 255),
-        );
-
-        let new_game_button = Button::new(
-            "Neues Spiel".to_string(),
-            NewGame,
-            sender.clone(),
-            graphics::Rect::new(1322., 490., 450., 120.),
-            Color::from_rgba(195, 195, 195, 255),
-        );
-
-        let exit_button = Button::new(
-            "Beenden".to_string(),
-            Exit,
-            sender.clone(),
-            graphics::Rect::new(1322., 630., 450., 120.),
-            Color::from_rgba(195, 195, 195, 255),
-        );
-
-        Self {
-            buttons: vec![start_button, new_game_button, exit_button],
-            receiver,
-            sender,
-        }
-    }
+    screen_sender: Sender<StackCommand>,
 }
 
 impl Screen for MainMenu {
-    fn update(&mut self, ctx: &mut Context) -> RLResult<StackCommand> {
+    fn update(&mut self, ctx: &mut Context) -> RLResult {
         let scale = get_scale(ctx);
-        //handle buttons
-        if ctx.mouse.button_pressed(MouseButton::Left) {
-            let current_position = ctx.mouse.position();
-            dbg!(format!("Current mouse position: {current_position:?}"));
-            self.buttons
-                .iter_mut()
-                .for_each(|btn| btn.click(current_position, scale));
-        }
+        self.buttons.iter_mut().for_each(|btn| {
+            btn.action(ctx, scale);
+        });
+
         if let Ok(msg) = self.receiver.try_recv() {
             match msg {
                 Exit => std::process::exit(0),
                 NewGame => {
                     GameState::delete_saves()?;
-                    Ok(StackCommand::Push(Box::new(GameState::new(ctx)?)))
+                    self.screen_sender
+                        .send(StackCommand::Push(Box::new(GameState::new(ctx)?)))?;
                 }
-                Start => Ok(StackCommand::Push(Box::new({
+                Start => self.screen_sender.send(StackCommand::Push(Box::new({
                     let mut gamestate = GameState::load(false).unwrap_or_default();
                     gamestate.load_assets(ctx)?;
                     gamestate
-                }))),
+                })))?,
             }
-        } else {
-            Ok(StackCommand::None)
         }
+        Ok(())
     }
 
     fn draw(&self, ctx: &mut Context) -> RLResult {
         let scale = get_scale(ctx);
-        let mut canvas =
-            graphics::Canvas::from_frame(ctx, graphics::Color::from([0.1, 0.2, 0.3, 1.0]));
+        let mut canvas = graphics::Canvas::from_frame(ctx, RLColor::DARK_BLUE);
         let background =
             graphics::Image::from_bytes(ctx, include_bytes!("../../../assets/mainmenu.png"))?;
         canvas.draw(&background, graphics::DrawParam::default().scale(scale));
@@ -105,5 +64,47 @@ impl Screen for MainMenu {
         canvas.finish(ctx)?;
 
         Ok(())
+    }
+
+    fn set_sender(&mut self, sender: Sender<StackCommand>) {}
+}
+
+impl MainMenu {
+    pub(crate) fn new(screen_sender: Sender<StackCommand>) -> MainMenu {
+        let (sender, receiver) = channel();
+
+        let start_button = Button::new(
+            "Start".to_string(),
+            Start,
+            sender.clone(),
+            graphics::Rect::new(1322., 350., 450., 120.),
+            RLColor::GREY,
+            RLColor::DARK_GREY,
+        );
+
+        let new_game_button = Button::new(
+            "Neues Spiel".to_string(),
+            NewGame,
+            sender.clone(),
+            graphics::Rect::new(1322., 490., 450., 120.),
+            RLColor::GREY,
+            RLColor::DARK_GREY,
+        );
+
+        let exit_button = Button::new(
+            "Beenden".to_string(),
+            Exit,
+            sender.clone(),
+            graphics::Rect::new(1322., 630., 450., 120.),
+            RLColor::GREY,
+            RLColor::DARK_GREY,
+        );
+
+        Self {
+            buttons: vec![start_button, new_game_button, exit_button],
+            receiver,
+            sender,
+            screen_sender,
+        }
     }
 }

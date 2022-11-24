@@ -15,6 +15,8 @@ pub struct Button {
     pub(crate) sender: Sender<Message>,
     pub(crate) rect: graphics::Rect,
     pub(crate) color: Color,
+    pub(crate) hover_color: Color,
+    pub(crate) current_color: Color,
 }
 
 impl Button {
@@ -24,6 +26,7 @@ impl Button {
         sender: Sender<Message>,
         rect: graphics::Rect,
         color: Color,
+        hover_color: Color,
     ) -> Self {
         Self {
             text: Text::new(TextFragment::new(text).color(Color::BLACK)),
@@ -31,21 +34,36 @@ impl Button {
             sender,
             rect,
             color,
+            hover_color,
+            current_color: color,
         }
     }
 
-    fn is_clicked(&self, mouse_pos: Point2<f32>, scale: Vec2) -> bool {
+    // processing button interaction: click, hover
+    // determines if button is clicked
+    pub(crate) fn action(&mut self, ctx: &Context, scale: Vec2) {
+        if self.in_area(ctx.mouse.position(), scale) {
+            self.current_color = self.hover_color;
+            if ctx.mouse.button_pressed(ggez::event::MouseButton::Left) {
+                self.click();
+            }
+        } else {
+            self.current_color = self.color;
+        }
+    }
+
+    // determines if mouse is hovering over button
+    fn in_area(&self, mouse_pos: Point2<f32>, scale: Vec2) -> bool {
         let mut button_rect = self.rect.clone();
         button_rect.x *= scale.x;
         button_rect.y *= scale.y;
         button_rect.contains(mouse_pos)
     }
 
-    pub(crate) fn click(&mut self, mouse_pos: Point2<f32>, scale: Vec2) {
-        if self.is_clicked(mouse_pos, scale) {
-            dbg!(format!("Pressed {:?}", self.message));
-            self.sender.send(self.message).unwrap();
-        }
+    // payload of button
+    fn click(&mut self) {
+        dbg!(format!("Pressed {:?}", self.message));
+        self.sender.send(self.message).unwrap();
     }
 
     pub(crate) fn draw_button(&self, ctx: &mut Context, canvas: &mut Canvas) -> RLResult {
@@ -53,7 +71,12 @@ impl Button {
         let scale = get_scale(ctx);
 
         // Background
-        mb.rounded_rectangle(graphics::DrawMode::fill(), self.rect, 10.0, self.color)?;
+        mb.rounded_rectangle(
+            graphics::DrawMode::fill(),
+            self.rect,
+            10.0,
+            self.current_color,
+        )?;
         // Border
         mb.rounded_rectangle(
             graphics::DrawMode::stroke(8.0),

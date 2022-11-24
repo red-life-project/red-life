@@ -10,9 +10,14 @@ serde = "1.0.145"
 serde_yaml = "0.9.13"
 ggez = "0.8.1"
 dyn-clone = "1.0.9"
+fastrand = "1.8.0"
 
 [build-dependencies]
 fs_extra = "1.2.0"
 
 [profile.dev.package.'*']
 opt-level = 3
+
+[profile.release]
+lto = true
+panic = "abort"

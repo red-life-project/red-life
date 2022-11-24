@@ -1,15 +1,11 @@
 use serde::{Deserialize, Serialize};
 
 use crate::backend::area::Area;
-use crate::backend::gamestate::GameState;
 use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
 use crate::machines::machine_sprite::MaschineSprite;
 use crate::machines::trade::Trade;
 use ggez::graphics::Rect;
-use serde_yaml::Value::Null;
-use std::ptr::null;
-use std::sync::mpsc::Sender;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum State {
