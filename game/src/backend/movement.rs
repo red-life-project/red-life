@@ -1,3 +1,4 @@
+use crate::backend::area::Area;
 use crate::backend::gamestate::GameState;
 use crate::backend::screen::StackCommand;
 use crate::backend::utils::get_scale;
@@ -9,7 +10,6 @@ use ggez::winit::event::VirtualKeyCode;
 use ggez::Context;
 use std::borrow::Borrow;
 use tracing::info;
-use crate::backend::area::Area;
 
 const MOVEMENT_SPEED: usize = 10;
 
@@ -63,9 +63,10 @@ impl GameState {
                     }
                 }
                 VirtualKeyCode::E => {
-                    info!("In interaction area: {:?}", self.get_interactable());
+                    info!("Interacting with Area: {:?}", self.get_interactable());
                     let player_ref = &self.player.clone();
-                    if let Ok(intractable) = self.get_interactable() {
+                    if let Some( intractable) =  self.get_interactable()
+                    {
                         intractable.interact(player_ref)
                     }
                 }

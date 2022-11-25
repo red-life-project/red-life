@@ -229,7 +229,7 @@ impl GameState {
             .areas
             .iter()
             .map(|m: &Box<dyn Area>| m.deref())
-            .filter(|m| m.is_non_broken_maschien())
+            .filter(|m| m.is_non_broken_machine())
             .map(|m: &dyn Area| m.get_name())
             .collect::<Vec<String>>();
 
