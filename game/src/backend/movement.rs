@@ -62,12 +62,11 @@ impl GameState {
                     }
                 }
                 VirtualKeyCode::E => {
-
                     //TODO: Game panics if player is outside of any interact area
 
                     info!("In interaction area: {:?}", self.get_interactable());
                     let player_ref = &self.player.clone();
-                    self.get_interactable().unwrap().interact(player_ref);  //TODO: change the unwrap
+                    self.get_interactable().unwrap().interact(player_ref); //TODO: change the unwrap
                 }
                 _ => {}
             }

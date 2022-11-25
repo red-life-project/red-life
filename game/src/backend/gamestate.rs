@@ -1,4 +1,3 @@
-use std::borrow::Borrow;
 use crate::backend::area::Area;
 use crate::backend::rlcolor::RLColor;
 use crate::backend::screen::StackCommand;
@@ -17,6 +16,7 @@ use ggez::graphics::{Canvas, Color, Image};
 use ggez::graphics::{DrawMode, Mesh, Rect};
 use ggez::{graphics, Context};
 use serde::{Deserialize, Serialize};
+use std::borrow::Borrow;
 use std::collections::HashMap;
 use std::fs;
 use std::fs::read_dir;
@@ -223,20 +223,17 @@ impl GameState {
         )))
     }
     pub fn check_on_milestone(&mut self, milestone_machines: Vec<String>) {
-       let a = self.areas.get(0).unwrap().deref();
+        let a = self.areas.get(0).unwrap().deref();
 
         let running_machine = self
             .areas
             .iter()
-            .map(|m:&Box<dyn Area>|m.deref())
-            .filter(|m|m.is_non_broken_maschien())
-            .map(|m:&dyn Area|m.get_name())
+            .map(|m: &Box<dyn Area>| m.deref())
+            .filter(|m| m.is_non_broken_maschien())
+            .map(|m: &dyn Area| m.get_name())
             .collect::<Vec<String>>();
 
-
-
-        if  { running_machine.len()}
-        {
+        if { running_machine.len() } {
             info!("found running_machines len: {}", running_machine.len())
         }
 
