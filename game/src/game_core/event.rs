@@ -1,10 +1,11 @@
-use std::sync::mpsc::Sender;
-use ggez::Context;
-use serde::{Deserialize, Serialize};
-use tracing::info;
-use crate::backend::popup_messages::NASA_INFO;
+use crate::backend::popup_messages::{MARS_INFO, NASA_INFO, WARNINGS};
 use crate::backend::rlcolor::RLColor;
 use crate::backend::screen::{Popup, StackCommand};
+use ggez::graphics::Color;
+use ggez::Context;
+use serde::{Deserialize, Serialize};
+use std::sync::mpsc::Sender;
+use tracing::info;
 
 pub const KOMETENEINSCHLAG: [&str; 2] = [
     "KOMETENEINSCHLAG",
@@ -32,10 +33,13 @@ pub(crate) struct Event {
     info_text: String,
 }
 impl Event {
-    pub fn new(event: [&str; 2], sender: Sender<StackCommand>, popup_message: &str) -> Self {
-        let popup = Popup::new(RLColor::RED, popup_message.to_string(), 5);
-        sender.send(StackCommand::Popup(popup)).unwrap();
-        info!("Event Popup sent: name: {}, Popup-Message: {}", event[0], popup_message.to_string());
+    pub fn new(
+        event: [&str; 2],
+        sender: Sender<StackCommand>,
+        popup_message: &str,
+        popup_type: &str,
+    ) -> Self {
+        Self::send_popup(popup_message, sender, popup_type, event[0]);
         info!(
             "New event created: {}, info text: {}",
             event[0].to_string(),
@@ -52,11 +56,21 @@ impl Event {
         let rng = fastrand::Rng::new();
         let event = rng.usize(..50);
         match event {
-            0 => Some(Event::new(KOMETENEINSCHLAG, sender, "Hallo")),
-            11 => Some(Event::new(INFORMATIONSPOPUP_NASA, sender, NASA_INFO[rng.usize(..5)])),
-            22 => Some(Event::new(SANDSTURM, sender, "Hallo")),
-            33 => Some(Event::new(STROMAUSFALL, sender, "Hallo")),
-            44 => Some(Event::new(INFORMATIONSPOPUP_MARS, sender, "Hallo")),
+            0 => Some(Event::new(KOMETENEINSCHLAG, sender, WARNINGS[0], "warning")),
+            11 => Some(Event::new(
+                INFORMATIONSPOPUP_NASA,
+                sender,
+                NASA_INFO[rng.usize(..4)],
+                "nasa",
+            )),
+            22 => Some(Event::new(SANDSTURM, sender, WARNINGS[2], "warning")),
+            33 => Some(Event::new(STROMAUSFALL, sender, WARNINGS[1], "warning")),
+            44 => Some(Event::new(
+                INFORMATIONSPOPUP_MARS,
+                sender,
+                MARS_INFO[rng.usize(..5)],
+                "mars",
+            )),
             _ => None,
         }
     }
@@ -64,5 +78,26 @@ impl Event {
         info!("Event X restored"); // Fill missing parameters
                                    //Sender is missing -> Should send reverse of event cr
         None
+    }
+    /// Sends a popup of an event to the screen
+    pub fn send_popup(
+        popup_message: &str,
+        sender: Sender<StackCommand>,
+        popup_type: &str,
+        event_name: &str,
+    ) -> () {
+        let popup = match popup_type {
+            "warning" => Popup::warning(popup_message.to_string()),
+            "nasa" => Popup::nasa(popup_message.to_string()),
+            "mars" => Popup::mars(popup_message.to_string()),
+            _ => Popup::new(Color::RED, "Error".to_string(), 10),
+        };
+        sender.send(StackCommand::Popup(popup)).unwrap();
+        info!(
+            "Event Popup sent: name: {}, Popup-Message: {}, Popup-Type: {}",
+            event_name,
+            popup_message.to_string(),
+            popup_type
+        );
     }
 }

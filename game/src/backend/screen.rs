@@ -44,7 +44,7 @@ impl Popup {
     }
     pub fn mars(text: String) -> Self {
         info!("New MARS popup created");
-        Self::new(RLColor::LIGHT_GREY, text, 10)
+        Self::new(RLColor::DARK_RED, text, 10)
     }
     pub fn warning(text: String) -> Self {
         info!("New WARNING popup created");
@@ -72,22 +72,22 @@ impl Screenstack {
             let rect = graphics::Mesh::new_rectangle(
                 ctx,
                 graphics::DrawMode::fill(),
-                graphics::Rect::new(0., 0., x + 2., y + 2.),
+                graphics::Rect::new(0., 0., x + 4., y + 4.),
                 RLColor::LIGHT_GREY,
             )?;
             let outer = graphics::Mesh::new_rectangle(
                 ctx,
                 graphics::DrawMode::stroke(3.),
-                graphics::Rect::new(0., 0., x + 3., y + 3.),
+                graphics::Rect::new(0., 0., x + 4., y + 4.),
                 RLColor::BLACK,
             )?;
-            draw!(canvas, &rect, vec2(0., pos as f32 * (y + 3.)), scale);
-            draw!(canvas, &outer, vec2(0., pos as f32 * (y + 3.)), scale);
+            draw!(canvas, &rect, vec2(0., pos as f32 * (y + 4.)), scale);
+            draw!(canvas, &outer, vec2(0., pos as f32 * (y + 4.)), scale);
             canvas.draw(
                 &text,
                 graphics::DrawParam::default()
                     .scale(scale)
-                    .dest([0., pos as f32 * (y + 3.) * scale.y])
+                    .dest([0., pos as f32 * (y + 4.) * scale.y])
                     .color(popup.color),
             );
         }
