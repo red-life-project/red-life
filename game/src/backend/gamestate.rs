@@ -1,3 +1,4 @@
+use std::borrow::Borrow;
 use crate::backend::area::Area;
 use crate::backend::rlcolor::RLColor;
 use crate::backend::screen::StackCommand;
@@ -19,6 +20,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
 use std::fs::read_dir;
+use std::ops::Deref;
 use std::sync::mpsc::Sender;
 use tracing::info;
 
@@ -30,7 +32,6 @@ const COLORS: [Color; 3] = [RLColor::BLUE, RLColor::GOLD, RLColor::DARK_RED];
 pub struct GameState {
     /// Contains the current player position, resources(air, energy, life) and the inventory and their change rates
     pub player: Player,
-    pub machines: Vec<Mashine>,
     events: Option<Event>,
     #[serde(skip)]
     assets: HashMap<String, Image>,
@@ -43,7 +44,6 @@ pub struct GameState {
 impl PartialEq for GameState {
     fn eq(&self, other: &Self) -> bool {
         self.player == other.player && self.player.milestone == other.player.milestone
-        //&& self.machines == other.machines
     }
 }
 
@@ -223,12 +223,23 @@ impl GameState {
         )))
     }
     pub fn check_on_milestone(&mut self, milestone_machines: Vec<String>) {
+       let a = self.areas.get(0).unwrap().deref();
+
         let running_machine = self
-            .machines
+            .areas
             .iter()
-            .filter(|machine| machine.check())
-            .map(|m| m.name.clone())
+            .map(|m:&Box<dyn Area>|m.deref())
+            .filter(|m|m.is_non_broken_maschien())
+            .map(|m:&dyn Area|m.get_name())
             .collect::<Vec<String>>();
+
+
+
+        if  { running_machine.len()}
+        {
+            info!("found running_machines len: {}", running_machine.len())
+        }
+
         if milestone_machines
             .iter()
             .all(|machine| running_machine.contains(&machine.to_string()))

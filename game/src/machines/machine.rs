@@ -102,7 +102,11 @@ impl Area for Mashine {
         }
     }
 
-    fn check(&self) -> bool {
+    fn is_non_broken_maschien(&self) -> bool {
         return self.state != Broken;
+    }
+
+    fn get_name(&self) -> String {
+        return self.name.clone();
     }
 }

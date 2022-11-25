@@ -61,11 +61,13 @@ impl GameState {
                             self.player.position.0.saturating_add(MOVEMENT_SPEED);
                     }
                 }
-                // TODO: Interact with the possible area
                 VirtualKeyCode::E => {
+
+                    //TODO: Game panics if player is outside of any interact area
+
                     info!("In interaction area: {:?}", self.get_interactable());
                     let player_ref = &self.player.clone();
-                    self.get_interactable().unwrap().interact(player_ref);
+                    self.get_interactable().unwrap().interact(player_ref);  //TODO: change the unwrap
                 }
                 _ => {}
             }
