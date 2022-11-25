@@ -52,22 +52,32 @@ impl Event {
     }
 
     /// if no Event is active it either chooses a random event of the Event enum or nothing every 60 seconds
-    pub fn event_generator(sender: Sender<StackCommand>) -> Option<Event> {
+    pub fn event_generator(popup_sender: Sender<StackCommand>) -> Option<Event> {
         let rng = fastrand::Rng::new();
         let event = rng.usize(..50);
         match event {
-            0 => Some(Event::new(KOMETENEINSCHLAG, sender, WARNINGS[0], "warning")),
+            0 => Some(Event::new(
+                KOMETENEINSCHLAG,
+                popup_sender,
+                WARNINGS[0],
+                "warning",
+            )),
             11 => Some(Event::new(
                 INFORMATIONSPOPUP_NASA,
-                sender,
+                popup_sender,
                 NASA_INFO[rng.usize(..4)],
                 "nasa",
             )),
-            22 => Some(Event::new(SANDSTURM, sender, WARNINGS[2], "warning")),
-            33 => Some(Event::new(STROMAUSFALL, sender, WARNINGS[1], "warning")),
+            22 => Some(Event::new(SANDSTURM, popup_sender, WARNINGS[2], "warning")),
+            33 => Some(Event::new(
+                STROMAUSFALL,
+                popup_sender,
+                WARNINGS[1],
+                "warning",
+            )),
             44 => Some(Event::new(
                 INFORMATIONSPOPUP_MARS,
-                sender,
+                popup_sender,
                 MARS_INFO[rng.usize(..5)],
                 "mars",
             )),
