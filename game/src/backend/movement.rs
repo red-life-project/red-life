@@ -1,9 +1,14 @@
+use crate::backend::area::Area;
 use crate::backend::gamestate::GameState;
 use crate::backend::screen::StackCommand;
-
+use crate::backend::utils::get_scale;
+use crate::game_core::resources::Resources;
+use crate::machines::machine::Machine;
+use crate::machines::machine::State::Running;
 use crate::RLResult;
 use ggez::winit::event::VirtualKeyCode;
 use ggez::Context;
+use std::borrow::Borrow;
 use tracing::info;
 
 const MOVEMENT_SPEED: usize = 10;
@@ -57,9 +62,12 @@ impl GameState {
                             self.player.position.0.saturating_add(MOVEMENT_SPEED);
                     }
                 }
-                // TODO: Interact with the possible area
                 VirtualKeyCode::E => {
-                    info!("In interaction area: {:?}", self.get_interactable());
+                    info!("Interacting with Area: {:?}", self.get_interactable());
+                    let player_ref = &self.player.clone();
+                    if let Some(intractable) = self.get_interactable() {
+                        intractable.interact(player_ref)
+                    }
                 }
                 _ => {}
             }

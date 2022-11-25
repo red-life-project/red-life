@@ -1,6 +1,6 @@
 use crate::backend::utils::is_colliding;
 use crate::game_core::player::Player;
-use ggez::graphics::Rect;
+use ggez::graphics::{Image, Rect};
 use std::fmt::Debug;
 
 pub trait Area: Debug {
@@ -10,4 +10,7 @@ pub trait Area: Debug {
     }
     fn get_collision_area(&self) -> Rect;
     fn get_interaction_area(&self) -> Rect;
+    fn get_graphic(&self) -> Image;
+    fn is_non_broken_machine(&self) -> bool;
+    fn get_name(&self) -> String;
 }
