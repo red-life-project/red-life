@@ -2,13 +2,14 @@ use crate::backend::gamestate::GameState;
 use crate::backend::screen::StackCommand;
 use crate::backend::utils::get_scale;
 use crate::game_core::resources::Resources;
-use crate::machines::machine::Mashine;
+use crate::machines::machine::Machine;
 use crate::machines::machine::State::Running;
 use crate::RLResult;
 use ggez::winit::event::VirtualKeyCode;
 use ggez::Context;
 use std::borrow::Borrow;
 use tracing::info;
+use crate::backend::area::Area;
 
 const MOVEMENT_SPEED: usize = 10;
 
@@ -62,11 +63,11 @@ impl GameState {
                     }
                 }
                 VirtualKeyCode::E => {
-                    //TODO: Game panics if player is outside of any interact area
-
                     info!("In interaction area: {:?}", self.get_interactable());
                     let player_ref = &self.player.clone();
-                    self.get_interactable().unwrap().interact(player_ref); //TODO: change the unwrap
+                    if let Ok(intractable) = self.get_interactable() {
+                        intractable.interact(player_ref)
+                    }
                 }
                 _ => {}
             }

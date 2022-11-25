@@ -9,7 +9,7 @@ use crate::game_core::event::Event;
 use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
 use crate::machines::machine::State::Broken;
-use crate::machines::machine::{Mashine, State};
+use crate::machines::machine::{Machine, State};
 use crate::{draw, RLResult};
 use ggez::glam::Vec2;
 use ggez::graphics::{Canvas, Color, Image};
