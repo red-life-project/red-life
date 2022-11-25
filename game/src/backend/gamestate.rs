@@ -8,17 +8,19 @@ use crate::game_core::deathscreen::DeathScreen;
 use crate::game_core::event::Event;
 use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
-use crate::machines::machine::Maschine;
 use crate::machines::machine::State::Broken;
+use crate::machines::machine::{Machine, State};
 use crate::{draw, RLResult};
 use ggez::glam::Vec2;
 use ggez::graphics::{Canvas, Color, Image};
 use ggez::graphics::{DrawMode, Mesh, Rect};
 use ggez::{graphics, Context};
 use serde::{Deserialize, Serialize};
+use std::borrow::Borrow;
 use std::collections::HashMap;
 use std::fs;
 use std::fs::read_dir;
+use std::ops::Deref;
 use std::sync::mpsc::Sender;
 use tracing::info;
 
@@ -30,21 +32,18 @@ const COLORS: [Color; 3] = [RLColor::BLUE, RLColor::GOLD, RLColor::DARK_RED];
 pub struct GameState {
     /// Contains the current player position, resources(air, energy, life) and the inventory and their change rates
     pub player: Player,
-    pub machines: Vec<Maschine>,
     events: Option<Event>,
     #[serde(skip)]
     assets: HashMap<String, Image>,
     #[serde(skip)]
-    areas: Vec<Box<dyn Area>>,
+    pub areas: Vec<Box<dyn Area>>,
     #[serde(skip)]
     pub(crate) screen_sender: Option<Sender<StackCommand>>,
 }
 
 impl PartialEq for GameState {
     fn eq(&self, other: &Self) -> bool {
-        self.player == other.player
-            && self.player.milestone == other.player.milestone
-            && self.machines == other.machines
+        self.player == other.player && self.player.milestone == other.player.milestone
     }
 }
 
@@ -53,6 +52,7 @@ impl GameState {
         info!("Creating new gamestate");
         let mut result = GameState::default();
         result.load_assets(ctx)?;
+        result.create_machine(); //////////// SANDER TESTING TOBE RM
         Ok(result)
     }
     pub fn tick(&mut self, ctx: &mut Context) -> RLResult {
@@ -191,9 +191,9 @@ impl GameState {
         Ok(game_state)
     }
 
-    pub(crate) fn get_interactable(&self) -> Option<&Box<dyn Area>> {
+    pub(crate) fn get_interactable(&mut self) -> Option<&mut Box<dyn Area>> {
         self.areas
-            .iter()
+            .iter_mut()
             .find(|area| area.is_interactable(self.player.position))
     }
 
@@ -216,19 +216,27 @@ impl GameState {
             || Self::border_collision_detection(next_player_pos)
     }
     /// Returns the asset if it exists
-    fn get_asset(&self, name: &str) -> RLResult<&Image> {
+    pub fn get_asset(&self, name: &str) -> RLResult<&Image> {
         self.assets.get(name).ok_or(RLError::AssetError(format!(
             "Could not find asset with name {}",
             name
         )))
     }
     pub fn check_on_milestone(&mut self, milestone_machines: Vec<String>) {
+        let a = self.areas.get(0).unwrap().deref();
+
         let running_machine = self
-            .machines
+            .areas
             .iter()
-            .filter(|machine| machine.state != Broken)
-            .map(|m| m.name.clone())
+            .map(|m: &Box<dyn Area>| m.deref())
+            .filter(|m| m.is_non_broken_machine())
+            .map(|m: &dyn Area| m.get_name())
             .collect::<Vec<String>>();
+
+        if { running_machine.len() != 0 } {
+            info!("found running_machines len: {}", running_machine.len())
+        }
+
         if milestone_machines
             .iter()
             .all(|machine| running_machine.contains(&machine.to_string()))
@@ -308,12 +316,14 @@ impl Screen for GameState {
             scale
         );
         self.draw_resources(&mut canvas, scale, ctx)?;
+        self.draw_machines(&mut canvas, scale, ctx)?;
         self.draw_items(&mut canvas, ctx)?;
         #[cfg(debug_assertions)]
         {
             let fps = graphics::Text::new(format!("FPS: {}", ctx.time.fps()));
             draw!(canvas, &fps, Vec2::new(0.0, 0.0), scale);
         }
+
         canvas.finish(ctx)?;
         Ok(())
     }

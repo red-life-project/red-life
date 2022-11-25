@@ -2,116 +2,111 @@ use serde::{Deserialize, Serialize};
 
 use crate::backend::area::Area;
 
+use crate::backend::gamestate::GameState;
 use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
-use crate::machines::machine_sprite::MaschineSprite;
+use crate::machines::machine::State::{Broken, Idle, Running};
+use crate::machines::machine_sprite::MachineSprite;
 use crate::machines::trade::Trade;
-use ggez::graphics::Rect;
-
+use crate::RLResult;
+use ggez::graphics::{Image, Rect};
+use std::sync::mpsc::Sender;
 use tracing::info;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum State {
     Broken,
-    Idel,
+    Idle,
     Running,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct Maschine {
-    //gamestate:GameState,
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Machine {
     pub name: String,
-    hitbox: Rect,
-    interaction_area: Rect,
     pub state: State,
-    sprite: MaschineSprite,
+    hit_box: Rect,
+    interaction_area: Rect,
+    #[serde(skip)]
+    sprite: MachineSprite,
     trades: Vec<Trade>,
-    running_recources: Resources<i16>,
+    running_resources: Resources<i16>,
     // sender:Sender<Resource>,
 }
-impl Default for Maschine {
-    fn default() -> Self {
+
+impl Machine {
+    pub fn quick(gs: &GameState) -> Self {
+        Machine::new(
+            gs,
+            "test".to_string(),
+            Rect {
+                x: 300.0,
+                y: 300.0,
+                w: 100.0,
+                h: 100.0,
+            },
+            Rect {
+                x: 300.0,
+                y: 400.0,
+                w: 100.0,
+                h: 50.0,
+            },
+        )
+    }
+
+    pub fn new(gs: &GameState, name: String, hit_box: Rect, interaction_area: Rect) -> Self {
+        info!("Creating new machine: name: {}", name);
+
+        let sprite = MachineSprite::new(gs, name.as_str());
         Self {
-            //gamestate:GameState::default(),
-            name: "Maschine ohne namen".to_string(),
-            hitbox: Rect::default(),
-            interaction_area: Rect::default(),
+            name,
+            hit_box,
+            interaction_area,
             state: State::Broken,
-            sprite: MaschineSprite::default(),
+            sprite,
             trades: vec![],
-            running_recources: Resources {
+            running_resources: Resources {
                 oxygen: 0,
                 energy: 0,
                 life: 0,
             }, //  sender: ()
         }
     }
-}
-
-impl Maschine {
-    pub fn test_maschine(/*gs:GameState*/) -> Maschine {
-        //let msSprite =  get_asset("player.png")?;
-        info!("Creating test machine: name: test_machine");
-        Self {
-            //gamestate:gs,
-            name: "test_Maschiene".to_string(),
-            hitbox: Rect {
-                x: 300.0,
-                y: 300.0,
-                w: 100.0,
-                h: 100.0,
-            },
-            interaction_area: Rect {
-                x: 300.0,
-                y: 400.0,
-                w: 100.0,
-                h: 50.0,
-            },
-            state: State::Broken,
-            sprite: Default::default(),
-            trades: vec![],
-            running_recources: Resources {
-                oxygen: 0,
-                energy: 0,
-                life: 0,
-            },
-        }
-    }
-    /*
-    pub fn new(/*gs:GameState,*/namen: String, trades: Vec<Trade>) -> Maschine {
-        //let loadedSprite: MaschineSprite =  AssetService::get(name);
-        //let loded = GameState
-
-        Self {
-           // gamestate: gs,
-            name: namen,
-            hitbox: Default::default(),
-            interaction_area: Default::default(),
-            state: State::Broken,
-            sprite: Default::default(),
-            trades,
-            running_recources: Resources::default(),
-         //   sender: ()
-        }
-    }
-    */
-
     pub fn no_energy(&mut self) {
-        self.state = State::Idel;
+        self.state = State::Idle;
         //timer pausieren
     }
 }
 
-impl Area for Maschine {
-    fn interact(&mut self, _player: &Player) {
-        todo!()
+impl Area for Machine {
+    fn interact(&mut self, player: &Player) {
+        match self.state {
+            Broken => self.state = Idle,
+            State::Idle => self.state = Running,
+            State::Running => self.state = Broken,
+        }
     }
 
     fn get_collision_area(&self) -> Rect {
-        self.hitbox
+        self.hit_box
     }
 
     fn get_interaction_area(&self) -> Rect {
         self.interaction_area
+    }
+
+    fn get_graphic(&self) -> Image {
+        match self.state {
+            Broken => self.sprite.broken.clone(),
+            State::Idle => self.sprite.idle.clone(),
+            State::Running => self.sprite.running.clone(),
+        }
+    }
+
+    fn is_non_broken_machine(&self) -> bool {
+        return self.state != Broken;
+    }
+
+    fn get_name(&self) -> String {
+        return self.name.clone();
     }
 }
