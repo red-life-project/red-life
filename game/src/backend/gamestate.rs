@@ -233,7 +233,7 @@ impl GameState {
             .map(|m: &dyn Area| m.get_name())
             .collect::<Vec<String>>();
 
-        if { running_machine.len() } {
+        if { running_machine.len() != 0 } {
             info!("found running_machines len: {}", running_machine.len())
         }
 

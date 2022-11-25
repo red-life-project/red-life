@@ -11,9 +11,7 @@ use ggez::{graphics, Context};
 impl GameState {
     pub fn create_machine(&mut self) {
         dbg!(format!("create_machine",));
-
         let new_ms = Mashine::default(self);
-        self.machines.push(new_ms.clone()); // TODO:RM
         self.areas.push(Box::new(new_ms));
     }
 
