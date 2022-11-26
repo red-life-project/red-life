@@ -1,10 +1,10 @@
 /// This is the text for the popups that appears in the top left corner.
 
 pub const WARNINGS: [&str; 4] = [
-    "$m : Ein Meteorit ist auf dem Weg!",
-    "$m : Der Strom ist ausgefallen!",
-    "$m : Ein Sandsturm ist auf dem Weg!",
-    "Machine $m ist ausgefallen!",
+    "Ein Komet ist auf dem Weg!",
+    "Der Strom ist ausgefallen!",
+    "Ein Sandsturm ist auf dem Weg!",
+    "Eine Maschine ist ausgefallen!",
 ];
 pub const MARS_INFO: [&str; 5] = [
     "Der Mars ist der 4. Planet in unserem Sonnensystem",
