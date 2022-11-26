@@ -97,7 +97,7 @@ impl Screen for MainMenu {
             graphics::Image::from_bytes(ctx, include_bytes!("../../../assets/mainmenu.png"))?;
         canvas.draw(&background, graphics::DrawParam::default().scale(scale));
 
-        for btn in self.buttons.iter() {
+        for btn in &self.buttons {
             btn.draw_button(ctx, &mut canvas)?;
         }
         canvas.finish(ctx)?;

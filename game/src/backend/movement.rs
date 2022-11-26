@@ -60,7 +60,7 @@ impl GameState {
                     info!("Interacting with Area: {:?}", self.get_interactable());
                     let player_ref = &self.player.clone();
                     if let Some(intractable) = self.get_interactable() {
-                        intractable.interact(player_ref)
+                        intractable.interact(player_ref);
                     }
                 }
                 _ => {}

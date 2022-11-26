@@ -14,7 +14,7 @@ use tracing::info;
 
 /// A screen is every drawable object in the game, so the main menu is a screen too
 pub trait Screen: Debug {
-    /// Used for updating the screen. Returns a StackCommand used to either push a new screen or pop
+    /// Used for updating the screen. Returns a `StackCommand` used to either push a new screen or pop
     /// the current one.
     fn update(&mut self, ctx: &mut Context) -> RLResult;
     /// Used for drawing the last screen in the game.

@@ -23,7 +23,7 @@ impl Default for MachineSprite {
             .unwrap();
         let error = Image::from_bytes(&ctx.0, bytes.as_slice()).unwrap();
         Self {
-            name: "".to_string(),
+            name: String::new(),
             idle: error.clone(),
             broken: error.clone(),
             running: error,
@@ -36,12 +36,10 @@ impl MachineSprite {
         //test_Broken.png
         info!("Creating new MachineSprite: name: {}", name);
 
-        let broken = gs
-            .get_asset(format!("{}_Broken.png", name).as_str())?
-            .clone();
-        let idle = gs.get_asset(format!("{}_Idle.png", name).as_str())?.clone();
+        let broken = gs.get_asset(format!("{name}_Broken.png").as_str())?.clone();
+        let idle = gs.get_asset(format!("{name}_Idle.png").as_str())?.clone();
         let running = gs
-            .get_asset(format!("{}_Running.png", name).as_str())?
+            .get_asset(format!("{name}_Running.png").as_str())?
             .clone();
         Ok(Self {
             name: name.to_string(),

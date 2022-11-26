@@ -15,7 +15,7 @@ impl GameState {
         Ok(())
     }
 
-    pub fn draw_machines(&self, canvas: &mut Canvas, scale: Vec2, ctx: &mut Context) -> RLResult {
+    pub fn draw_machines(&self, canvas: &mut Canvas, scale: Vec2, ctx: &mut Context) {
         for area in &self.areas {
             let machine = area.get_graphic();
             let pos = Vec2 {
@@ -24,6 +24,5 @@ impl GameState {
             };
             draw!(canvas, &machine, pos, scale);
         }
-        Ok(())
     }
 }

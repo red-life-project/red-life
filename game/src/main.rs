@@ -1,3 +1,4 @@
+#![warn(clippy::pedantic)]
 mod backend;
 mod basis;
 mod game_core;

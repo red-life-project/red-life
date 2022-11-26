@@ -10,9 +10,11 @@ use std::fmt::{Debug, Display, Formatter};
 use std::sync::mpsc::Sender;
 use tracing::info;
 
-/// Create DeathScreen using deathscreen::new() and pass reason of death from DeathReason enum.
+/// Create `DeathScreen` using `deathscreen::new()` and pass reason of death from `DeathReason` enum.
 /// # Example
+/// ```
 /// StackCommand::Push(Box::new(deathscreen::new(death_reason: DeathReason::Oxygen)?))
+/// ```
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum DeathReason {
@@ -29,7 +31,7 @@ impl Display for DeathReason {
         }
     }
 }
-/// Deathscreen, telling the user why they died.
+/// `Deathscreen`, telling the user why they died.
 #[derive(Debug)]
 pub struct DeathScreen {
     buttons: Vec<Button>,
@@ -63,7 +65,7 @@ impl Screen for DeathScreen {
             if key == &VirtualKeyCode::Escape {
                 self.sender.send(StackCommand::Push(Box::new(MainMenu::new(
                     self.sender.clone(),
-                ))))?
+                ))))?;
             };
         }
         Ok(())

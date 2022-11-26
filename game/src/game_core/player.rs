@@ -52,7 +52,7 @@ impl Default for Player {
 
 impl Player {
     /// Checks whether the player has taken damage in the past few seconds and if not so start the regeneration
-    pub(crate) fn life_regeneration(&mut self, sender: Sender<StackCommand>) {
+    pub(crate) fn life_regeneration(&mut self, sender: &Sender<StackCommand>) {
         match (
             self.resources_change.life,
             self.last_damage,
@@ -84,7 +84,7 @@ impl Player {
             _ => self.last_damage += 1,
         }
     }
-    pub fn add_item(&mut self, item: Item) {
+    pub fn add_item(&mut self, item: &Item) {
         self.inventory.iter_mut().for_each(|(i, amount)| {
             if i.name == item.name {
                 *amount += 1;

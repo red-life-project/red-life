@@ -55,18 +55,18 @@ impl GameState {
     pub fn tick(&mut self, ctx: &mut Context) -> RLResult {
         // Iterate over every resource and add the change rate to the current value
         self.get_current_milestone(ctx);
-        self.player.resources = Resources::from_iter(
-            self.player
-                .resources
-                .into_iter()
-                .zip(self.player.resources_change.into_iter())
-                .map(|(a, b)| a.saturating_add_signed(b)),
-        );
+        self.player.resources = self
+            .player
+            .resources
+            .into_iter()
+            .zip(self.player.resources_change.into_iter())
+            .map(|(a, b)| a.saturating_add_signed(b))
+            .collect::<Resources<_>>();
         // Check if player is able to regenerate life
         self.player
-            .life_regeneration(self.screen_sender.as_ref().unwrap().clone());
+            .life_regeneration(&self.screen_sender.as_ref().unwrap().clone());
         // Check if the player is dead
-        if let Some(empty_resource) = Resources::get_death_reason(&self.player.resources) {
+        if let Some(empty_resource) = Resources::get_death_reason(self.player.resources) {
             match empty_resource {
                 Both => self.player.resources_change.life = -20,
                 _ => self.player.resources_change.life = -10,
@@ -256,9 +256,9 @@ impl GameState {
                 if ctx.time.ticks() % 5000 == 0 {
                     if self.events.is_none() {
                         self.events =
-                            Event::event_generator(self.screen_sender.as_ref().unwrap().clone())
+                            Event::event_generator(&self.screen_sender.as_ref().unwrap().clone());
                     } else {
-                        self.events = Event::restore_event()
+                        self.events = Event::restore_event();
                     }
                 }
                 self.check_on_milestone(vec![
@@ -290,7 +290,7 @@ impl GameState {
 }
 
 impl Screen for GameState {
-    /// Updates the game and handles input. Returns StackCommand::Pop when Escape is pressed.
+    /// Updates the game and handles input. Returns `StackCommand::Pop` when Escape is pressed.
     fn update(&mut self, ctx: &mut Context) -> RLResult {
         const DESIRED_FPS: u32 = 60;
         if ctx.time.check_update_time(DESIRED_FPS) {
@@ -313,7 +313,7 @@ impl Screen for GameState {
             scale
         );
         self.draw_resources(&mut canvas, scale, ctx)?;
-        self.draw_machines(&mut canvas, scale, ctx)?;
+        self.draw_machines(&mut canvas, scale, ctx);
         self.draw_items(&mut canvas, ctx)?;
         #[cfg(debug_assertions)]
         {
