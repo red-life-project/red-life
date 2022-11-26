@@ -60,11 +60,10 @@ impl Screen for DeathScreen {
                 "The player wants to return to the main menu with: {:?}",
                 key
             );
-            match key {
-                VirtualKeyCode::Escape => self.sender.send(StackCommand::Push(Box::new(
-                    MainMenu::new(self.sender.clone()),
-                )))?,
-                _ => {}
+            if key == &VirtualKeyCode::Escape {
+                self.sender.send(StackCommand::Push(Box::new(MainMenu::new(
+                    self.sender.clone(),
+                ))))?
             };
         }
         Ok(())

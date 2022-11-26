@@ -1,4 +1,3 @@
-use crate::backend::area::Area;
 use crate::backend::gamestate::GameState;
 use crate::backend::screen::StackCommand;
 use crate::RLResult;

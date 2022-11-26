@@ -225,7 +225,7 @@ impl GameState {
         let running_machine = self
             .areas
             .iter()
-            .map(|m: &Box<dyn Area>| m.deref())
+            .map(|m| m.deref())
             .filter(|m| m.is_non_broken_machine())
             .map(|m: &dyn Area| m.get_name())
             .collect::<Vec<String>>();

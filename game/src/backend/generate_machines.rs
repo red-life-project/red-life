@@ -2,8 +2,8 @@ use crate::backend::gamestate::GameState;
 use crate::machines::machine::Machine;
 use crate::{draw, RLResult};
 use ggez::glam::Vec2;
-use ggez::graphics::{Canvas, Color, DrawMode};
-use ggez::{graphics, Context};
+use ggez::graphics::Canvas;
+use ggez::Context;
 use tracing::info;
 
 ///DIESE DATEI IST ZUM TESTEN VON SANDER
