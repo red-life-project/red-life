@@ -1,6 +1,7 @@
 use crate::backend::popup_messages::{MARS_INFO, NASA_INFO, WARNINGS};
 use crate::backend::rlcolor::RLColor;
 use crate::backend::screen::{Popup, StackCommand};
+use crate::game_core::resources::Resources;
 use ggez::graphics::Color;
 use ggez::Context;
 use serde::{Deserialize, Serialize};
@@ -27,10 +28,25 @@ pub const INFORMATIONSPOPUP_MARS: [&str; 2] = [
     "InformationspopupMars",
     "Ein Informationspopup über Mars, welches Fakten und Informationen über den Mars enthält",
 ];
+
+// resources
+pub const DEBUG_CR: Resources<i16> = Resources {
+    oxygen: 10,
+    energy: 10,
+    life: 0,
+};
+pub const NO_CHANGE: Resources<i16> = Resources {
+    oxygen: 0,
+    energy: 0,
+    life: 0,
+};
+
+/// Defines an event in the game
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub(crate) struct Event {
     name: String,
     info_text: String,
+    pub(crate) resources: Resources<i16>,
 }
 impl Event {
     pub fn new(
@@ -38,6 +54,7 @@ impl Event {
         sender: Sender<StackCommand>,
         popup_message: &str,
         popup_type: &str,
+        resources: Resources<i16>,
     ) -> Self {
         Self::send_popup(popup_message, sender, popup_type, event[0]);
         info!(
@@ -48,6 +65,7 @@ impl Event {
         Self {
             name: event[0].to_string(),
             info_text: event[1].to_string(),
+            resources,
         }
     }
 
@@ -61,33 +79,43 @@ impl Event {
                 popup_sender,
                 WARNINGS[0],
                 "warning",
+                DEBUG_CR,
             )),
             11 => Some(Event::new(
                 INFORMATIONSPOPUP_NASA,
                 popup_sender,
                 NASA_INFO[rng.usize(..4)],
                 "nasa",
+                NO_CHANGE,
             )),
-            22 => Some(Event::new(SANDSTURM, popup_sender, WARNINGS[2], "warning")),
+            22 => Some(Event::new(
+                SANDSTURM,
+                popup_sender,
+                WARNINGS[2],
+                "warning",
+                DEBUG_CR,
+            )),
             33 => Some(Event::new(
                 STROMAUSFALL,
                 popup_sender,
                 WARNINGS[1],
                 "warning",
+                DEBUG_CR,
             )),
             44 => Some(Event::new(
                 INFORMATIONSPOPUP_MARS,
                 popup_sender,
                 MARS_INFO[rng.usize(..5)],
                 "mars",
+                NO_CHANGE,
             )),
             _ => None,
         }
     }
-    pub fn restore_event() -> Option<Event> {
-        info!("Event X restored"); // Fill missing parameters
-                                   //Sender is missing -> Should send reverse of event cr
-        None
+    pub fn restore_event(&self) -> Resources<i16> {
+        info!("Event {} restored", self.name);
+        let mut inverted_resources = self.resources.clone().invert();
+        inverted_resources
     }
     /// Sends a popup of an event to the screen
     pub fn send_popup(

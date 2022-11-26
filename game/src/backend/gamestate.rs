@@ -259,9 +259,15 @@ impl GameState {
                 if ctx.time.ticks() % 5000 == 0 {
                     if self.events.is_none() {
                         self.events =
-                            Event::event_generator(self.screen_sender.as_ref().unwrap().clone())
+                            Event::event_generator(self.screen_sender.as_ref().unwrap().clone());
+                        self.events.iter().for_each(|event| {
+                            self.player.resources_change = self.player.resources_change - event.resources;
+                        });
                     } else {
-                        self.events = Event::restore_event()
+                        self.events.iter().for_each(|event| {
+                            self.player.resources_change = self.player.resources_change + event.resources;
+                        });
+                        self.events = None;
                     }
                 }
                 self.check_on_milestone(vec![
