@@ -9,7 +9,6 @@ use crate::main_menu::mainmenu::Message::{Exit, NewGame, Start};
 use crate::RLResult;
 
 use ggez::{graphics, Context};
-use std::fs;
 use std::sync::mpsc::{channel, Receiver, Sender};
 
 #[derive(Copy, Clone, Debug, PartialEq)]

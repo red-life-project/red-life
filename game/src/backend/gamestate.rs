@@ -8,15 +8,12 @@ use crate::game_core::deathscreen::DeathScreen;
 use crate::game_core::event::Event;
 use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
-use crate::machines::machine::State::Broken;
-use crate::machines::machine::{Machine, State};
 use crate::{draw, RLResult};
 use ggez::glam::Vec2;
 use ggez::graphics::{Canvas, Color, Image};
 use ggez::graphics::{DrawMode, Mesh, Rect};
 use ggez::{graphics, Context};
 use serde::{Deserialize, Serialize};
-use std::borrow::Borrow;
 use std::collections::HashMap;
 use std::fs;
 use std::fs::read_dir;
@@ -52,7 +49,7 @@ impl GameState {
         info!("Creating new gamestate");
         let mut result = GameState::default();
         result.load_assets(ctx)?;
-        result.create_machine(); //////////// SANDER TESTING TOBE RM
+        result.create_machine()?; //////////// SANDER TESTING TOBE RM
         Ok(result)
     }
     pub fn tick(&mut self, ctx: &mut Context) -> RLResult {
@@ -233,7 +230,7 @@ impl GameState {
             .map(|m: &dyn Area| m.get_name())
             .collect::<Vec<String>>();
 
-        if { running_machine.len() != 0 } {
+        if !running_machine.is_empty() {
             info!("found running_machines len: {}", running_machine.len())
         }
 

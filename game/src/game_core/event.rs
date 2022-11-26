@@ -1,8 +1,6 @@
 use crate::backend::popup_messages::{MARS_INFO, NASA_INFO, WARNINGS};
-use crate::backend::rlcolor::RLColor;
 use crate::backend::screen::{Popup, StackCommand};
 use ggez::graphics::Color;
-use ggez::Context;
 use serde::{Deserialize, Serialize};
 use std::sync::mpsc::Sender;
 use tracing::info;

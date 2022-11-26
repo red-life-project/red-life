@@ -10,7 +10,6 @@ use crate::machines::machine_sprite::MachineSprite;
 use crate::machines::trade::Trade;
 use crate::RLResult;
 use ggez::graphics::{Image, Rect};
-use std::sync::mpsc::Sender;
 use tracing::info;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -34,7 +33,7 @@ pub struct Machine {
 }
 
 impl Machine {
-    pub fn quick(gs: &GameState) -> Self {
+    pub fn quick(gs: &GameState) -> RLResult<Self> {
         Machine::new(
             gs,
             "test".to_string(),
@@ -53,11 +52,16 @@ impl Machine {
         )
     }
 
-    pub fn new(gs: &GameState, name: String, hit_box: Rect, interaction_area: Rect) -> Self {
+    pub fn new(
+        gs: &GameState,
+        name: String,
+        hit_box: Rect,
+        interaction_area: Rect,
+    ) -> RLResult<Self> {
         info!("Creating new machine: name: {}", name);
 
-        let sprite = MachineSprite::new(gs, name.as_str());
-        Self {
+        let sprite = MachineSprite::new(gs, name.as_str())?;
+        Ok(Self {
             name,
             hit_box,
             interaction_area,
@@ -68,12 +72,12 @@ impl Machine {
                 oxygen: 0,
                 energy: 0,
                 life: 0,
-            }, //  sender: ()
-        }
+            },
+        })
     }
     pub fn no_energy(&mut self) {
         self.state = State::Idle;
-        //timer pausieren
+        //TODO: timer pausieren
     }
 }
 
@@ -103,10 +107,10 @@ impl Area for Machine {
     }
 
     fn is_non_broken_machine(&self) -> bool {
-        return self.state != Broken;
+        self.state != Broken
     }
 
     fn get_name(&self) -> String {
-        return self.name.clone();
+        self.name.clone()
     }
 }

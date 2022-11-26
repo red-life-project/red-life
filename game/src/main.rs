@@ -12,7 +12,6 @@ use ggez::{event, Context};
 use std::fs::File;
 use std::sync::Mutex;
 use tracing::{info, Level};
-use tracing_subscriber::prelude::*;
 
 /// Our own Result Type for custom Error handling.
 pub type RLResult<T = ()> = Result<T, error::RLError>;
