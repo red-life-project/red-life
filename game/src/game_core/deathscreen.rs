@@ -83,9 +83,9 @@ impl Screen for DeathScreen {
             graphics::Image::from_bytes(ctx, include_bytes!("../../../assets/deathscreen.png"))?;
         canvas.draw(&background, graphics::DrawParam::default().scale(scale));
 
-        draw!(canvas, &self.death_message, Vec2::new(412., 520.), scale);
+        draw!(canvas, &self.death_message, Vec2::new(372., 520.), scale);
 
-        draw!(canvas, &self.additional_text, Vec2::new(686., 720.), scale);
+        draw!(canvas, &self.additional_text, Vec2::new(646., 720.), scale);
 
         canvas.finish(ctx)?;
 
