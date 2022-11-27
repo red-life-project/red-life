@@ -225,13 +225,13 @@ impl GameState {
         let running_machine = self
             .areas
             .iter()
-            .map(|m| m.deref())
+            .map(Deref::deref)
             .filter(|m| m.is_non_broken_machine())
-            .map(|m: &dyn Area| m.get_name())
+            .map(Area::get_name)
             .collect::<Vec<String>>();
 
         if !running_machine.is_empty() {
-            info!("found running_machines len: {}", running_machine.len())
+            info!("found running_machines len: {}", running_machine.len());
         }
 
         if milestone_machines

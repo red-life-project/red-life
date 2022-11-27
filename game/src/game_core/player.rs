@@ -158,9 +158,14 @@ mod test {
         let (mut gamestate, _) = setup_gamestate();
         let channel = channel();
         gamestate.set_sender(channel.0);
-        let mut player = Player::default();
-        player.last_damage = 3;
-        player.resources_change.life = -1;
+        let mut player = Player {
+            last_damage: 3,
+            resources_change: Resources {
+                life: -1,
+                ..Default::default()
+            },
+            ..Player::default()
+        };
         player.life_regeneration(&gamestate.screen_sender.as_ref().unwrap().clone());
         assert_eq!(player.resources_change.life, -1);
         assert_eq!(player.last_damage, 0);
