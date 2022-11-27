@@ -36,6 +36,7 @@ pub const DEBUG_CR: Resources<i16> = Resources {
     energy: 10,
     life: 0,
 };
+// for info events
 pub const NO_CHANGE: Resources<i16> = Resources {
     oxygen: 0,
     energy: 0,
@@ -48,7 +49,7 @@ pub(crate) struct Event {
     name: String,
     info_text: String,
     pub(crate) resources: Resources<i16>,
-    pub(crate) duration: Duration,
+    duration: Duration,
     start_time: SystemTime,
 }
 impl Event {
