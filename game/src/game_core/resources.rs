@@ -70,16 +70,6 @@ impl Resources<u16> {
     }
 }
 
-impl Resources<i16> {
-    pub fn invert(&self) -> Self {
-        Self {
-            oxygen: -self.oxygen,
-            energy: -self.energy,
-            life: -self.life,
-        }
-    }
-}
-
 #[cfg(test)]
 mod test {
     use super::*;
@@ -138,21 +128,5 @@ mod test {
         assert_eq!(ait.next().unwrap(), 2);
         assert_eq!(ait.next().unwrap(), 1);
         assert_eq!(Some(ait.next()), Some(None))
-    }
-
-    #[test]
-    fn invert_i16() {
-        let a = Resources {
-            oxygen: 3,
-            energy: 2,
-            life: 1,
-        };
-        let b = a.invert();
-        let c = Resources {
-            oxygen: -3,
-            energy: -2,
-            life: -1,
-        };
-        assert_eq!(b, c);
     }
 }
