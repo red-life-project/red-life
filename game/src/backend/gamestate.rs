@@ -5,7 +5,7 @@ use crate::backend::utils::{get_scale, is_colliding};
 use crate::backend::{error::RLError, screen::Screen};
 use crate::game_core::deathscreen::DeathReason::Both;
 use crate::game_core::deathscreen::DeathScreen;
-use crate::game_core::event::Event;
+use crate::game_core::event::{Event, NO_CHANGE};
 use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
 use crate::machines::machine::State::Broken;
@@ -32,7 +32,7 @@ const COLORS: [Color; 3] = [RLColor::BLUE, RLColor::GOLD, RLColor::DARK_RED];
 pub struct GameState {
     /// Contains the current player position, resources(air, energy, life) and the inventory and their change rates
     pub player: Player,
-    events: Option<Event>,
+    events: Vec<Event>,
     #[serde(skip)]
     assets: HashMap<String, Image>,
     #[serde(skip)]
@@ -253,21 +253,35 @@ impl GameState {
                     self.player.resources_change.oxygen = -1;
                     self.player.resources_change.energy = -1;
                     self.player.last_damage = 0;
-                    self.events = None;
+                    self.events = Vec::new();
                     self.player.match_milestone = 1;
                 }
-                if ctx.time.ticks() % 5000 == 0 {
-                    if self.events.is_none() {
-                        self.events =
-                            Event::event_generator(self.screen_sender.as_ref().unwrap().clone());
-                        self.events.iter().for_each(|event| {
-                            self.player.resources_change = self.player.resources_change - event.resources;
-                        });
+                // Remove event if it is not active anymore and change players resource change
+                self.events.retain(|event| {
+                    if event.is_active() {
+                        true
                     } else {
-                        self.events.iter().for_each(|event| {
-                            self.player.resources_change = self.player.resources_change + event.resources;
-                        });
-                        self.events = None;
+                        dbg!("Event removed");
+                        self.player.resources_change =
+                            self.player.resources_change + event.resources;
+                        false
+                    }
+                });
+                // Event time
+                if ctx.time.ticks() % 5000 == 0 {
+                    // have a maximum of three active events
+                    if self.events.len() < 3 {
+                        let gen_event =
+                            Event::event_generator(self.screen_sender.as_ref().unwrap().clone());
+                        // TODO: use if let Some()
+                        // only push events that change the change_rate of the player
+                        // ignore info events (INFORMATIONSPOPUP_NASA, INFORMATIONSPOPUP_MARS)
+                        if gen_event.is_some() && gen_event.as_ref().unwrap().resources != NO_CHANGE
+                        {
+                            self.player.resources_change = self.player.resources_change
+                                - gen_event.as_ref().unwrap().resources;
+                            self.events.push(gen_event.unwrap());
+                        }
                     }
                 }
                 self.check_on_milestone(vec![

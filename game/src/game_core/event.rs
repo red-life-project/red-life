@@ -6,6 +6,7 @@ use ggez::graphics::Color;
 use ggez::Context;
 use serde::{Deserialize, Serialize};
 use std::sync::mpsc::Sender;
+use std::time::{Duration, Instant, SystemTime};
 use tracing::info;
 
 pub const KOMETENEINSCHLAG: [&str; 2] = [
@@ -47,6 +48,8 @@ pub(crate) struct Event {
     name: String,
     info_text: String,
     pub(crate) resources: Resources<i16>,
+    pub(crate) duration: Duration,
+    start_time: SystemTime,
 }
 impl Event {
     pub fn new(
@@ -55,6 +58,7 @@ impl Event {
         popup_message: &str,
         popup_type: &str,
         resources: Resources<i16>,
+        duration: Duration,
     ) -> Self {
         Self::send_popup(popup_message, sender, popup_type, event[0]);
         info!(
@@ -66,6 +70,8 @@ impl Event {
             name: event[0].to_string(),
             info_text: event[1].to_string(),
             resources,
+            duration,
+            start_time: SystemTime::now(),
         }
     }
 
@@ -80,6 +86,7 @@ impl Event {
                 WARNINGS[0],
                 "warning",
                 DEBUG_CR,
+                Duration::from_secs(10),
             )),
             11 => Some(Event::new(
                 INFORMATIONSPOPUP_NASA,
@@ -87,6 +94,7 @@ impl Event {
                 NASA_INFO[rng.usize(..4)],
                 "nasa",
                 NO_CHANGE,
+                Duration::from_secs(10),
             )),
             22 => Some(Event::new(
                 SANDSTURM,
@@ -94,6 +102,7 @@ impl Event {
                 WARNINGS[2],
                 "warning",
                 DEBUG_CR,
+                Duration::from_secs(10),
             )),
             33 => Some(Event::new(
                 STROMAUSFALL,
@@ -101,6 +110,7 @@ impl Event {
                 WARNINGS[1],
                 "warning",
                 DEBUG_CR,
+                Duration::from_secs(10),
             )),
             44 => Some(Event::new(
                 INFORMATIONSPOPUP_MARS,
@@ -108,14 +118,15 @@ impl Event {
                 MARS_INFO[rng.usize(..5)],
                 "mars",
                 NO_CHANGE,
+                Duration::from_secs(10),
             )),
             _ => None,
         }
     }
+    /// Returns inverse resources of the event
     pub fn restore_event(&self) -> Resources<i16> {
         info!("Event {} restored", self.name);
-        let mut inverted_resources = self.resources.clone().invert();
-        inverted_resources
+        self.resources.clone().invert()
     }
     /// Sends a popup of an event to the screen
     pub fn send_popup(
@@ -137,5 +148,9 @@ impl Event {
             popup_message.to_string(),
             popup_type
         );
+    }
+    /// Check if event is still active
+    pub fn is_active(&self) -> bool {
+        self.start_time.elapsed().unwrap() < self.duration
     }
 }
