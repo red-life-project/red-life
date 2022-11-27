@@ -85,8 +85,8 @@ impl Area for Machine {
     fn interact(&mut self, player: &Player) {
         match self.state {
             Broken => self.state = Idle,
-            State::Idle => self.state = Running,
-            State::Running => self.state = Broken,
+            Idle => self.state = Running,
+            Running => self.state = Broken,
         }
     }
 
@@ -101,8 +101,8 @@ impl Area for Machine {
     fn get_graphic(&self) -> Image {
         match self.state {
             Broken => self.sprite.broken.clone(),
-            State::Idle => self.sprite.idle.clone(),
-            State::Running => self.sprite.running.clone(),
+            Idle => self.sprite.idle.clone(),
+            Running => self.sprite.running.clone(),
         }
     }
 
