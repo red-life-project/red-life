@@ -6,7 +6,7 @@ use ggez::graphics::Color;
 use ggez::Context;
 use serde::{Deserialize, Serialize};
 use std::sync::mpsc::Sender;
-use std::time::{Duration, Instant, SystemTime};
+use std::time::{Duration, SystemTime};
 use tracing::info;
 
 pub const KOMETENEINSCHLAG: [&str; 2] = [
@@ -122,11 +122,6 @@ impl Event {
             )),
             _ => None,
         }
-    }
-    /// Returns inverse resources of the event
-    pub fn restore_event(&self) -> Resources<i16> {
-        info!("Event {} restored", self.name);
-        self.resources.clone().invert()
     }
     /// Sends a popup of an event to the screen
     pub fn send_popup(
