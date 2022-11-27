@@ -47,7 +47,10 @@ impl Button {
         info!("User clicked: mouse position: {:?}", ctx.mouse.position());
         if self.in_area(ctx.mouse.position(), scale) {
             self.current_color = self.hover_color;
-            if ctx.mouse.button_just_pressed(ggez::event::MouseButton::Left) {
+            if ctx
+                .mouse
+                .button_just_pressed(ggez::event::MouseButton::Left)
+            {
                 self.click();
             }
         } else {
