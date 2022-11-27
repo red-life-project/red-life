@@ -256,29 +256,38 @@ impl GameState {
                     self.events = Vec::new();
                     self.player.match_milestone = 1;
                 }
-                // Remove event if it is not active anymore and change players resource change
+                // remove event if it is not active anymore and change players resource change
+                // the resources<i16> struct is then subtracted from the players resources<i16>
                 self.events.retain(|event| {
                     if event.is_active() {
+                        // event will remain in vector
                         true
                     } else {
                         info!("Event {} is not active anymore", event.get_name());
+                        // the resources<i16> struct is then added to the players resources<i16>
+                        // removing the effect of the event
                         self.player.resources_change =
                             self.player.resources_change + event.resources;
+                        // event will be removed from the events vector
                         false
                     }
                 });
-                // Event time
+                // add new event
                 if ctx.time.ticks() % 5000 == 0 {
                     // have a maximum of three active events
                     if self.events.len() < 3 {
+                        // generate new event
+                        // might not return an event
                         let gen_event =
                             Event::event_generator(self.screen_sender.as_ref().unwrap().clone());
-                        // only push events that change the change_rate of the player
-                        // ignore info events (INFORMATIONSPOPUP_NASA, INFORMATIONSPOPUP_MARS)
+                        // only push events that change the change_rate of the player (at least one field is not 0)
+                        // ignore info events (INFORMATIONSPOPUP_NASA, INFORMATIONSPOPUP_MARS) (all their fields are 0)
                         if let Some(event) = gen_event {
                             if event.resources != NO_CHANGE {
+                                // if the event_generator returned an event, substrack the resources<i16> struct from the players resources<i16>
                                 self.player.resources_change =
                                     self.player.resources_change - event.resources;
+                                // push the event to the events vector
                                 self.events.push(event);
                             }
                         }

@@ -53,6 +53,7 @@ pub(crate) struct Event {
     start_time: SystemTime,
 }
 impl Event {
+    /// create new event
     pub fn new(
         event: [&str; 2],
         sender: Sender<StackCommand>,
@@ -147,6 +148,7 @@ impl Event {
     }
     /// Check if event is still active
     pub fn is_active(&self) -> bool {
+        // check if time since event creation is greater than the duration of the event
         self.start_time.elapsed().unwrap() < self.duration
     }
     /// Returns the name of the event
