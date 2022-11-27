@@ -42,11 +42,17 @@ pub struct DeathScreen {
 impl DeathScreen {
     pub fn new(death_reason: DeathReason, sender: Sender<StackCommand>) -> Self {
         info!("The player died due to a lack of : {:?}", death_reason);
+
+        let mut death_message = graphics::Text::new(format!("Dein Todesgrund: {death_reason}"));
+        death_message.set_scale(70.);
+        let mut additional_text = graphics::Text::new("Bitte drücke ESC!");
+        additional_text.set_scale(70.);
+
         Self {
             buttons: vec![],
             death_reason,
-            death_message: graphics::Text::new(format!("Dein Todesgrund: {death_reason}")),
-            additional_text: graphics::Text::new("Bitte drücke ESC!"),
+            death_message,
+            additional_text,
             sender,
         }
     }
@@ -73,19 +79,22 @@ impl Screen for DeathScreen {
     fn draw(&self, ctx: &mut Context) -> RLResult {
         let scale = get_scale(ctx);
         let mut canvas = graphics::Canvas::from_frame(ctx, graphics::Color::RED);
+        let background =
+            graphics::Image::from_bytes(ctx, include_bytes!("../../../assets/deathscreen.png"))?;
+        canvas.draw(&background, graphics::DrawParam::default().scale(scale));
 
         draw!(
             canvas,
             &self.death_message,
-            Vec2::new(400., 200.),
-            2. * scale
+            Vec2::new(412., 520.),
+            scale
         );
 
         draw!(
             canvas,
             &self.additional_text,
-            Vec2::new(422.5, 300.),
-            2. * scale
+            Vec2::new(686., 720.),
+            scale
         );
 
         canvas.finish(ctx)?;
