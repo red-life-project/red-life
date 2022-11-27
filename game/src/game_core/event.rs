@@ -153,4 +153,8 @@ impl Event {
     pub fn is_active(&self) -> bool {
         self.start_time.elapsed().unwrap() < self.duration
     }
+    /// Returns the name of the event
+    pub fn get_name(&self) -> String {
+        self.name.clone()
+    }
 }

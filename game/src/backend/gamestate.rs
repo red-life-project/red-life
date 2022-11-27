@@ -261,7 +261,7 @@ impl GameState {
                     if event.is_active() {
                         true
                     } else {
-                        dbg!("Event removed");
+                        info!("Event {} is not active anymore", event.get_name());
                         self.player.resources_change =
                             self.player.resources_change + event.resources;
                         false
@@ -273,14 +273,14 @@ impl GameState {
                     if self.events.len() < 3 {
                         let gen_event =
                             Event::event_generator(self.screen_sender.as_ref().unwrap().clone());
-                        // TODO: use if let Some()
                         // only push events that change the change_rate of the player
                         // ignore info events (INFORMATIONSPOPUP_NASA, INFORMATIONSPOPUP_MARS)
-                        if gen_event.is_some() && gen_event.as_ref().unwrap().resources != NO_CHANGE
-                        {
-                            self.player.resources_change = self.player.resources_change
-                                - gen_event.as_ref().unwrap().resources;
-                            self.events.push(gen_event.unwrap());
+                        if let Some(event) = gen_event {
+                            if event.resources != NO_CHANGE {
+                                self.player.resources_change =
+                                    self.player.resources_change - event.resources;
+                                self.events.push(event);
+                            }
                         }
                     }
                 }
