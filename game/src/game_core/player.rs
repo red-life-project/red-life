@@ -52,7 +52,7 @@ impl Default for Player {
 
 impl Player {
     /// Checks whether the player has taken damage in the past few seconds and if not so start the regeneration
-    pub(crate) fn life_regeneration(&mut self, sender: Sender<StackCommand>) {
+    pub(crate) fn life_regeneration(&mut self, sender: &Sender<StackCommand>) {
         match (
             self.resources_change.life,
             self.last_damage,
@@ -84,7 +84,7 @@ impl Player {
             _ => self.last_damage += 1,
         }
     }
-    pub fn add_item(&mut self, item: Item) {
+    pub fn add_item(&mut self, item: &Item) {
         self.inventory.iter_mut().for_each(|(i, amount)| {
             if i.name == item.name {
                 *amount += 1;
@@ -113,7 +113,7 @@ mod test {
         player.resources.life = u16::MAX;
         player.resources_change.life = 5;
         player.last_damage = 1000;
-        player.life_regeneration(gamestate.screen_sender.as_ref().unwrap().clone());
+        player.life_regeneration(&gamestate.screen_sender.as_ref().unwrap().clone());
         assert_eq!(player.resources_change.life, 0);
         assert_eq!(player.last_damage, 0);
     }
@@ -125,7 +125,7 @@ mod test {
         player.resources.life = 1000;
         player.resources_change.life = 5;
         player.last_damage = 1000;
-        player.life_regeneration(gamestate.screen_sender.as_ref().unwrap().clone());
+        player.life_regeneration(&gamestate.screen_sender.as_ref().unwrap().clone());
         assert_eq!(player.last_damage, 0);
     }
 
@@ -136,7 +136,7 @@ mod test {
         player.resources.life = 1000;
         player.resources_change.life = 0;
         player.last_damage = 900;
-        player.life_regeneration(gamestate.screen_sender.as_ref().unwrap().clone());
+        player.life_regeneration(&gamestate.screen_sender.as_ref().unwrap().clone());
         assert_eq!(player.resources_change.life, 5);
         assert_eq!(player.last_damage, 0);
     }
@@ -148,7 +148,7 @@ mod test {
         player.resources.life = 20000;
         player.last_damage = 400;
         player.resources_change.life = 0;
-        player.life_regeneration(gamestate.screen_sender.as_ref().unwrap().clone());
+        player.life_regeneration(&gamestate.screen_sender.as_ref().unwrap().clone());
         assert_eq!(player.resources_change.life, 0);
         assert_eq!(player.last_damage, 401);
     }
@@ -158,10 +158,15 @@ mod test {
         let (mut gamestate, _) = setup_gamestate();
         let channel = channel();
         gamestate.set_sender(channel.0);
-        let mut player = Player::default();
-        player.last_damage = 3;
-        player.resources_change.life = -1;
-        player.life_regeneration(gamestate.screen_sender.as_ref().unwrap().clone());
+        let mut player = Player {
+            last_damage: 3,
+            resources_change: Resources {
+                life: -1,
+                ..Default::default()
+            },
+            ..Player::default()
+        };
+        player.life_regeneration(&gamestate.screen_sender.as_ref().unwrap().clone());
         assert_eq!(player.resources_change.life, -1);
         assert_eq!(player.last_damage, 0);
     }
