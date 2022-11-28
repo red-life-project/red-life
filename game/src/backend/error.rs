@@ -39,7 +39,7 @@ impl From<SendError<StackCommand>> for RLError {
         error!("Could not send StackCommand: {}", value);
         RLError::IO(io::Error::new(
             io::ErrorKind::Other,
-            format!("Could not send StackCommand: {}", value),
+            format!("Could not send StackCommand: {value}"),
         ))
     }
 }
