@@ -1,6 +1,8 @@
 //! Contains the game logic, updates the game and draws the current board
 use crate::backend::area::Area;
+use crate::backend::constants::COLORS;
 use crate::backend::constants::MAP_BORDER;
+use crate::backend::constants::RESOURCE_POSITION;
 use crate::backend::rlcolor::RLColor;
 use crate::backend::screen::StackCommand;
 use crate::backend::utils::{get_scale, is_colliding};
@@ -24,8 +26,6 @@ use std::ops::Deref;
 use std::sync::mpsc::Sender;
 use tracing::info;
 
-const RESOURCE_POSITION: [f32; 3] = [316.0, 639.0, 1373.0];
-const COLORS: [Color; 3] = [RLColor::BLUE, RLColor::GOLD, RLColor::DARK_RED];
 /// This is the game state. It contains all the data that is needed to run the game.
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct GameState {
