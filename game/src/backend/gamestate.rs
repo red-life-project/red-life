@@ -257,7 +257,7 @@ impl GameState {
                     &ctx,
                     &mut self.events,
                     &mut self.player.resources_change,
-                    self.screen_sender.as_ref().unwrap().clone(),
+                    &self.screen_sender.as_ref().unwrap().clone(),
                 );
                 self.check_on_milestone(vec![
                     "Sauerstoffgenerator".to_string(),

@@ -6,6 +6,7 @@ use ggez::graphics::Color;
 use serde::{Deserialize, Serialize};
 use std::sync::mpsc::Sender;
 use std::time::{Duration, SystemTime};
+use ggez::Context;
 use tracing::info;
 
 pub const KOMETENEINSCHLAG: [&str; 2] = [
@@ -159,7 +160,7 @@ impl Event {
         ctx: &Context,
         events: &mut Vec<Event>,
         player_resources: &mut Resources<i16>,
-        popup_sender: Sender<StackCommand>,
+        popup_sender: &Sender<StackCommand>,
     ) {
         events.retain(|event| {
             if event.is_active() {
