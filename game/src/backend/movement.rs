@@ -8,7 +8,7 @@ use crate::machines::machine::State::Running;
 use crate::RLResult;
 use ggez::winit::event::VirtualKeyCode;
 use ggez::Context;
-use std::borrow::Borrow;
+use std::borrow::{Borrow, BorrowMut};
 use tracing::info;
 
 const MOVEMENT_SPEED: usize = 10;
@@ -27,7 +27,12 @@ impl GameState {
             info!("Interacting with Area: {:?}", self.get_interactable());
             let player_ref = &self.player.clone();
             if let Some(intractable) = self.get_interactable() {
-                intractable.interact(player_ref)
+                let a = intractable.interact(player_ref.inventory.clone());
+                dbg!("the player inventory neades updating: new inventory is:");
+                info!(
+                    "Player inveltory updated:({},{},{})",
+                    a[0].1, a[1].1, a[2].1
+                )
             }
         }
         let keys = ctx.keyboard.pressed_keys();

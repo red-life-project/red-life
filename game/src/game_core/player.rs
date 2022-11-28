@@ -39,7 +39,7 @@ impl Default for Player {
             },
             resources_change: Resources {
                 oxygen: 0,
-                // In release Version this Value should be 0
+                // In release Version this Value shouldplayer.inventory.0  be 0
                 energy: -1,
                 life: 0,
             },
