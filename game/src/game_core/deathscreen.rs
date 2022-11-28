@@ -14,14 +14,15 @@ use tracing::info;
 /// # Example
 /// StackCommand::Push(Box::new(deathscreen::new(death_reason: DeathReason::Oxygen)?))
 
-// Constants for all strings used in this screen
-// Might be moved to a separate file in the future
+/// Constants for all strings used in this screen
+/// Might be moved to a separate file in the future
 pub const AIR_STRING: &str = "Luft";
 pub const ENERGY_STRING: &str = "Energie";
 pub const AIR_AND_ENERGY_STRING: &str = "Luft und Energie";
 pub const DEATH_REASON_STRING: &str = "Dein Todesgrund: ";
 pub const ADDITIONAL_INFO_STRING: &str = "Bitte drücke ESC!";
 
+/// Defines the reason for the death of the player
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum DeathReason {
     Oxygen,

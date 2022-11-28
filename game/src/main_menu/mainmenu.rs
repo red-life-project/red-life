@@ -11,14 +11,14 @@ use crate::RLResult;
 use ggez::{graphics, Context};
 use std::fs;
 use std::sync::mpsc::{channel, Receiver, Sender};
-
+/// is used to define what every button does
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum Message {
     Exit,
     NewGame,
     Start,
 }
-
+/// Main menu screen of the game with buttons to start a new game, load a game or exit the game.
 #[derive(Debug)]
 pub struct MainMenu {
     buttons: Vec<Button>,
@@ -67,6 +67,7 @@ impl MainMenu {
     }
 }
 impl Screen for MainMenu {
+    /// Updates the screen every tick
     fn update(&mut self, ctx: &mut Context) -> RLResult {
         let scale = get_scale(ctx);
         self.buttons.iter_mut().for_each(|btn| {
@@ -90,7 +91,7 @@ impl Screen for MainMenu {
         }
         Ok(())
     }
-
+    /// Draws the main menu and all its buttons.
     fn draw(&self, ctx: &mut Context) -> RLResult {
         let scale = get_scale(ctx);
         let mut canvas = graphics::Canvas::from_frame(ctx, RLColor::DARK_BLUE);
