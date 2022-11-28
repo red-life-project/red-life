@@ -1,10 +1,8 @@
 use crate::backend::popup_messages::{MARS_INFO, NASA_INFO, WARNINGS};
-use crate::backend::rlcolor::RLColor;
 use crate::backend::screen::{Popup, StackCommand};
 use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
 use ggez::graphics::Color;
-use ggez::Context;
 use serde::{Deserialize, Serialize};
 use std::sync::mpsc::Sender;
 use std::time::{Duration, SystemTime};
@@ -57,7 +55,7 @@ impl Event {
     /// create new event
     pub fn new(
         event: [&str; 2],
-        sender: Sender<StackCommand>,
+        sender: &Sender<StackCommand>,
         popup_message: &str,
         popup_type: &str,
         resources: Resources<i16>,
@@ -79,7 +77,7 @@ impl Event {
     }
 
     /// if no Event is active it either chooses a random event of the Event enum or nothing every 60 seconds
-    pub fn event_generator(popup_sender: Sender<StackCommand>) -> Option<Event> {
+    pub fn event_generator(popup_sender: &Sender<StackCommand>) -> Option<Event> {
         let rng = fastrand::Rng::new();
         let event = rng.usize(..50);
         match event {
@@ -129,10 +127,10 @@ impl Event {
     /// Sends a popup of an event to the screen
     pub fn send_popup(
         popup_message: &str,
-        sender: Sender<StackCommand>,
+        sender: &Sender<StackCommand>,
         popup_type: &str,
         event_name: &str,
-    ) -> () {
+    ) {
         let popup = match popup_type {
             "warning" => Popup::warning(popup_message.to_string()),
             "nasa" => Popup::nasa(popup_message.to_string()),
