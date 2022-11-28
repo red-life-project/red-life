@@ -1,5 +1,5 @@
+//! Contains the color definitions for the game. Every color is defined as a constant.
 use ggez::graphics::Color;
-
 pub struct RLColor {}
 
 impl RLColor {
