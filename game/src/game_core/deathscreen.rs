@@ -16,14 +16,15 @@ use tracing::info;
 /// StackCommand::Push(Box::new(deathscreen::new(death_reason: DeathReason::Oxygen)?))
 /// ```
 
-// Constants for all strings used in this screen
-// Might be moved to a separate file in the future
+/// Constants for all strings used in this screen
+/// Might be moved to a separate file in the future
 pub const AIR_STRING: &str = "Luft";
 pub const ENERGY_STRING: &str = "Energie";
 pub const AIR_AND_ENERGY_STRING: &str = "Luft und Energie";
 pub const DEATH_REASON_STRING: &str = "Dein Todesgrund: ";
 pub const ADDITIONAL_INFO_STRING: &str = "Bitte drücke ESC!";
 
+/// Defines the reason for the death of the player and is used to display the reason on the screen
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum DeathReason {
     Oxygen,
@@ -39,7 +40,7 @@ impl Display for DeathReason {
         }
     }
 }
-/// `Deathscreen`, telling the user why they died.
+/// `Deathscreen`, telling the user why they died. Also has a button to return to the main menu
 #[derive(Debug)]
 pub struct DeathScreen {
     buttons: Vec<Button>,
@@ -50,6 +51,10 @@ pub struct DeathScreen {
 }
 
 impl DeathScreen {
+    /// Creates a new DeathScreen and sends a command to the `ScreenStack` when the button is pressed
+    /// # Arguments
+    /// * `death_reason` - The reason for the death of the player
+    /// * `sender` - The sender to send the command to the `ScreenStack`
     pub fn new(death_reason: DeathReason, sender: Sender<StackCommand>) -> Self {
         info!("The player died due to a lack of : {:?}", death_reason);
 
@@ -85,7 +90,7 @@ impl Screen for DeathScreen {
         }
         Ok(())
     }
-
+    /// Draws the death screen with the reason for the death of the player and a button to return to the main menu
     fn draw(&self, ctx: &mut Context) -> RLResult {
         let scale = get_scale(ctx);
         let mut canvas = graphics::Canvas::from_frame(ctx, graphics::Color::RED);
