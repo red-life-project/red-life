@@ -22,6 +22,7 @@ impl FromIterator<u16> for Resources<u16> {
         }
     }
 }
+
 impl<T: PartialOrd> IntoIterator for Resources<T> {
     type Item = T;
     type IntoIter = std::array::IntoIter<T, 3>;
@@ -52,6 +53,7 @@ impl<T: ops::Sub<Output = T> + PartialOrd> ops::Sub<Resources<T>> for Resources<
         }
     }
 }
+
 impl Resources<u16> {
     /// This function returns the value that reached zero first
     /// If no value reached zero, it returns None
@@ -67,6 +69,7 @@ impl Resources<u16> {
         }
     }
 }
+
 #[cfg(test)]
 mod test {
     use super::*;
