@@ -133,7 +133,7 @@ pub enum StackCommand {
 }
 
 impl event::EventHandler<RLError> for Screenstack {
-    /// Redirect the update function to the last screen and handle the returned StackCommand
+    /// Redirect the update function to the last screen and handle the returned `StackCommand`
     fn update(&mut self, ctx: &mut Context) -> RLResult {
         self.remove_popups();
         self.screens

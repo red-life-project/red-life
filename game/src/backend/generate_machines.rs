@@ -15,7 +15,7 @@ impl GameState {
         Ok(())
     }
 
-    pub fn draw_machines(&self, canvas: &mut Canvas, scale: Vec2, ctx: &mut Context) {
+    pub fn draw_machines(&self, canvas: &mut Canvas, scale: Vec2) {
         for area in &self.areas {
             let machine = area.get_graphic();
             let pos = Vec2 {

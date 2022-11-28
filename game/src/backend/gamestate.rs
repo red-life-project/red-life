@@ -94,7 +94,7 @@ impl GameState {
 
     /// Paints the current resource level of air, energy and life as a bar on the screen and
     /// draws the amount of every resource in the inventory.
-    fn draw_resources(&self, canvas: &mut Canvas, scale: Vec2, ctx: &mut Context) -> RLResult {
+    fn draw_resources(&self, canvas: &mut Canvas, scale: Vec2, ctx: &mut Context) {
         self.player
             .resources
             .into_iter()
@@ -121,10 +121,9 @@ impl GameState {
                 Ok(())
             })
             .for_each(drop);
-        Ok(())
     }
     /// iterates trough the inventory and draws the amount of every item in the inventory.
-    fn draw_items(&self, canvas: &mut Canvas, ctx: &mut Context) -> RLResult {
+    fn draw_items(&self, canvas: &mut Canvas, ctx: &mut Context) {
         self.player
             .inventory
             .clone()
@@ -142,13 +141,12 @@ impl GameState {
                 );
                 draw!(
                     canvas,
-                    &graphics::Text::new(format!("{}", amount)),
+                    &graphics::Text::new(format!("{amount}")),
                     Vec2::new(position.0 + (i * 63) as f32, position.1),
                     scale
                 );
             })
             .for_each(drop);
-        Ok(())
     }
     /// Loads the assets. Has to be called before drawing the game.
     pub(crate) fn load_assets(&mut self, ctx: &mut Context) -> RLResult {
@@ -229,16 +227,15 @@ impl GameState {
     /// # Arguments
     /// * `name` - The name of the asset
     pub fn get_asset(&self, name: &str) -> RLResult<&Image> {
-        self.assets.get(name).ok_or(RLError::AssetError(format!(
-            "Could not find asset with name {}",
-            name
-        )))
+        self.assets
+            .get(name)
+            .ok_or_else(|| RLError::AssetError(format!("Could not find asset with name {}", name)))
     }
     /// Checks if the milestone is reached which means the vec of repaired machines
     /// contain the vec of machines needed to reach the next milestone.
     /// # Arguments
     /// * `milestone_machines` - A vec of machines needed to reach the next milestone
-    pub fn check_on_milestone(&mut self, milestone_machines: Vec<String>) {
+    pub fn check_on_milestone(&mut self, milestone_machines: &[String]) {
         //let a = self.areas.get(0).unwrap().deref(); erst einfügen, wenn man es auch benutzt
 
         let running_machine = self
@@ -282,13 +279,13 @@ impl GameState {
                         self.events = Event::restore_event();
                     }
                 }
-                self.check_on_milestone(vec![
+                self.check_on_milestone(&[
                     "Sauerstoffgenerator".to_string(),
                     "Stromgenerator".to_string(),
                 ]);
             }
             2 => {
-                self.check_on_milestone(vec!["Kommunikationsmodul".to_string()]);
+                self.check_on_milestone(&["Kommunikationsmodul".to_string()]);
             }
             _ => {}
         }
@@ -333,9 +330,9 @@ impl Screen for GameState {
             Vec2::from([self.player.position.0 as f32, self.player.position.1 as f32]),
             scale
         );
-        self.draw_resources(&mut canvas, scale, ctx)?;
-        self.draw_machines(&mut canvas, scale, ctx);
-        self.draw_items(&mut canvas, ctx)?;
+        self.draw_resources(&mut canvas, scale, ctx);
+        self.draw_machines(&mut canvas, scale);
+        self.draw_items(&mut canvas, ctx);
         #[cfg(debug_assertions)]
         {
             let fps = graphics::Text::new(format!("FPS: {}", ctx.time.fps()));
