@@ -175,21 +175,19 @@ impl Event {
                 false
             }
         });
-        if ctx.time.ticks() % 5000 == 0 {
-            // have a maximum of three active events
-            if events.len() < 3 {
-                // generate new event
-                // might not return an event
-                let gen_event = Event::event_generator(popup_sender);
-                // only push events that change the change_rate of the player (at least one field is not 0)
-                // ignore info events (INFORMATIONSPOPUP_NASA, INFORMATIONSPOPUP_MARS) (all their fields are 0)
-                if let Some(event) = gen_event {
-                    if event.resources != NO_CHANGE {
-                        // if the event_generator returned an event, substrack the resources<i16> struct from the players resources<i16>
-                        *player_resources = *player_resources - event.resources;
-                        // push the event to the events vector
-                        events.push(event);
-                    }
+        // have a maximum of three active events
+        if ctx.time.ticks() % 5000 == 0 && events.len() < 3 {
+            // generate new event
+            // might not return an event
+            let gen_event = Event::event_generator(popup_sender);
+            // only push events that change the change_rate of the player (at least one field is not 0)
+            // ignore info events (INFORMATIONSPOPUP_NASA, INFORMATIONSPOPUP_MARS) (all their fields are 0)
+            if let Some(event) = gen_event {
+                if event.resources != NO_CHANGE {
+                    // if the event_generator returned an event, substrack the resources<i16> struct from the players resources<i16>
+                    *player_resources = *player_resources - event.resources;
+                    // push the event to the events vector
+                    events.push(event);
                 }
             }
         }
