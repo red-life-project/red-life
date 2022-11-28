@@ -173,7 +173,7 @@ impl Event {
             }
         });
         // have a maximum of three active events
-        if ctx.time.ticks() % 10 == 0 && gamestate.events.len() < 3 {
+        if ctx.time.ticks() % 5000 == 0 && gamestate.events.len() < 3 {
             // generate new event
             // might not return an event
             let gen_event =
