@@ -1,6 +1,6 @@
 pub(crate) mod area;
 pub(crate) mod asset_service;
-mod constants;
+pub(crate) mod constants;
 pub(crate) mod error;
 pub(crate) mod gamestate;
 pub(crate) mod generate_machines;

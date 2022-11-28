@@ -1,8 +1,7 @@
 //! Contains the game logic, updates the game and draws the current board
 use crate::backend::area::Area;
 use crate::backend::constants::COLORS;
-use crate::backend::constants::MAP_BORDER;
-use crate::backend::constants::RESOURCE_POSITION;
+use crate::backend::constants::{DESIRED_FPS, MAP_BORDER, RESOURCE_POSITION};
 use crate::backend::rlcolor::RLColor;
 use crate::backend::screen::StackCommand;
 use crate::backend::utils::{get_scale, is_colliding};
@@ -308,7 +307,6 @@ impl GameState {
 impl Screen for GameState {
     /// Updates the game and handles input. Returns `StackCommand::Pop` when Escape is pressed.
     fn update(&mut self, ctx: &mut Context) -> RLResult {
-        const DESIRED_FPS: u32 = 60;
         if ctx.time.check_update_time(DESIRED_FPS) {
             self.tick(ctx)?;
             self.move_player(ctx)?;
