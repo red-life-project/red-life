@@ -30,6 +30,9 @@ pub const INFORMATIONSPOPUP_MARS: [&str; 2] = [
     "InformationspopupMars",
     "Ein Informationspopup über Mars, welches Fakten und Informationen über den Mars enthält",
 ];
+/// defines an event which has an impact on the game and the player
+/// for example a popup or a change in the player's resources
+/// events can just fade off or stay as long as the player didnt interact with them
 
 // resources
 pub const DEBUG_CR: Resources<i16> = Resources {
@@ -127,6 +130,11 @@ impl Event {
         }
     }
     /// Sends a popup of an event to the screen
+    /// # Arguments
+    /// * `popup_message` - The message which should be displayed in the popup
+    /// * `sender` - The sender which is used to send the popup to the screen
+    /// * `popup_type` - The type of the popup, which is used to determine the color of the popup
+    /// * `event_name` - The name of the event, which is used to determine what Event name should be displayed in the popup
     pub fn send_popup(
         popup_message: &str,
         sender: &Sender<StackCommand>,

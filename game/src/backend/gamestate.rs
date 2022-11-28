@@ -1,3 +1,4 @@
+//! Contains the game logic, updates the game and draws the current board
 use crate::backend::area::Area;
 use crate::backend::rlcolor::RLColor;
 use crate::backend::screen::StackCommand;
@@ -20,7 +21,6 @@ use std::fs::read_dir;
 use std::ops::Deref;
 use std::sync::mpsc::Sender;
 use tracing::info;
-
 const RESOURCE_POSITION: [f32; 3] = [316.0, 639.0, 1373.0];
 const RESOURCE_NAME: [&str; 3] = ["Luft", "Energie", "Leben"];
 const COLORS: [Color; 3] = [RLColor::BLUE, RLColor::GOLD, RLColor::DARK_RED];
@@ -45,6 +45,8 @@ impl PartialEq for GameState {
 }
 
 impl GameState {
+    /// Creates a new game state at the beginning of the game and after every loading.
+    /// It loads all the assets and creates the areas of the machines.
     pub fn new(ctx: &mut Context) -> RLResult<Self> {
         info!("Creating new gamestate");
         let mut result = GameState::default();
@@ -52,6 +54,9 @@ impl GameState {
         result.create_machine()?; //////////// SANDER TESTING TOBE RM
         Ok(result)
     }
+    /// Gets called every tick in the update fn to update the internal game logic.
+    /// It updates the player resources, checks on the current milestone if the player has reached a new one
+    /// and checks if the player has died.
     pub fn tick(&mut self, ctx: &mut Context) -> RLResult {
         // Iterate over every resource and add the change rate to the current value
         self.get_current_milestone(ctx);
@@ -66,7 +71,7 @@ impl GameState {
         self.player
             .life_regeneration(&self.screen_sender.as_ref().unwrap().clone());
         // Check if the player is dead
-        if let Some(empty_resource) = Resources::get_death_reason(self.player.resources) {
+        if let Some(empty_resource) = Resources::get_death_reason(&self.player.resources) {
             match empty_resource {
                 Both => self.player.resources_change.life = -20,
                 _ => self.player.resources_change.life = -10,
@@ -87,7 +92,8 @@ impl GameState {
         Ok(())
     }
 
-    /// Paints the current resource level of air, energy and life as a bar on the screen.
+    /// Paints the current resource level of air, energy and life as a bar on the screen and
+    /// draws the amount of every resource in the inventory.
     fn draw_resources(&self, canvas: &mut Canvas, scale: Vec2, ctx: &mut Context) -> RLResult {
         self.player
             .resources
@@ -117,6 +123,7 @@ impl GameState {
             .for_each(drop);
         Ok(())
     }
+    /// iterates trough the inventory and draws the amount of every item in the inventory.
     fn draw_items(&self, canvas: &mut Canvas, ctx: &mut Context) -> RLResult {
         self.player
             .inventory
@@ -161,6 +168,8 @@ impl GameState {
 
     /// Saves the active game state to a file. The boolean value "milestone" determines whether this is a milestone or an autosave.
     /// If the file already exists, it will be overwritten.
+    /// # Arguments
+    /// * `milestone` - Boolean value that determines whether this is a milestone save or an autosave.
     pub(crate) fn save(&self, milestone: bool) -> RLResult {
         let save_data = serde_yaml::to_string(self)?;
         // Create the folder if it doesn't exist
@@ -176,6 +185,8 @@ impl GameState {
     }
     /// Loads a game state from a file. The boolean value "milestone" determines whether this is a milestone or an autosave.
     /// If the file doesn't exist, it will return a default game state.
+    /// # Arguments
+    /// * `milestone` - Whether to load the milestone or the autosave
     pub fn load(milestone: bool) -> RLResult<GameState> {
         let save_data = if milestone {
             info!("Loading milestone...");
@@ -187,7 +198,7 @@ impl GameState {
         let game_state: GameState = serde_yaml::from_str(&save_data)?;
         Ok(game_state)
     }
-
+    /// Returns the area the player needs to stand in to interact with a machine
     pub(crate) fn get_interactable(&mut self) -> Option<&mut Box<dyn Area>> {
         self.areas
             .iter_mut()
@@ -195,6 +206,8 @@ impl GameState {
     }
 
     /// Returns if the player would collide with a border if they moved in the given direction
+    /// # Arguments
+    /// * `next_player_pos` - The direction the player wants to move
     fn border_collision_detection(next_player_pos: (usize, usize)) -> bool {
         next_player_pos.0 >= 1750 // Right border
             || next_player_pos.1 >= 850 // Bottom border
@@ -213,12 +226,18 @@ impl GameState {
             || Self::border_collision_detection(next_player_pos)
     }
     /// Returns the asset if it exists
+    /// # Arguments
+    /// * `name` - The name of the asset
     pub fn get_asset(&self, name: &str) -> RLResult<&Image> {
         self.assets.get(name).ok_or(RLError::AssetError(format!(
             "Could not find asset with name {}",
             name
         )))
     }
+    /// Checks if the milestone is reached which means the vec of repaired machines
+    /// contain the vec of machines needed to reach the next milestone.
+    /// # Arguments
+    /// * `milestone_machines` - A vec of machines needed to reach the next milestone
     pub fn check_on_milestone(&mut self, milestone_machines: Vec<String>) {
         //let a = self.areas.get(0).unwrap().deref(); erst einfügen, wenn man es auch benutzt
 
@@ -243,6 +262,8 @@ impl GameState {
             self.save(true).unwrap();
         }
     }
+    /// Decides what happens if a certain milestone is reached
+    /// divided into 3 milestones
     fn get_current_milestone(&mut self, ctx: &mut Context) {
         match self.player.milestone {
             1 => {
