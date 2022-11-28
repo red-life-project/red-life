@@ -18,8 +18,8 @@ pub fn get_scale(ctx: &Context) -> Vec2 {
 /// Returns if the player would collide with a machine if they moved in the given direction
 #[inline(always)]
 pub fn is_colliding(player_pos: (usize, usize), area: &Rect) -> bool {
-    max(area.x as usize, player_pos.0) <= min((area.x + area.w) as usize, player_pos.0 + 41)
-        && max(area.y as usize, player_pos.1) <= min((area.y + area.h) as usize, player_pos.1 + 50)
+    max(area.x as usize, player_pos.0) <= min((area.x + area.w) as usize, player_pos.0 + 100)
+        && max(area.y as usize, player_pos.1) <= min((area.y + area.h) as usize, player_pos.1 + 100)
 }
 
 /// This macro is used for simplifying drawing with scaling.
