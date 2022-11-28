@@ -1,8 +1,9 @@
-use crate::backend::popup_messages::GAME_INFO;
 use crate::backend::rlcolor::RLColor;
 use crate::backend::screen::{Popup, StackCommand};
-use crate::game_core::item::{Item, BENZIN, GEDRUCKTESTEIL, SUPER_GLUE};
+use crate::game_core::item::Item;
 use crate::game_core::resources::Resources;
+use crate::languages::german::GAME_INFO;
+use crate::languages::german::{BENZIN, GEDRUCKTESTEIL, SUPER_GLUE};
 
 use serde::{Deserialize, Serialize};
 use std::sync::mpsc::Sender;

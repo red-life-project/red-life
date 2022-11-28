@@ -2,6 +2,7 @@
 mod backend;
 mod basis;
 mod game_core;
+mod languages;
 mod machines;
 mod main_menu;
 

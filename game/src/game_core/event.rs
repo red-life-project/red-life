@@ -1,8 +1,11 @@
 use crate::backend::gamestate::GameState;
-use crate::backend::popup_messages::{MARS_INFO, NASA_INFO, WARNINGS};
 use crate::backend::screen::{Popup, StackCommand};
 use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
+use crate::languages::german::{
+    INFORMATIONSPOPUP_MARS, INFORMATIONSPOPUP_NASA, KOMETENEINSCHLAG, SANDSTURM, STROMAUSFALL,
+};
+use crate::languages::german::{MARS_INFO, NASA_INFO, WARNINGS};
 use ggez::graphics::Color;
 use ggez::Context;
 use serde::{Deserialize, Serialize};
@@ -10,26 +13,6 @@ use std::sync::mpsc::Sender;
 use std::time::{Duration, SystemTime};
 use tracing::info;
 
-pub const KOMETENEINSCHLAG: [&str; 2] = [
-    "KOMETENEINSCHLAG",
-    "Ein KOMETENEINSCHLAG hat die Erde getroffen und hat ein Loch in der Wand erzeugt",
-];
-pub const INFORMATIONSPOPUP_NASA: [&str; 2] = [
-    "InformationspopupNASA",
-    "Ein Informationspopup über die NASA, welches Fakten und Informationen über die NASA enthält",
-];
-pub const SANDSTURM: [&str; 2] = [
-    "Sandsturm",
-    "Ein Sandsturm, welcher zu einer Störung des Sauerstoffgenerators führt",
-];
-pub const STROMAUSFALL: [&str; 2] = [
-    "Stromausfall",
-    "Ein Stromausfall, welcher zu einer Störung des Sauerstoffgenerators führt",
-];
-pub const INFORMATIONSPOPUP_MARS: [&str; 2] = [
-    "InformationspopupMars",
-    "Ein Informationspopup über Mars, welches Fakten und Informationen über den Mars enthält",
-];
 /// defines an event which has an impact on the game and the player
 /// for example a popup or a change in the player's resources
 /// events can just fade off or stay as long as the player didnt interact with them

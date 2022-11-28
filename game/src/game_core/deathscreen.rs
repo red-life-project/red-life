@@ -1,5 +1,8 @@
 use crate::backend::screen::{Screen, StackCommand};
 use crate::backend::utils::get_scale;
+use crate::languages::german::{
+    ADDITIONAL_INFO_STRING, AIR_AND_ENERGY_STRING, AIR_STRING, DEATH_REASON_STRING, ENERGY_STRING,
+};
 use crate::main_menu::button::Button;
 use crate::main_menu::mainmenu::MainMenu;
 use crate::{draw, RLResult};
@@ -15,14 +18,6 @@ use tracing::info;
 /// ```
 /// StackCommand::Push(Box::new(deathscreen::new(death_reason: DeathReason::Oxygen)?))
 /// ```
-
-/// Constants for all strings used in this screen
-/// Might be moved to a separate file in the future
-pub const AIR_STRING: &str = "Luft";
-pub const ENERGY_STRING: &str = "Energie";
-pub const AIR_AND_ENERGY_STRING: &str = "Luft und Energie";
-pub const DEATH_REASON_STRING: &str = "Dein Todesgrund: ";
-pub const ADDITIONAL_INFO_STRING: &str = "Bitte drücke ESC!";
 
 /// Defines the reason for the death of the player and is used to display the reason on the screen
 #[derive(Copy, Clone, Debug, PartialEq)]
