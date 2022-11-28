@@ -256,30 +256,12 @@ impl GameState {
                     self.events = Vec::new();
                     self.player.match_milestone = 1;
                 }
-                // remove event if it is not active anymore and change players resource change
-                // the resources<i16> struct is then subtracted from the players resources<i16>
-                Event::update_events(&mut self.events, &mut self.player.resources_change);
-                // add new event
-                if ctx.time.ticks() % 5000 == 0 {
-                    // have a maximum of three active events
-                    if self.events.len() < 3 {
-                        // generate new event
-                        // might not return an event
-                        let gen_event =
-                            Event::event_generator(self.screen_sender.as_ref().unwrap().clone());
-                        // only push events that change the change_rate of the player (at least one field is not 0)
-                        // ignore info events (INFORMATIONSPOPUP_NASA, INFORMATIONSPOPUP_MARS) (all their fields are 0)
-                        if let Some(event) = gen_event {
-                            if event.resources != NO_CHANGE {
-                                // if the event_generator returned an event, substrack the resources<i16> struct from the players resources<i16>
-                                self.player.resources_change =
-                                    self.player.resources_change - event.resources;
-                                // push the event to the events vector
-                                self.events.push(event);
-                            }
-                        }
-                    }
-                }
+                Event::update_events(
+                    &ctx,
+                    &mut self.events,
+                    &mut self.player.resources_change,
+                    self.screen_sender.as_ref().unwrap().clone(),
+                );
                 self.check_on_milestone(vec![
                     "Sauerstoffgenerator".to_string(),
                     "Stromgenerator".to_string(),

@@ -156,24 +156,43 @@ impl Event {
     pub fn get_name(&self) -> String {
         self.name.clone()
     }
-    /// Deletes due events from the gamestates events vector
-    pub fn update_events(events: &mut Vec<Event>, player_resources: &mut Resources<i16>) -> () {
+    /// Deletes due events from the gamestates events vector and adds new events
+    pub fn update_events(
+        ctx: &Context,
+        events: &mut Vec<Event>,
+        player_resources: &mut Resources<i16>,
+        popup_sender: Sender<StackCommand>,
+    ) {
         events.retain(|event| {
             if event.is_active() {
                 // event will remain in vector
                 true
             } else {
                 info!("Event {} is not active anymore", event.get_name());
-                dbg!(event.resources);
-                dbg!("Event removed");
                 // the resources<i16> struct is then added to the players resources<i16>
                 // removing the effect of the event
-                let mut new_resources = *player_resources + event.resources;
-                *player_resources = new_resources;
+                *player_resources = *player_resources + event.resources;
                 // event will be removed from the events vector
                 false
             }
         });
+        if ctx.time.ticks() % 10 == 0 {
+            // have a maximum of three active events
+            if events.len() < 3 {
+                // generate new event
+                // might not return an event
+                let gen_event = Event::event_generator(popup_sender);
+                // only push events that change the change_rate of the player (at least one field is not 0)
+                // ignore info events (INFORMATIONSPOPUP_NASA, INFORMATIONSPOPUP_MARS) (all their fields are 0)
+                if let Some(event) = gen_event {
+                    if event.resources != NO_CHANGE {
+                        // if the event_generator returned an event, substrack the resources<i16> struct from the players resources<i16>
+                        *player_resources = *player_resources - event.resources;
+                        // push the event to the events vector
+                        events.push(event);
+                    }
+                }
+            }
+        }
     }
-    ///
 }
