@@ -3,10 +3,10 @@ use crate::backend::screen::{Popup, StackCommand};
 use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
 use ggez::graphics::Color;
+use ggez::Context;
 use serde::{Deserialize, Serialize};
 use std::sync::mpsc::Sender;
 use std::time::{Duration, SystemTime};
-use ggez::Context;
 use tracing::info;
 
 pub const KOMETENEINSCHLAG: [&str; 2] = [
