@@ -1,3 +1,4 @@
+use crate::backend::gamestate::GameState;
 use crate::backend::popup_messages::{MARS_INFO, NASA_INFO, WARNINGS};
 use crate::backend::screen::{Popup, StackCommand};
 use crate::game_core::player::Player;
@@ -156,13 +157,8 @@ impl Event {
         self.name.clone()
     }
     /// Deletes due events from the gamestates events vector and adds new events
-    pub fn update_events(
-        ctx: &Context,
-        events: &mut Vec<Event>,
-        player_resources: &mut Resources<i16>,
-        popup_sender: &Sender<StackCommand>,
-    ) {
-        events.retain(|event| {
+    pub fn update_events(ctx: &Context, gamestate: &mut GameState) {
+        gamestate.events.retain(|event| {
             if event.is_active() {
                 // event will remain in vector
                 true
@@ -170,24 +166,27 @@ impl Event {
                 info!("Event {} is not active anymore", event.get_name());
                 // the resources<i16> struct is then added to the players resources<i16>
                 // removing the effect of the event
-                *player_resources = *player_resources + event.resources;
+                gamestate.player.resources_change =
+                    gamestate.player.resources_change + event.resources;
                 // event will be removed from the events vector
                 false
             }
         });
         // have a maximum of three active events
-        if ctx.time.ticks() % 5000 == 0 && events.len() < 3 {
+        if ctx.time.ticks() % 10 == 0 && gamestate.events.len() < 3 {
             // generate new event
             // might not return an event
-            let gen_event = Event::event_generator(popup_sender);
+            let gen_event =
+                Event::event_generator(&gamestate.screen_sender.as_ref().unwrap().clone());
             // only push events that change the change_rate of the player (at least one field is not 0)
             // ignore info events (INFORMATIONSPOPUP_NASA, INFORMATIONSPOPUP_MARS) (all their fields are 0)
             if let Some(event) = gen_event {
                 if event.resources != NO_CHANGE {
                     // if the event_generator returned an event, substrack the resources<i16> struct from the players resources<i16>
-                    *player_resources = *player_resources - event.resources;
+                    gamestate.player.resources_change =
+                        gamestate.player.resources_change - event.resources;
                     // push the event to the events vector
-                    events.push(event);
+                    gamestate.events.push(event);
                 }
             }
         }

@@ -29,7 +29,7 @@ const COLORS: [Color; 3] = [RLColor::BLUE, RLColor::GOLD, RLColor::DARK_RED];
 pub struct GameState {
     /// Contains the current player position, resources(air, energy, life) and the inventory and their change rates
     pub player: Player,
-    events: Vec<Event>,
+    pub(crate) events: Vec<Event>,
     #[serde(skip)]
     assets: HashMap<String, Image>,
     #[serde(skip)]
@@ -253,12 +253,7 @@ impl GameState {
                     self.events = Vec::new();
                     self.player.match_milestone = 1;
                 }
-                Event::update_events(
-                    &ctx,
-                    &mut self.events,
-                    &mut self.player.resources_change,
-                    &self.screen_sender.as_ref().unwrap().clone(),
-                );
+                Event::update_events(&ctx, self);
                 self.check_on_milestone(vec![
                     "Sauerstoffgenerator".to_string(),
                     "Stromgenerator".to_string(),
