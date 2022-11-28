@@ -16,6 +16,14 @@ use tracing::info;
 /// StackCommand::Push(Box::new(deathscreen::new(death_reason: DeathReason::Oxygen)?))
 /// ```
 
+// Constants for all strings used in this screen
+// Might be moved to a separate file in the future
+pub const AIR_STRING: &str = "Luft";
+pub const ENERGY_STRING: &str = "Energie";
+pub const AIR_AND_ENERGY_STRING: &str = "Luft und Energie";
+pub const DEATH_REASON_STRING: &str = "Dein Todesgrund: ";
+pub const ADDITIONAL_INFO_STRING: &str = "Bitte drücke ESC!";
+
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum DeathReason {
     Oxygen,
@@ -25,9 +33,9 @@ pub enum DeathReason {
 impl Display for DeathReason {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            DeathReason::Oxygen => write!(f, "Luft"),
-            DeathReason::Energy => write!(f, "Energie"),
-            DeathReason::Both => write!(f, "Luft und Energie"),
+            DeathReason::Oxygen => write!(f, "{}", AIR_STRING),
+            DeathReason::Energy => write!(f, "{}", ENERGY_STRING),
+            DeathReason::Both => write!(f, "{}", AIR_AND_ENERGY_STRING),
         }
     }
 }
@@ -44,11 +52,18 @@ pub struct DeathScreen {
 impl DeathScreen {
     pub fn new(death_reason: DeathReason, sender: Sender<StackCommand>) -> Self {
         info!("The player died due to a lack of : {:?}", death_reason);
+
+        let mut death_message =
+            graphics::Text::new(format!("{} {death_reason}", DEATH_REASON_STRING));
+        death_message.set_scale(70.);
+        let mut additional_text = graphics::Text::new(ADDITIONAL_INFO_STRING);
+        additional_text.set_scale(70.);
+
         Self {
             buttons: vec![],
             death_reason,
-            death_message: graphics::Text::new(format!("Dein Todesgrund: {death_reason}")),
-            additional_text: graphics::Text::new("Bitte drücke ESC!"),
+            death_message,
+            additional_text,
             sender,
         }
     }
@@ -74,20 +89,13 @@ impl Screen for DeathScreen {
     fn draw(&self, ctx: &mut Context) -> RLResult {
         let scale = get_scale(ctx);
         let mut canvas = graphics::Canvas::from_frame(ctx, graphics::Color::RED);
+        let background =
+            graphics::Image::from_bytes(ctx, include_bytes!("../../../assets/deathscreen.png"))?;
+        canvas.draw(&background, graphics::DrawParam::default().scale(scale));
 
-        draw!(
-            canvas,
-            &self.death_message,
-            Vec2::new(400., 200.),
-            2. * scale
-        );
+        draw!(canvas, &self.death_message, Vec2::new(372., 520.), scale);
 
-        draw!(
-            canvas,
-            &self.additional_text,
-            Vec2::new(422.5, 300.),
-            2. * scale
-        );
+        draw!(canvas, &self.additional_text, Vec2::new(646., 720.), scale);
 
         canvas.finish(ctx)?;
 

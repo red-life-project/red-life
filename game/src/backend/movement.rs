@@ -17,6 +17,13 @@ impl GameState {
                 .unwrap()
                 .send(StackCommand::Pop)?;
         }
+        if ctx.keyboard.is_key_just_pressed(VirtualKeyCode::E) {
+            info!("Interacting with Area: {:?}", self.get_interactable());
+            let player_ref = &self.player.clone();
+            if let Some(intractable) = self.get_interactable() {
+                intractable.interact(player_ref)
+            }
+        }
         let keys = ctx.keyboard.pressed_keys();
         for key in keys.iter() {
             match key {
@@ -54,13 +61,6 @@ impl GameState {
                     )) {
                         self.player.position.0 =
                             self.player.position.0.saturating_add(MOVEMENT_SPEED);
-                    }
-                }
-                VirtualKeyCode::E => {
-                    info!("Interacting with Area: {:?}", self.get_interactable());
-                    let player_ref = &self.player.clone();
-                    if let Some(intractable) = self.get_interactable() {
-                        intractable.interact(player_ref);
                     }
                 }
                 _ => {}
