@@ -176,7 +176,7 @@ impl Event {
                 false
             }
         });
-        if ctx.time.ticks() % 10 == 0 {
+        if ctx.time.ticks() % 5000 == 0 {
             // have a maximum of three active events
             if events.len() < 3 {
                 // generate new event
