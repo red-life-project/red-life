@@ -222,6 +222,8 @@ impl GameState {
             name
         )))
     }
+    /// The function checks if the milestone is reached which means the repaired machines
+    /// contain the vec of machines needed to reach the next milestone.
     pub fn check_on_milestone(&mut self, milestone_machines: Vec<String>) {
         //let a = self.areas.get(0).unwrap().deref(); erst einfügen, wenn man es auch benutzt
 
@@ -246,6 +248,8 @@ impl GameState {
             self.save(true).unwrap();
         }
     }
+    /// Decides what happens if a certain milestone is reached
+    /// divided into 3 milestones
     fn get_current_milestone(&mut self, ctx: &mut Context) {
         match self.player.milestone {
             1 => {

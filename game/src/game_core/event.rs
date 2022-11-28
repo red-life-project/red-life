@@ -27,6 +27,9 @@ pub const INFORMATIONSPOPUP_MARS: [&str; 2] = [
     "InformationspopupMars",
     "Ein Informationspopup über Mars, welches Fakten und Informationen über den Mars enthält",
 ];
+/// defines an event which has an impact on the game and the player
+/// for example a popup or a change in the player's resources
+/// events can just fade off or stay as long as the player didnt interact with them
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub(crate) struct Event {
     name: String,
