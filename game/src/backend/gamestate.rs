@@ -258,20 +258,7 @@ impl GameState {
                 }
                 // remove event if it is not active anymore and change players resource change
                 // the resources<i16> struct is then subtracted from the players resources<i16>
-                self.events.retain(|event| {
-                    if event.is_active() {
-                        // event will remain in vector
-                        true
-                    } else {
-                        info!("Event {} is not active anymore", event.get_name());
-                        // the resources<i16> struct is then added to the players resources<i16>
-                        // removing the effect of the event
-                        self.player.resources_change =
-                            self.player.resources_change + event.resources;
-                        // event will be removed from the events vector
-                        false
-                    }
-                });
+                Event::update_events(&mut self.events, &mut self.player.resources_change);
                 // add new event
                 if ctx.time.ticks() % 5000 == 0 {
                     // have a maximum of three active events

@@ -1,6 +1,7 @@
 use crate::backend::popup_messages::{MARS_INFO, NASA_INFO, WARNINGS};
 use crate::backend::rlcolor::RLColor;
 use crate::backend::screen::{Popup, StackCommand};
+use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
 use ggez::graphics::Color;
 use ggez::Context;
@@ -155,4 +156,24 @@ impl Event {
     pub fn get_name(&self) -> String {
         self.name.clone()
     }
+    /// Deletes due events from the gamestates events vector
+    pub fn update_events(events: &mut Vec<Event>, player_resources: &mut Resources<i16>) -> () {
+        events.retain(|event| {
+            if event.is_active() {
+                // event will remain in vector
+                true
+            } else {
+                info!("Event {} is not active anymore", event.get_name());
+                dbg!(event.resources);
+                dbg!("Event removed");
+                // the resources<i16> struct is then added to the players resources<i16>
+                // removing the effect of the event
+                let mut new_resources = *player_resources + event.resources;
+                *player_resources = new_resources;
+                // event will be removed from the events vector
+                false
+            }
+        });
+    }
+    ///
 }
