@@ -85,7 +85,7 @@ impl Player {
             _ => self.last_damage += 1,
         }
     }
-    pub fn add_item(&mut self, item: &Item,n:i32) {
+    pub fn add_item(&mut self, item: &Item, n: i32) {
         self.inventory.iter_mut().for_each(|(i, amount)| {
             if i.name == item.name {
                 *amount += n;
@@ -93,11 +93,10 @@ impl Player {
         });
     }
     pub fn get_item_amount(&self, item: &Item) -> i32 {
-
-        let mut ret :i32 =  -100;
+        let mut ret: i32 = -100;
         self.inventory.iter().for_each(|(i, amount)| {
             if i.name == item.name {
-                 ret =  *amount;
+                ret = *amount;
             }
         });
         ret

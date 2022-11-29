@@ -5,7 +5,7 @@ use ggez::graphics::{Image, Rect};
 use std::fmt::Debug;
 
 pub trait Area: Debug {
-    fn interact(&mut self, player :  &mut Player) -> Player;
+    fn interact(&mut self, player: &mut Player) -> Player;
     fn is_interactable(&self, pos: (usize, usize)) -> bool {
         is_colliding(pos, &self.get_interaction_area())
     }
