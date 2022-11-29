@@ -4,7 +4,6 @@ use std::borrow::BorrowMut;
 use crate::backend::area::Area;
 
 use crate::backend::gamestate::GameState;
-use crate::game_core::item::{Item, BENZIN, GEDRUCKTESTEIL};
 use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
 use crate::machines::machine::State::{Broken, Idle, Running};
@@ -14,6 +13,8 @@ use crate::RLResult;
 use ggez::graphics::{Image, Rect};
 use tracing::info;
 use tracing_subscriber::fmt::time;
+use crate::game_core::item::Item;
+use crate::languages::german::{BENZIN, GEDRUCKTESTEIL};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum State {
@@ -58,8 +59,8 @@ impl Machine {
                     "repair_test".to_string(),
                     100,
                     State::Broken,
-                    clone.clone(),
-                    (0, 0, 0),
+                    &mut clone.clone(),
+                    (0, 0, -1),
                     Item::new(BENZIN),
                     0,
                 ),
@@ -67,8 +68,8 @@ impl Machine {
                     "repair_test".to_string(),
                     100,
                     State::Idle,
-                    clone.clone(),
-                    (-10, -10, 0),
+                    &mut clone.clone(),
+                    (-10, -10, 1),
                     Item::new(BENZIN),
                     0,
                 ),
@@ -76,8 +77,8 @@ impl Machine {
                     "repair_test".to_string(),
                     100,
                     State::Running,
-                    clone,
-                    (1, 1, 0),
+                    &mut clone.clone(),
+                    (1, 1, -1),
                     Item::new(GEDRUCKTESTEIL),
                     1,
                 ),
@@ -128,33 +129,27 @@ impl Machine {
 }
 
 impl Area for Machine {
-    fn interact(&mut self, mut player_inventory: Vec<(Item, i32)>) -> Vec<(Item, i32)> {
+    fn interact(&mut self, player: &mut Player) -> Player {
         let t = self.get_trade();
-        for demand in &t.cost {
-            for supply in &player_inventory {
-                if supply.0.name == demand.0.name && supply.1 - demand.1 < 0 {
-                    //if there is one item in the list of demands the interaction fails nothing changes
-                    //TODO: inform player about failed interaction
-                    return player_inventory.clone();
-                }
-            }
+
+        if t.cost.iter().any(|(item, demand)| player.get_item_amount(item) - demand < 0){
+            return player.clone();
         }
+
         // all checks have been pased taking items
         info!("Executing trade:{} ", t.name);
-        for demand in &t.cost {
-            for supply in player_inventory.borrow_mut() {
-                if supply.0.name == demand.0.name {
-                    supply.1 -= demand.1
-                }
-            }
-        }
+
+        &t.cost.iter().for_each(|(item, demand)| {
+            player.add_item(item, *demand*-1)
+        });
+
         match self.state {
             // generalisation
             Broken => self.state = Idle,
             Idle => self.state = Running,
-            Running => self.state = Broken,
+            Running => self.state = Running,
         };
-        player_inventory.clone()
+        player.clone()
     }
 
     fn get_collision_area(&self) -> Rect {

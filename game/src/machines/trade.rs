@@ -4,10 +4,11 @@ use crate::machines::machine::State;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub(crate) struct Trade {
+pub struct Trade {
     pub(crate) name: String,
     time_ms: usize,
-    pub ms_state: State, // the Machine needs to be in this state for the trade to be accessible
+    pub ms_state: State,
+    // the Machine needs to be in this state for the trade to be accessible
     //ggf eine weitere State in was dieser trade die maschiene ändert
     pub(crate) cost: Vec<(Item, i32)>,
     result: Item,
@@ -49,7 +50,7 @@ impl Trade {
         name: String,
         time_ms: usize,
         ms_state: State,
-        cost: Vec<(Item, i32)>,
+        cost: &mut Vec<(Item, i32)>,
         (a, b, c): (i32, i32, i32),
         result: Item,
         amount_produced: usize,
@@ -61,7 +62,7 @@ impl Trade {
             name,
             time_ms,
             ms_state,
-            cost,
+            cost: cost.clone(),
             result,
             amount_produced,
         }
