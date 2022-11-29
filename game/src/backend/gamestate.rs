@@ -1,5 +1,7 @@
 //! Contains the game logic, updates the game and draws the current board
 use crate::backend::area::Area;
+use crate::backend::constants::COLORS;
+use crate::backend::constants::{DESIRED_FPS, MAP_BORDER, RESOURCE_POSITION};
 use crate::backend::rlcolor::RLColor;
 use crate::backend::screen::StackCommand;
 use crate::backend::utils::{get_scale, is_colliding};
@@ -9,6 +11,7 @@ use crate::game_core::deathscreen::DeathScreen;
 use crate::game_core::event::{Event, NO_CHANGE};
 use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
+use crate::languages::german::RESOURCE_NAME;
 use crate::{draw, RLResult};
 use ggez::glam::Vec2;
 use ggez::graphics::{Canvas, Color, Image};
@@ -21,9 +24,7 @@ use std::fs::read_dir;
 use std::ops::Deref;
 use std::sync::mpsc::Sender;
 use tracing::info;
-const RESOURCE_POSITION: [f32; 3] = [316.0, 639.0, 1373.0];
-const RESOURCE_NAME: [&str; 3] = ["Luft", "Energie", "Leben"];
-const COLORS: [Color; 3] = [RLColor::BLUE, RLColor::GOLD, RLColor::DARK_RED];
+
 /// This is the game state. It contains all the data that is needed to run the game.
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct GameState {
@@ -209,10 +210,10 @@ impl GameState {
     /// # Arguments
     /// * `next_player_pos` - The direction the player wants to move
     fn border_collision_detection(next_player_pos: (usize, usize)) -> bool {
-        next_player_pos.0 >= 1750 // Right border
-            || next_player_pos.1 >= 850 // Bottom border
-            || next_player_pos.0 <= 255 // Left border
-            || next_player_pos.1 <= 220 // Top border
+        next_player_pos.0 >= MAP_BORDER[0] // Right border
+            || next_player_pos.1 >= MAP_BORDER[1] // Bottom border
+            || next_player_pos.0 <= MAP_BORDER[2] // Left border
+            || next_player_pos.1 <= MAP_BORDER[3] // Top border
     }
     /// Returns a boolean indicating whether the player would collide with a machine or border if they moved in the given direction
     ///
@@ -306,7 +307,6 @@ impl GameState {
 impl Screen for GameState {
     /// Updates the game and handles input. Returns `StackCommand::Pop` when Escape is pressed.
     fn update(&mut self, ctx: &mut Context) -> RLResult {
-        const DESIRED_FPS: u32 = 60;
         if ctx.time.check_update_time(DESIRED_FPS) {
             self.tick(ctx)?;
             self.move_player(ctx)?;
