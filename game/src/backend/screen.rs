@@ -14,7 +14,7 @@ use tracing::info;
 
 /// A screen is every drawable object in the game, so the main menu is a screen too
 pub trait Screen: Debug {
-    /// Used for updating the screen. Returns a StackCommand used to either push a new screen or pop
+    /// Used for updating the screen. Returns a `StackCommand` used to either push a new screen or pop
     /// the current one.
     fn update(&mut self, ctx: &mut Context) -> RLResult;
     /// Used for drawing the last screen in the game.
@@ -60,6 +60,8 @@ impl Popup {
     }
 }
 impl Screenstack {
+    /// Draws a new popup at the top left of the screen with the given text and color
+    /// The popup will be removed after the given duration
     fn draw_popups(&mut self, ctx: &mut Context) -> RLResult {
         let mut canvas = graphics::Canvas::from_frame(ctx, None);
         for (pos, popup) in self.popup.iter().enumerate() {
@@ -94,6 +96,10 @@ impl Screenstack {
         canvas.finish(ctx)?;
         Ok(())
     }
+    /// handels what to do with the given commands (Push, Pop, None)
+    /// Push: Pushes a new screen on the stack
+    /// Pop: Pops the current screen
+    /// None: Does nothing
     fn process_command(&mut self, command: StackCommand) {
         // Match the command given back by the screen
         match command {
@@ -111,6 +117,7 @@ impl Screenstack {
             StackCommand::Popup(popup) => self.popup.push(popup),
         }
     }
+    /// removes the expired popups
     fn remove_popups(&mut self) {
         self.popup.retain(|popup| popup.expiration > Instant::now());
     }
@@ -126,7 +133,7 @@ pub enum StackCommand {
 }
 
 impl event::EventHandler<RLError> for Screenstack {
-    // Redirect the update function to the last screen and handle the returned StackCommand
+    /// Redirect the update function to the last screen and handle the returned StackCommand
     fn update(&mut self, ctx: &mut Context) -> RLResult {
         self.remove_popups();
         self.screens

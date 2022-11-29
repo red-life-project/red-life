@@ -1,19 +1,16 @@
-use crate::backend::area::Area;
 use crate::backend::gamestate::GameState;
 use crate::backend::screen::StackCommand;
-use crate::backend::utils::get_scale;
-use crate::game_core::resources::Resources;
-use crate::machines::machine::Machine;
-use crate::machines::machine::State::Running;
 use crate::RLResult;
 use ggez::winit::event::VirtualKeyCode;
 use ggez::Context;
-use std::borrow::{Borrow, BorrowMut};
 use tracing::info;
 
 const MOVEMENT_SPEED: usize = 10;
 
 impl GameState {
+    /// Handles the player movement and updates the player position
+    /// Checks on every move if the next step is inside the borders of the map if not it will not move
+    /// Handles escape which will pause the game and go to the main menu
     pub fn move_player(&mut self, ctx: &mut Context) -> RLResult {
         if ctx.keyboard.is_key_just_pressed(VirtualKeyCode::Escape) {
             info!("Exiting...");
