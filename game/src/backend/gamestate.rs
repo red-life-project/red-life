@@ -24,6 +24,7 @@ use std::fs::read_dir;
 use std::ops::Deref;
 use std::sync::mpsc::Sender;
 use tracing::info;
+use crate::game_core::infoscreen::InfoScreen;
 
 /// This is the game state. It contains all the data that is needed to run the game.
 #[derive(Debug, Default, Serialize, Deserialize)]
@@ -84,9 +85,10 @@ impl GameState {
                 self.screen_sender
                     .as_mut()
                     .expect("No screen sender")
-                    .send(StackCommand::Push(Box::new(DeathScreen::new(
+                    .send(StackCommand::Push(Box::new(InfoScreen::new(
                         empty_resource,
                         cloned_sender,
+                        "deathscreen".to_string(),
                     ))))?;
             };
         }
