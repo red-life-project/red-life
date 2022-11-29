@@ -18,6 +18,6 @@ pub(crate) const RESOURCE_POSITION: [f32; 3] = [316.0, 639.0, 1373.0];
 pub(crate) const COLORS: [Color; 3] = [RLColor::BLUE, RLColor::GOLD, RLColor::DARK_RED];
 
 /// Contains the size of the player icon to scale the collision area.
-pub(crate) const PLAYER_ICON_SIZE: (usize, usize) = (60, 50);
+pub(crate) const PLAYER_ICON_SIZE: (usize, usize) = (58, 96);
 
 // pub const MACHINE_POSITIONS: [[i32; 4]; 4] = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
