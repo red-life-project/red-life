@@ -1,5 +1,6 @@
 //!DIESE DATEI IST ZUM TESTEN VON SANDER
 use crate::backend::gamestate::GameState;
+
 use crate::game_core::item::Item;
 use crate::game_core::resources::Resources;
 use crate::languages::german::{BENZIN, GEDRUCKTESTEIL};
@@ -7,7 +8,7 @@ use crate::machines::machine::{Machine, State};
 use crate::machines::trade::Trade;
 use crate::{draw, RLResult};
 use ggez::glam::Vec2;
-use ggez::graphics::{Canvas, Rect};
+use ggez::graphics::{Canvas, Mesh, Rect};
 use ggez::Context;
 use tracing::info;
 
@@ -77,14 +78,26 @@ impl GameState {
         Ok(())
     }
 
-    pub fn draw_machines(&self, canvas: &mut Canvas, scale: Vec2, ctx: &mut Context) {
+    pub fn draw_machines(&self, canvas: &mut Canvas, scale: Vec2, ctx: &mut Context) -> RLResult {
         for area in &self.areas {
             let machine = area.get_graphic();
-            let pos = Vec2 {
+            let mut pos = Vec2 {
                 x: area.get_collision_area().x,
                 y: area.get_collision_area().y,
             };
             draw!(canvas, &machine, pos, scale);
+            let status = Mesh::new_circle(
+                ctx,
+                ggez::graphics::DrawMode::fill(),
+                Vec2::new(0.0, 0.0),
+                15.0,
+                0.1,
+                area.get_state().into(),
+            )?;
+            pos.x += 20.;
+            pos.y += 20.;
+            draw!(canvas, &status, pos, scale);
         }
+        Ok(())
     }
 }

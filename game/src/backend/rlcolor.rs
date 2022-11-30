@@ -69,4 +69,22 @@ impl RLColor {
         b: 0.,
         a: 1.,
     };
+    pub const STATUS_GREEN: Color = Color {
+        r: 0.,
+        g: 1.,
+        b: 0.,
+        a: 1.,
+    };
+    pub const STATUS_YELLOW: Color = Color {
+        r: 1.,
+        g: 1.,
+        b: 0.,
+        a: 1.,
+    };
+    pub const STATUS_RED: Color = Color {
+        r: 1.,
+        g: 0.,
+        b: 0.,
+        a: 1.,
+    };
 }

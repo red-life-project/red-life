@@ -1,6 +1,7 @@
 use crate::backend::utils::is_colliding;
-use crate::game_core::item::Item;
+
 use crate::game_core::player::Player;
+use crate::machines::machine::State;
 use ggez::graphics::{Image, Rect};
 use std::fmt::Debug;
 
@@ -14,4 +15,5 @@ pub trait Area: Debug {
     fn get_graphic(&self) -> Image;
     fn is_non_broken_machine(&self) -> bool;
     fn get_name(&self) -> String;
+    fn get_state(&self) -> State;
 }
