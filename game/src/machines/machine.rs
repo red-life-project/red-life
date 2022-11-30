@@ -165,10 +165,10 @@ impl Area for Machine {
             .map(|(item, demand)| (item, player.get_item_amount(item) - demand))
             .filter(|(item, dif)| *dif < 0)
             .collect::<Vec<(&Item, i32)>>();
-        if dif.iter().any(|(item, demand)| *demand < 0) {
-            let mut missing_items = "".to_string();
+        if dif.iter().any(|(_, demand)| *demand < 0) {
+            let mut missing_items = String::new();
             dif.iter()
-                .map(|(item, amout)| format!("{} {}\n", amout, item.name))
+                .map(|(item, amount)| format!("{amount} {}\n", item.name))
                 .for_each(|x| missing_items.push_str(&x));
 
             let popup = Popup::new(
