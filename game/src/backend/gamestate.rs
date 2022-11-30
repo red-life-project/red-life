@@ -88,7 +88,6 @@ impl GameState {
                     .send(StackCommand::Push(Box::new(InfoScreen::new_deathscreen(
                         empty_resource,
                         cloned_sender,
-                        "deathscreen".to_string(),
                     ))))?;
             };
         }

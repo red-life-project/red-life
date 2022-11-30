@@ -82,7 +82,7 @@ impl Screen for MainMenu {
                     GameState::delete_saves()?;
                     let cloned_sender = self.screen_sender.clone();
                     self.screen_sender.send(StackCommand::Push(Box::new(
-                        InfoScreen::new_introscreen(cloned_sender, "Introscreen".to_string()),
+                        InfoScreen::new_introscreen(cloned_sender),
                     )))?;
                 }
                 Start => self.screen_sender.send(StackCommand::Push(Box::new({

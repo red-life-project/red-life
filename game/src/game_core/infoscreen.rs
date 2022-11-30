@@ -1,7 +1,7 @@
 use crate::backend::gamestate::GameState;
 use crate::backend::screen::{Screen, StackCommand};
 use crate::backend::utils::get_scale;
-use crate::game_core::deathscreen::{DeathReason, DeathScreen};
+use crate::game_core::deathscreen::DeathReason;
 use crate::languages::german::{
     ADDITIONAL_INFO_STRING, BUTTON_INFO, DEATH_REASON_STRING, INTRO_TEXT, TURTORIAL_TEXT,
 };
@@ -13,12 +13,21 @@ use ggez::{graphics, Context};
 use std::sync::mpsc::Sender;
 use tracing::info;
 
+/// Defines the type of Screen wich is Infoscreen corrently scowing
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub enum ScreenType {
+    Death,
+    Intro,
+    Winning,
+}
+/// Create `DeathScreen`, `IntroScreen` or `WinningSreen`. Deathscreen needs the reason of death from `DeathReason` enum.
 #[derive(Debug)]
 pub struct InfoScreen {
     background: String,
     main_message: graphics::Text,
     additional_text: graphics::Text,
     sender: Sender<StackCommand>,
+    screentype: ScreenType,
 }
 
 impl InfoScreen {
@@ -26,12 +35,7 @@ impl InfoScreen {
     /// # Arguments
     /// * `death_reason` - The reason for the death of the player
     /// * `sender` - The sender to send the command to the `ScreenStack`
-    /// * `background` - The assetname of the background
-    pub fn new_deathscreen(
-        death_reason: DeathReason,
-        sender: Sender<StackCommand>,
-        background: String,
-    ) -> Self {
+    pub fn new_deathscreen(death_reason: DeathReason, sender: Sender<StackCommand>) -> Self {
         info!("The player died due to a lack of : {:?}", death_reason);
 
         let mut main_message =
@@ -39,30 +43,50 @@ impl InfoScreen {
         main_message.set_scale(70.);
         let mut additional_text = graphics::Text::new(ADDITIONAL_INFO_STRING);
         additional_text.set_scale(70.);
-
+        let background = "deathscreen".to_string();
+        let screentype = ScreenType::Death;
         Self {
             background,
             main_message,
             additional_text,
             sender,
+            screentype,
         }
     }
     /// Creates a new IntroScreen using InfoScreen
     /// # Arguments
-    /// * `death_reason` - The reason for the death of the player
     /// * `sender` - The sender to send the command to the `ScreenStack`
-    /// * `background` - The assetname of the background
-    pub fn new_introscreen(sender: Sender<StackCommand>, background: String) -> Self {
+    pub fn new_introscreen(sender: Sender<StackCommand>) -> Self {
         let mut main_message = graphics::Text::new(format!("{} \n{}", INTRO_TEXT, TURTORIAL_TEXT));
         main_message.set_scale(60.);
         let mut additional_text = graphics::Text::new(BUTTON_INFO);
         additional_text.set_scale(50.);
-
+        let background = "Introscreen".to_string();
+        let screentype = ScreenType::Intro;
         Self {
             background,
             main_message,
             additional_text,
             sender,
+            screentype,
+        }
+    }
+    /// Creates a new Winning using InfoScreen
+    /// # Arguments
+    /// * `sender` - The sender to send the command to the `ScreenStack`
+    pub fn new_winningscreen(sender: Sender<StackCommand>) -> Self {
+        let mut main_message = graphics::Text::new(format!("{} \n{}", INTRO_TEXT, TURTORIAL_TEXT));
+        main_message.set_scale(60.);
+        let mut additional_text = graphics::Text::new(BUTTON_INFO);
+        additional_text.set_scale(50.);
+        let background = "Winningscreen".to_string();
+        let screentype = ScreenType::Winning;
+        Self {
+            background,
+            main_message,
+            additional_text,
+            sender,
+            screentype,
         }
     }
 }
@@ -73,11 +97,15 @@ impl Screen for InfoScreen {
         if let Some(key) = keys.iter().next() {
             info!("The player wants to got to the next screen with: {:?}", key);
             if key == &VirtualKeyCode::Escape {
-                self.sender.send(StackCommand::Push(Box::new(MainMenu::new(
-                    self.sender.clone(),
-                ))))?;
-            };
-            if key == &VirtualKeyCode::Space {
+                if self.screentype == ScreenType::Death{
+                    self.sender.send(StackCommand::Push(Box::new(MainMenu::new(
+                        self.sender.clone(),
+                    ))))?;
+                }else {
+                    self.sender.send(StackCommand::Pop)?;
+                }
+            }
+            if key == &VirtualKeyCode::Space && self.screentype == ScreenType::Intro{
                 self.sender.send(StackCommand::Pop)?;
                 self.sender.send(StackCommand::Push(Box::new({
                     let mut gamestate = GameState::load(false).unwrap_or_default();

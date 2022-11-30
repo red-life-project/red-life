@@ -39,10 +39,10 @@ impl Default for Player {
                 life: u16::MAX,
             },
             resources_change: Resources {
-                oxygen: -1000,
+                oxygen: 0,
                 // In release Version this Value shouldplayer.inventory.0  be 0
                 energy: -1,
-                life: -1000,
+                life: 0,
             },
             milestone: 0,
             last_damage: 0,
