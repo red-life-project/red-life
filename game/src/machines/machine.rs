@@ -3,7 +3,7 @@ use std::borrow::BorrowMut;
 use std::fmt::{Display, Formatter};
 
 use crate::backend::area::Area;
-
+use crate::backend::constants::PLAYER_INTERACTION_RADIUS;
 use crate::backend::gamestate::GameState;
 use crate::backend::rlcolor::RLColor;
 use crate::game_core::item::Item;
@@ -70,12 +70,6 @@ impl Machine {
                 w: 100.0,
                 h: 100.0,
             },
-            Rect {
-                x: 300.0,
-                y: 400.0,
-                w: 100.0,
-                h: 50.0,
-            },
             vec![
                 Trade::new_and_set(
                     "repair_test".to_string(),
@@ -120,7 +114,6 @@ impl Machine {
         gs: &GameState,
         name: String,
         hit_box: Rect,
-        interaction_area: Rect,
         trades: Vec<Trade>,
         running_resources: Resources<i16>,
     ) -> RLResult<Self> {
@@ -130,7 +123,12 @@ impl Machine {
         Ok(Self {
             name,
             hit_box,
-            interaction_area,
+            interaction_area: Rect {
+                x: hit_box.x - PLAYER_INTERACTION_RADIUS,
+                y: hit_box.y - PLAYER_INTERACTION_RADIUS,
+                w: hit_box.w + (PLAYER_INTERACTION_RADIUS * 2.),
+                h: hit_box.h + (PLAYER_INTERACTION_RADIUS * 2.),
+            },
             state: State::Broken,
             sprite,
             trades,

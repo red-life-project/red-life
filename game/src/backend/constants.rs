@@ -20,4 +20,6 @@ pub(crate) const COLORS: [Color; 3] = [RLColor::BLUE, RLColor::GOLD, RLColor::DA
 /// Contains the size of the player icon to scale the collision area.
 pub(crate) const PLAYER_ICON_SIZE: (usize, usize) = (58, 96);
 
+/// Contains the interaction radius of the player.
+pub(crate) const PLAYER_INTERACTION_RADIUS: f32 = 50.;
 // pub const MACHINE_POSITIONS: [[i32; 4]; 4] = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
