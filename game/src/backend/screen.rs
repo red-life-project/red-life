@@ -154,10 +154,6 @@ impl event::EventHandler<RLError> for Screenstack {
         self.draw_popups(ctx)?;
         Ok(())
     }
-    /// Override the quit event so we don't actually quit the game.
-    fn quit_event(&mut self, ctx: &mut Context) -> RLResult<bool> {
-        Ok(true)
-    }
 }
 
 impl Default for Screenstack {
