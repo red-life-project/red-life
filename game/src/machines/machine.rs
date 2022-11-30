@@ -1,5 +1,4 @@
 use serde::{Deserialize, Serialize};
-use std::borrow::BorrowMut;
 use std::fmt::{Display, Formatter};
 use std::ops::Add;
 use std::sync::mpsc::Sender;
@@ -18,7 +17,7 @@ use crate::machines::machine_sprite::MachineSprite;
 use crate::machines::trade::Trade;
 use crate::RLResult;
 use ggez::graphics::{Color, Image, Rect};
-use tracing::{error, info};
+use tracing::info;
 use tracing_subscriber::fmt::time;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -58,6 +57,8 @@ pub struct Machine {
     sprite: MachineSprite,
     trades: Vec<Trade>,
     running_resources: Resources<i16>,
+    time_remaining: i16,
+    time_change: i16,
     // sender:Sender<Resource>,
 }
 
@@ -136,6 +137,9 @@ impl Machine {
             sprite,
             trades,
             running_resources,
+
+            time_remaining: 100,
+            time_change: 1,
         })
     }
     pub fn no_energy(&mut self) {
@@ -154,10 +158,21 @@ impl Machine {
 impl Area for Machine {
     fn interact(&mut self, player: &mut Player, sender: &Sender<StackCommand>) -> Player {
         let t = self.get_trade();
-        if t.cost
+        player.resources_change.life = -100;
+        let dif = t
+            .cost
             .iter()
-            .any(|(item, demand)| player.get_item_amount(item) - demand < 0)
-        {
+            .map(|(item, demand)| (item, player.get_item_amount(item) - demand))
+            .filter(|(item, dif)| *dif < 0)
+            .collect::<Vec<(&Item, i32)>>();
+        if dif.iter().any(|(item, demand)| *demand < 0) {
+            //phileps popup funktion(dif)
+
+            // @pflipper // @pflipper // @pflipper // @pflipper // @pflipper // @pflipper
+            dif.iter()
+                .map(|(item, amout)| format!("{}{}", item.name, amout));
+            // @pflipper // @pflipper // @pflipper // @pflipper // @pflipper // @pflipper
+
             let popup = Popup::new(RLColor::RED, "Fehlende Items".to_string(), 5);
             info!("Popup for Trade conflict sent");
             sender.send(StackCommand::Popup(popup)).unwrap();
@@ -167,7 +182,7 @@ impl Area for Machine {
         // all checks have been pased taking items
         info!("Executing trade:{} ", t.name);
 
-        &t.cost
+        t.cost
             .iter()
             .for_each(|(item, demand)| player.add_item(item, *demand * -1));
 
@@ -188,10 +203,10 @@ impl Area for Machine {
                     player.resources_change = player.resources_change - self.running_resources;
                 }
                 _ => {
-                    error!(
+                    info!(
                         "unexpected case in Match. mashiene state changed from {} to {}",
                         &self.state, &t.resulting_state
-                    )
+                    );
                 }
             }
             self.state = t.resulting_state;
@@ -222,6 +237,19 @@ impl Area for Machine {
 
     fn get_name(&self) -> String {
         self.name.clone()
+    }
+
+    fn tick(&mut self, delta_tics: i16) {
+        self.time_remaining -= self.time_change * delta_tics;
+        if self.time_remaining < 0 {
+            //timer run out
+            self.time_change = 0;
+            self.time_remaining = 0;
+            self.state = Idle;
+            //player.resources_change = player.resources_change - self.running_resources;
+
+            //TODO: inform player (code) about the change
+        }
     }
     fn get_state(&self) -> State {
         self.state.clone()

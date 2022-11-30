@@ -17,5 +17,6 @@ pub trait Area: Debug {
     fn get_graphic(&self) -> Image;
     fn is_non_broken_machine(&self) -> bool;
     fn get_name(&self) -> String;
+    fn tick(&mut self, delta_tics: i16);
     fn get_state(&self) -> State;
 }
