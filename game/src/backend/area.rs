@@ -1,12 +1,14 @@
 use crate::backend::utils::is_colliding;
 
+use crate::backend::screen::StackCommand;
 use crate::game_core::player::Player;
 use crate::machines::machine::State;
 use ggez::graphics::{Image, Rect};
 use std::fmt::Debug;
+use std::sync::mpsc::Sender;
 
 pub trait Area: Debug {
-    fn interact(&mut self, player: &mut Player) -> Player;
+    fn interact(&mut self, player: &mut Player, sender: &Sender<StackCommand>) -> Player;
     fn is_interactable(&self, pos: (usize, usize)) -> bool {
         is_colliding(pos, &self.get_interaction_area())
     }

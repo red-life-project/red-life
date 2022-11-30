@@ -23,8 +23,9 @@ impl GameState {
         if ctx.keyboard.is_key_just_pressed(VirtualKeyCode::E) {
             info!("Interacting with Area: {:?}", self.get_interactable());
             let player_ref = &mut self.player.clone();
+            let sender_clone = self.screen_sender.clone().unwrap();
             if let Some(intractable) = self.get_interactable() {
-                self.player = intractable.interact(player_ref);
+                self.player = intractable.interact(player_ref, &sender_clone);
             }
         }
         let keys = ctx.keyboard.pressed_keys();

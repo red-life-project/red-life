@@ -1,11 +1,14 @@
 use serde::{Deserialize, Serialize};
 use std::borrow::BorrowMut;
 use std::fmt::{Display, Formatter};
+use std::ops::Add;
+use std::sync::mpsc::Sender;
 
 use crate::backend::area::Area;
 use crate::backend::constants::PLAYER_INTERACTION_RADIUS;
 use crate::backend::gamestate::GameState;
 use crate::backend::rlcolor::RLColor;
+use crate::backend::screen::{Popup, StackCommand};
 use crate::game_core::item::Item;
 use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
@@ -149,13 +152,15 @@ impl Machine {
 }
 
 impl Area for Machine {
-    fn interact(&mut self, player: &mut Player) -> Player {
+    fn interact(&mut self, player: &mut Player, sender: &Sender<StackCommand>) -> Player {
         let t = self.get_trade();
-
         if t.cost
             .iter()
             .any(|(item, demand)| player.get_item_amount(item) - demand < 0)
         {
+            let popup = Popup::new(RLColor::RED, "Fehlende Items".to_string(), 5);
+            info!("Popup for Trade conflict sent");
+            sender.send(StackCommand::Popup(popup)).unwrap();
             return player.clone();
         }
 
