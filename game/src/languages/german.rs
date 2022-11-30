@@ -43,12 +43,17 @@ pub const NASA_INFO: [&str; 5] = [
 ];
 pub const GAME_INFO: [&str; 1] = ["Lebensregeneration gestartet"];
 
-/// Constants for all strings used in this screen
+/// Constants for all strings used in deathscreen
 pub const AIR_STRING: &str = "Luft";
 pub const ENERGY_STRING: &str = "Energie";
 pub const AIR_AND_ENERGY_STRING: &str = "Luft und Energie";
 pub const DEATH_REASON_STRING: &str = "Dein Todesgrund: ";
 pub const ADDITIONAL_INFO_STRING: &str = "Bitte drücke ESC!";
+
+/// Constants for all strings used in introscreen
+pub const INTRO_TEXT: &str = "Du bist auf dem Mars gestrandet \nund musst überleben";
+pub const TURTORIAL_TEXT: &str = "Bewege dich mit WASD. \nInteragiere mit E";
+pub const BUTTON_INFO: &str = "Bitte drücke die Leertaste!";
 
 /// Constants for the events that can occur.
 pub const KOMETENEINSCHLAG: [&str; 2] = [

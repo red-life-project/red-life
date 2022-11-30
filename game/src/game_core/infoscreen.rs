@@ -2,7 +2,9 @@ use crate::backend::gamestate::GameState;
 use crate::backend::screen::{Screen, StackCommand};
 use crate::backend::utils::get_scale;
 use crate::game_core::deathscreen::{DeathReason, DeathScreen};
-use crate::languages::german::{ADDITIONAL_INFO_STRING, DEATH_REASON_STRING};
+use crate::languages::german::{
+    ADDITIONAL_INFO_STRING, BUTTON_INFO, DEATH_REASON_STRING, INTRO_TEXT, TURTORIAL_TEXT,
+};
 use crate::main_menu::mainmenu::MainMenu;
 use crate::{draw, RLResult};
 use ggez::glam::Vec2;
@@ -51,10 +53,10 @@ impl InfoScreen {
     /// * `sender` - The sender to send the command to the `ScreenStack`
     /// * `background` - The assetname of the background
     pub fn new_introscreen(sender: Sender<StackCommand>, background: String) -> Self {
-        let mut main_message = graphics::Text::new("Test");
-        main_message.set_scale(70.);
-        let mut additional_text = graphics::Text::new(ADDITIONAL_INFO_STRING);
-        additional_text.set_scale(70.);
+        let mut main_message = graphics::Text::new(format!("{} \n{}", INTRO_TEXT, TURTORIAL_TEXT));
+        main_message.set_scale(60.);
+        let mut additional_text = graphics::Text::new(BUTTON_INFO);
+        additional_text.set_scale(50.);
 
         Self {
             background,
@@ -96,9 +98,9 @@ impl Screen for InfoScreen {
 
         canvas.draw(&background, graphics::DrawParam::default().scale(scale));
 
-        draw!(canvas, &self.main_message, Vec2::new(372., 520.), scale);
+        draw!(canvas, &self.main_message, Vec2::new(372., 500.), scale);
 
-        draw!(canvas, &self.additional_text, Vec2::new(646., 720.), scale);
+        draw!(canvas, &self.additional_text, Vec2::new(646., 740.), scale);
 
         canvas.finish(ctx)?;
 
