@@ -158,7 +158,6 @@ impl Machine {
 impl Area for Machine {
     fn interact(&mut self, player: &mut Player, sender: &Sender<StackCommand>) -> Player {
         let t = self.get_trade();
-        player.resources_change.life = -100;
         let dif = t
             .cost
             .iter()
