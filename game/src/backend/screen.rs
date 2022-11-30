@@ -133,7 +133,7 @@ pub enum StackCommand {
 }
 
 impl event::EventHandler<RLError> for Screenstack {
-    /// Redirect the update function to the last screen and handle the returned `StackCommand`
+    /// Redirect the update function to the last screen and handle the returned StackCommand
     fn update(&mut self, ctx: &mut Context) -> RLResult {
         self.remove_popups();
         self.screens
@@ -154,7 +154,7 @@ impl event::EventHandler<RLError> for Screenstack {
         self.draw_popups(ctx)?;
         Ok(())
     }
-    /// Override the quit event so we don't actually quit the game.
+    /// Overrides the quit event so we don't actually quit the game.
     fn quit_event(&mut self, _ctx: &mut Context) -> RLResult<bool> {
         Ok(true)
     }
