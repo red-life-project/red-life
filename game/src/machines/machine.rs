@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::backend::area::Area;
-
+use crate::backend::constants::PLAYER_INTERACTION_RADIUS;
 use crate::backend::gamestate::GameState;
 use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
@@ -43,28 +43,22 @@ impl Machine {
                 w: 100.0,
                 h: 100.0,
             },
-            Rect {
-                x: 300.0,
-                y: 400.0,
-                w: 100.0,
-                h: 50.0,
-            },
         )
     }
 
-    pub fn new(
-        gs: &GameState,
-        name: String,
-        hit_box: Rect,
-        interaction_area: Rect,
-    ) -> RLResult<Self> {
+    pub fn new(gs: &GameState, name: String, hit_box: Rect) -> RLResult<Self> {
         info!("Creating new machine: name: {}", name);
 
         let sprite = MachineSprite::new(gs, name.as_str())?;
         Ok(Self {
             name,
             hit_box,
-            interaction_area,
+            interaction_area: Rect {
+                x: hit_box.x - PLAYER_INTERACTION_RADIUS,
+                y: hit_box.y - PLAYER_INTERACTION_RADIUS,
+                w: hit_box.w + (PLAYER_INTERACTION_RADIUS * 2.),
+                h: hit_box.h + (PLAYER_INTERACTION_RADIUS * 2.),
+            },
             state: State::Broken,
             sprite,
             trades: vec![],
