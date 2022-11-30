@@ -132,15 +132,19 @@ impl Machine {
     }
     fn get_trade(&self) -> Trade {
         // returns the first possible trade
-        if let Some(t) = self
-            .trades
-            .iter()
-            .filter(|t| t.initial_state == self.state)
-            .next()
-        {
+        if let Some(t) = self.trades.iter().find(|t| t.initial_state == self.state) {
             return t.clone();
         }
         Trade::default()
+    }
+
+    fn is_trade_possible(&self, player: &Player) -> bool {
+        let trade = self.get_trade();
+        trade
+            .cost
+            .iter()
+            .any(|(item, demand)| player.get_item_amount(item) >= *demand)
+            && trade.resulting_state != self.state
     }
 }
 
@@ -148,45 +152,34 @@ impl Area for Machine {
     fn interact(&mut self, player: &mut Player) -> Player {
         let t = self.get_trade();
 
-        if t.cost
-            .iter()
-            .any(|(item, demand)| player.get_item_amount(item) - demand < 0)
-        {
+        if !self.is_trade_possible(player) {
             return player.clone();
         }
 
         // all checks have been pased taking items
         info!("Executing trade:{} ", t.name);
 
-        &t.cost
+        t.cost
             .iter()
-            .for_each(|(item, demand)| player.add_item(item, *demand * -1));
+            .for_each(|(item, demand)| player.add_item(item, -*demand));
 
-        /*     match self.state {
-            // generalisation
-            Broken => self.state = Idle,
-            Idle => self.state = Running,
-            Running => self.state = Running,
-        };*/
-        if self.state != t.resulting_state {
-            // if the state changed
-            match (&self.state, &t.resulting_state) {
-                (Broken, Idle) | (Idle, Broken) => {}
-                (Broken, Running) | (Idle, Running) => {
-                    player.resources_change = player.resources_change + self.running_resources;
-                }
-                (Running, Broken) | (Running, Idle) => {
-                    player.resources_change = player.resources_change - self.running_resources;
-                }
-                _ => {
-                    error!(
-                        "unexpected case in Match. mashiene state changed from {} to {}",
-                        &self.state, &t.resulting_state
-                    )
-                }
+        // If we are not in the resulting state
+        match (&self.state, &t.resulting_state) {
+            (Broken, Idle) | (Idle, Broken) => {}
+            (Broken | Idle, Running) => {
+                player.resources_change = player.resources_change + self.running_resources;
             }
-            self.state = t.resulting_state;
+            (Running, Broken | Idle) => {
+                player.resources_change = player.resources_change - self.running_resources;
+            }
+            _ => {
+                error!(
+                    "Invalid Trade. Trying to change from {} to {}",
+                    &self.state, &t.resulting_state
+                );
+            }
         }
+        self.state = t.resulting_state;
 
         player.clone()
     }
