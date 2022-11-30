@@ -11,7 +11,7 @@ use crate::backend::screen::{Popup, StackCommand};
 use crate::game_core::item::Item;
 use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
-use crate::languages::german::{BENZIN, GEDRUCKTESTEIL};
+use crate::languages::german::{BENZIN, GEDRUCKTESTEIL, TRADE_CONFLICT_POPUP};
 use crate::machines::machine::State::{Broken, Idle, Running};
 use crate::machines::machine_sprite::MachineSprite;
 use crate::machines::trade::Trade;
@@ -166,15 +166,20 @@ impl Area for Machine {
             .filter(|(item, dif)| *dif < 0)
             .collect::<Vec<(&Item, i32)>>();
         if dif.iter().any(|(item, demand)| *demand < 0) {
-            //phileps popup funktion(dif)
-
-            // @pflipper // @pflipper // @pflipper // @pflipper // @pflipper // @pflipper
+            let mut missing_items = "".to_string();
             dif.iter()
-                .map(|(item, amout)| format!("{}{}", item.name, amout));
-            // @pflipper // @pflipper // @pflipper // @pflipper // @pflipper // @pflipper
+                .map(|(item, amout)| format!("{} {}\n", amout, item.name))
+                .for_each(|x| missing_items.push_str(&x));
 
-            let popup = Popup::new(RLColor::RED, "Fehlende Items".to_string(), 5);
-            info!("Popup for Trade conflict sent");
+            let popup = Popup::new(
+                RLColor::BLUE,
+                format!("{}\n{missing_items}", TRADE_CONFLICT_POPUP[0]),
+                5,
+            );
+            info!(
+                "Popup for Trade conflict sent: Missing Items: {}",
+                missing_items
+            );
             sender.send(StackCommand::Popup(popup)).unwrap();
             return player.clone();
         }
