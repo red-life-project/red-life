@@ -28,12 +28,6 @@ impl GameState {
                 w: 100.0,
                 h: 100.0,
             },
-            Rect {
-                x: 600.0,
-                y: 400.0,
-                w: 100.0,
-                h: 50.0,
-            },
             vec![
                 Trade::new_and_set(
                     "repair_test".to_string(),
