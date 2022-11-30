@@ -5,6 +5,7 @@ use std::fmt::{Display, Formatter};
 use crate::backend::area::Area;
 
 use crate::backend::gamestate::GameState;
+use crate::backend::rlcolor::RLColor;
 use crate::game_core::item::Item;
 use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
@@ -13,7 +14,7 @@ use crate::machines::machine::State::{Broken, Idle, Running};
 use crate::machines::machine_sprite::MachineSprite;
 use crate::machines::trade::Trade;
 use crate::RLResult;
-use ggez::graphics::{Image, Rect};
+use ggez::graphics::{Color, Image, Rect};
 use tracing::{error, info};
 use tracing_subscriber::fmt::time;
 
@@ -30,6 +31,16 @@ impl Display for State {
             Broken => write!(f, "Broken"),
             Idle => write!(f, "Idle"),
             Running => write!(f, "Running"),
+        }
+    }
+}
+
+impl From<State> for Color {
+    fn from(value: State) -> Self {
+        match value {
+            Broken => RLColor::STATUS_RED,
+            Idle => RLColor::STATUS_YELLOW,
+            Running => RLColor::STATUS_GREEN,
         }
     }
 }
@@ -132,12 +143,7 @@ impl Machine {
     }
     fn get_trade(&self) -> Trade {
         // returns the first possible trade
-        if let Some(t) = self
-            .trades
-            .iter()
-            .filter(|t| t.initial_state == self.state)
-            .next()
-        {
+        if let Some(t) = self.trades.iter().find(|t| t.initial_state == self.state) {
             return t.clone();
         }
         Trade::default()
@@ -213,5 +219,8 @@ impl Area for Machine {
 
     fn get_name(&self) -> String {
         self.name.clone()
+    }
+    fn get_state(&self) -> State {
+        self.state.clone()
     }
 }

@@ -3,7 +3,6 @@ use crate::backend::constants::{PLAYER_ICON_SIZE, SCREEN_RESOLUTION};
 use ggez::glam::Vec2;
 use ggez::graphics::Rect;
 use ggez::Context;
-use std::cmp::{max, min};
 /// This returns the scale so we can have resolution-agnostic scaling
 /// Use it in your drawing calls like this:
 /// ```rust
