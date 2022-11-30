@@ -8,8 +8,10 @@ use crate::main_menu::button::Button;
 use crate::main_menu::mainmenu::Message::{Exit, NewGame, Start};
 use crate::RLResult;
 
+use crate::game_core::infoscreen::InfoScreen;
 use ggez::{graphics, Context};
 use std::sync::mpsc::{channel, Receiver, Sender};
+
 /// is used to define what every button does
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum Message {
@@ -78,8 +80,10 @@ impl Screen for MainMenu {
                 Exit => std::process::exit(0),
                 NewGame => {
                     GameState::delete_saves()?;
-                    self.screen_sender
-                        .send(StackCommand::Push(Box::new(GameState::new(ctx)?)))?;
+                    let cloned_sender = self.screen_sender.clone();
+                    self.screen_sender.send(StackCommand::Push(Box::new(
+                        InfoScreen::new_introscreen(cloned_sender, "deathscreen".to_string()),
+                    )))?;
                 }
                 Start => self.screen_sender.send(StackCommand::Push(Box::new({
                     let mut gamestate = GameState::load(false).unwrap_or_default();

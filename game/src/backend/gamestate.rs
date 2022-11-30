@@ -9,6 +9,7 @@ use crate::backend::{error::RLError, screen::Screen};
 use crate::game_core::deathscreen::DeathReason::Both;
 use crate::game_core::deathscreen::DeathScreen;
 use crate::game_core::event::{Event, NO_CHANGE};
+use crate::game_core::infoscreen::InfoScreen;
 use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
 use crate::languages::german::RESOURCE_NAME;
@@ -24,7 +25,6 @@ use std::fs::read_dir;
 use std::ops::Deref;
 use std::sync::mpsc::Sender;
 use tracing::info;
-use crate::game_core::infoscreen::InfoScreen;
 
 /// This is the game state. It contains all the data that is needed to run the game.
 #[derive(Debug, Default, Serialize, Deserialize)]
@@ -85,7 +85,7 @@ impl GameState {
                 self.screen_sender
                     .as_mut()
                     .expect("No screen sender")
-                    .send(StackCommand::Push(Box::new(InfoScreen::new(
+                    .send(StackCommand::Push(Box::new(InfoScreen::new_deathscreen(
                         empty_resource,
                         cloned_sender,
                         "deathscreen".to_string(),
