@@ -13,10 +13,11 @@ use tracing::info;
 impl GameState {
     pub fn create_machine(&mut self) {
         info!("Generating all Machines");
+        let sender_clone = self.sender.as_mut().unwrap().clone();
         let all = gen_all_machines();
         for m in &all {
             //code can panic @cargo bene fix
-            let new_ms = Machine::new_by_const(self, m.clone()).unwrap();
+            let new_ms = Machine::new_by_const(self, m.clone(),sender_clone.clone()).unwrap();
             self.areas.push(Box::new(new_ms));
         }
     }
