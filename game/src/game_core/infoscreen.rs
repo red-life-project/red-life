@@ -1,9 +1,9 @@
+use std::fmt::{Display, Formatter};
 use crate::backend::gamestate::GameState;
 use crate::backend::screen::{Screen, StackCommand};
 use crate::backend::utils::get_scale;
-use crate::game_core::deathscreen::DeathReason;
 use crate::languages::german::{
-    ADDITIONAL_INFO_STRING, BUTTON_INFO, DEATH_REASON_STRING, INTRO_TEXT, TURTORIAL_TEXT,
+    ADDITIONAL_INFO_STRING, BUTTON_INFO, DEATH_REASON_STRING, INTRO_TEXT, TURTORIAL_TEXT, AIR_STRING,ENERGY_STRING,AIR_AND_ENERGY_STRING
 };
 use crate::main_menu::mainmenu::MainMenu;
 use crate::{draw, RLResult};
@@ -12,7 +12,23 @@ use ggez::winit::event::VirtualKeyCode;
 use ggez::{graphics, Context};
 use std::sync::mpsc::Sender;
 use tracing::info;
-
+///Authors Leo and Maxi
+/// Defines the reason for the death of the player and is used to display the reason on the screen
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub enum DeathReason {
+    Oxygen,
+    Energy,
+    Both,
+}
+impl Display for DeathReason {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            DeathReason::Oxygen => write!(f, "{AIR_STRING}"),
+            DeathReason::Energy => write!(f, "{ENERGY_STRING}"),
+            DeathReason::Both => write!(f, "{AIR_AND_ENERGY_STRING}"),
+        }
+    }
+}
 /// Defines the type of Screen which is Infoscreen currently showing
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum ScreenType {
