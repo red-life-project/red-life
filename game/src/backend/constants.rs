@@ -47,7 +47,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
             vec![
                 Trade::new(
                     "repair_test".to_string(),
-                    100,
+                    0,
                     State::Broken,
                     State::Idle,
                     gen_inventory(-1, -1, -1),
@@ -65,7 +65,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                 ),
                 Trade::new(
                     "repair_test".to_string(),
-                    100,
+                    0,
                     State::Running,
                     State::Idle,
                     gen_inventory(-2, -2, -2),
@@ -90,7 +90,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
             vec![
                 Trade::new(
                     "repair_test".to_string(),
-                    100,
+                    0,
                     State::Broken,
                     State::Idle,
                     gen_inventory(2, 2, 2),
@@ -99,7 +99,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                 ),
                 Trade::new(
                     "repair_test".to_string(),
-                    100,
+                    0,
                     State::Idle,
                     State::Running,
                     gen_inventory(0, 1, 2),
