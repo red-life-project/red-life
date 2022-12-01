@@ -1,16 +1,15 @@
 //!DIESE DATEI IST ZUM TESTEN VON SANDER
-use crate::backend::gamestate::{GameState};
-
+use crate::backend::gamestate::GameState;
 
 use crate::machines::machine::Machine;
 
 use crate::backend::constants::gen_all_machines;
+use crate::backend::rlcolor::RLColor;
 use crate::{draw, RLResult};
 use ggez::glam::Vec2;
 use ggez::graphics::{Canvas, Mesh, Rect};
 use ggez::Context;
 use tracing::info;
-use crate::backend::rlcolor::RLColor;
 
 impl GameState {
     pub fn create_machine(&mut self) {
@@ -40,29 +39,31 @@ impl GameState {
                 0.1,
                 area.get_state().into(),
             )?;
-            pos.x += 20.;
-            pos.y += 20.;
-            draw!(canvas, &status, pos, scale);
-            // Bar for machine Timer
-            pos.x += 50.;
-            let rect1 = Mesh::new_rounded_rectangle(
-                ctx,
-                ggez::graphics::DrawMode::fill(),
-                Rect::new(0.0, 0.0, 100.0, 10.0),
-                15.,
-                RLColor::DARK_GREY,
-            )?;
-            draw!(canvas, &rect1, pos, scale);
-            // Bar for current time
             let time = area.get_time_percentage();
-            let rect2 = Mesh::new_rounded_rectangle(
-                ctx,
-                ggez::graphics::DrawMode::fill(),
-                Rect::new(0.0, 0.0, 100.0 * time, 10.0),
-                15.,
-                RLColor::LIGHT_BLUE,
-            )?;
-            draw!(canvas, &rect2, pos, scale);
+            if time >= 0. {
+                pos.x += 20.;
+                pos.y += 20.;
+                draw!(canvas, &status, pos, scale);
+                // Bar for machine Timer
+                pos.x += 50.;
+                let rect1 = Mesh::new_rounded_rectangle(
+                    ctx,
+                    ggez::graphics::DrawMode::fill(),
+                    Rect::new(0.0, 0.0, 100.0, 10.0),
+                    15.,
+                    RLColor::DARK_GREY,
+                )?;
+                draw!(canvas, &rect1, pos, scale);
+                // Bar for current time
+                let rect2 = Mesh::new_rounded_rectangle(
+                    ctx,
+                    ggez::graphics::DrawMode::fill(),
+                    Rect::new(0.0, 0.0, 100.0 * time, 10.0),
+                    15.,
+                    RLColor::LIGHT_BLUE,
+                )?;
+                draw!(canvas, &rect2, pos, scale);
+            }
         }
         Ok(())
     }

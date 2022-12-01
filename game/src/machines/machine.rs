@@ -53,7 +53,7 @@ pub struct Machine {
     pub hit_box: Rect,
     interaction_area: Rect,
     trades: Vec<Trade>,
-    last_trade : Trade,
+    last_trade: Trade,
     running_resources: Resources<i16>,
     time_remaining: i16,
     time_change: i16,
@@ -147,14 +147,14 @@ impl Area for Machine {
         // all checks have been pased taking items
         info!("Executing trade:{} ", trade.name);
         self.time_remaining = trade.time_ticks;
-        if trade.time_ticks>0 {
+        if trade.time_ticks > 0 {
             self.time_change = 1;
         }
         self.time_change = trade.time_ticks;
-        trade.cost
+        trade
+            .cost
             .iter()
             .for_each(|(item, demand)| player.add_item(item, -*demand));
-
 
         if self.state != trade.resulting_state {
             // if the state changed
@@ -250,8 +250,7 @@ impl Area for Machine {
     }
 
     fn get_time_percentage(&self) -> f32 {
-        let x = if (self.last_trade.time_ticks != 0)
-        {
+        let x = if self.last_trade.time_ticks != 0 {
             self.last_trade.time_ticks as f32 / self.time_remaining as f32
         } else {
             -1.0
