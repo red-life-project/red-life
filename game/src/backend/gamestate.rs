@@ -116,7 +116,7 @@ impl GameState {
             }
         };
 
-        self.areas.iter_mut().for_each(|a| a.tick(1));
+        self.machines.iter_mut().for_each(|a| a.tick(1));
 
         Ok(())
     }

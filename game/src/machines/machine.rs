@@ -3,11 +3,11 @@ use std::fmt::{Display, Formatter};
 
 use std::sync::mpsc::Sender;
 
-use crate::backend::area::Area;
 use crate::backend::constants::PLAYER_INTERACTION_RADIUS;
 use crate::backend::gamestate::{GameCommand, GameState};
 use crate::backend::rlcolor::RLColor;
 use crate::backend::screen::{Popup, StackCommand};
+use crate::backend::utils::is_colliding;
 use crate::game_core::item::Item;
 use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
@@ -64,6 +64,9 @@ pub struct Machine {
 }
 
 impl Machine {
+    pub(crate) fn is_interactable(&self, pos: (usize, usize)) -> bool {
+        is_colliding(pos, &self.get_interaction_area())
+    }
     pub fn new_by_const(
         gs: &GameState,
         sender: Sender<GameCommand>,
@@ -148,10 +151,11 @@ impl Machine {
             }
         }
     }
-}
-
-impl Area for Machine {
-    fn interact(&mut self, player: &mut Player, sender: &Sender<StackCommand>) -> Player {
+    pub(crate) fn interact(
+        &mut self,
+        player: &mut Player,
+        sender: &Sender<StackCommand>,
+    ) -> Player {
         let trade = self.get_trade();
         let dif = trade
             .cost
@@ -199,7 +203,7 @@ impl Area for Machine {
         player.clone()
     }
 
-    fn get_collision_area(&self) -> Rect {
+    pub(crate) fn get_collision_area(&self) -> Rect {
         self.hit_box
     }
 
@@ -207,7 +211,7 @@ impl Area for Machine {
         self.interaction_area
     }
 
-    fn get_graphic(&self) -> Image {
+    pub(crate) fn get_graphic(&self) -> Image {
         match self.state {
             Broken => self.sprite.broken.clone(),
             Idle => self.sprite.idle.clone(),
@@ -215,15 +219,15 @@ impl Area for Machine {
         }
     }
 
-    fn is_non_broken_machine(&self) -> bool {
+    pub(crate) fn is_non_broken_machine(&self) -> bool {
         self.state != Broken
     }
 
-    fn get_name(&self) -> String {
+    pub(crate) fn get_name(&self) -> String {
         self.name.clone()
     }
 
-    fn tick(&mut self, delta_tics: i16) {
+    pub(crate) fn tick(&mut self, delta_tics: i16) {
         self.time_remaining -= self.time_change * delta_tics;
         if self.time_remaining < 0 {
             //timer run out
@@ -236,11 +240,11 @@ impl Area for Machine {
             }
         }
     }
-    fn get_state(&self) -> State {
+    pub(crate) fn get_state(&self) -> State {
         self.state.clone()
     }
 
-    fn get_time_percentage(&self) -> f32 {
+    pub(crate) fn get_time_percentage(&self) -> f32 {
         let x = if self.last_trade.time_ticks == 0 {
             -1.0
         } else {
