@@ -1,82 +1,24 @@
 //!DIESE DATEI IST ZUM TESTEN VON SANDER
 use crate::backend::gamestate::GameState;
 
+use crate::machines::machine::Machine;
 
-use crate::languages::german::{BENZIN, GEDRUCKTESTEIL};
-use crate::machines::machine::{Machine, State};
-
+use crate::backend::constants::gen_all_machines;
 use crate::{draw, RLResult};
 use ggez::glam::Vec2;
-use ggez::graphics::{Canvas, Mesh, Rect};
+use ggez::graphics::{Canvas, Mesh};
 use ggez::Context;
 use tracing::info;
-use crate::backend::constants::gen_all_machines;
 
 impl GameState {
-    pub fn create_machine(&mut self) -> RLResult {
+    pub fn create_machine(&mut self) {
         info!("Generating all Machines");
-        let all = gen_all_machines().clone();
-            for m in all.iter() {
+        let all = gen_all_machines();
+        for m in &all {
             //code can panic @cargo bene fix
             let new_ms = Machine::new_by_const(self, m.clone()).unwrap();
             self.areas.push(Box::new(new_ms));
         }
-
-        // let new_ms = Machine::quick(self)?;
-        // self.areas.push(Box::new(new_ms));
-
-        // let clone = self.player.inventory.clone();
-        /* let ms_2 = Machine::new(
-             self,
-             "Oxygen".to_string(),
-             Rect {
-                 x: 600.0,
-                 y: 300.0,
-                 w: 100.0,
-                 h: 100.0,
-             },
-             vec![
-                 Trade::new_and_set(
-                     "repair_test".to_string(),
-                     100,
-                     State::Broken,
-                     State::Idle,
-                     &mut clone.clone(),
-                     (2, 2, 2),
-                     Item::new(BENZIN),
-                     0,
-                 ),
-                 Trade::new_and_set(
-                     "repair_test".to_string(),
-                     100,
-                     State::Idle,
-                     State::Running,
-                     &mut clone.clone(),
-                     (0, 1, 2),
-                     Item::new(BENZIN),
-                     0,
-                 ),
-                 Trade::new_and_set(
-                     "repair_test".to_string(),
-                     100,
-                     State::Running,
-                     State::Idle,
-                     &mut clone.clone(),
-                     (0, 0, 0),
-                     Item::new(GEDRUCKTESTEIL),
-                     1,
-                 ),
-             ],
-             Resources {
-                 oxygen: 10,
-                 energy: -5,
-                 life: 0,
-             },
-         )?;*/
-
-        //self.areas.push(Box::new(ms_2));
-
-        Ok(())
     }
 
     pub fn draw_machines(&self, canvas: &mut Canvas, scale: Vec2, ctx: &mut Context) -> RLResult {

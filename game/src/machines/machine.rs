@@ -11,14 +11,13 @@ use crate::backend::screen::{Popup, StackCommand};
 use crate::game_core::item::Item;
 use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
-use crate::languages::german::{BENZIN, GEDRUCKTESTEIL, TRADE_CONFLICT_POPUP};
+use crate::languages::german::TRADE_CONFLICT_POPUP;
 use crate::machines::machine::State::{Broken, Idle, Running};
 use crate::machines::machine_sprite::MachineSprite;
 use crate::machines::trade::Trade;
 use crate::RLResult;
 use ggez::graphics::{Color, Image, Rect};
 use tracing::info;
-
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum State {
@@ -63,59 +62,10 @@ pub struct Machine {
 }
 
 impl Machine {
-    pub fn quick(gs: &GameState) -> RLResult<Self> {
-        let clone = gs.player.inventory.clone();
-        Machine::new(
-            gs,
-            "test".to_string(),
-            Rect {
-                x: 300.0,
-                y: 300.0,
-                w: 100.0,
-                h: 100.0,
-            },
-            vec![
-                Trade::new_and_set(
-                    "repair_test".to_string(),
-                    100,
-                    State::Broken,
-                    State::Idle,
-                    &mut clone.clone(),
-                    (-1, -1, -1),
-                    Item::new(BENZIN),
-                    0,
-                ),
-                Trade::new_and_set(
-                    "repair_test".to_string(),
-                    100,
-                    State::Idle,
-                    State::Running,
-                    &mut clone.clone(),
-                    (1, 1, 1),
-                    Item::new(BENZIN),
-                    0,
-                ),
-                Trade::new_and_set(
-                    "repair_test".to_string(),
-                    100,
-                    State::Running,
-                    State::Idle,
-                    &mut clone.clone(),
-                    (-2, -2, -2),
-                    Item::new(GEDRUCKTESTEIL),
-                    1,
-                ),
-            ],
-            Resources {
-                oxygen: 0,
-                energy: -25,
-                life: 0,
-            },
-        )
-    }
-
-    pub fn new_by_const(gs: &GameState, (name, hit_box, trades, running_resources): (String, Rect, Vec<Trade>, Resources<i16>)) -> RLResult<Self>
-    {
+    pub fn new_by_const(
+        gs: &GameState,
+        (name, hit_box, trades, running_resources): (String, Rect, Vec<Trade>, Resources<i16>),
+    ) -> RLResult<Self> {
         Machine::new(gs, name, hit_box, trades, running_resources)
     }
 
@@ -167,7 +117,7 @@ impl Area for Machine {
             .cost
             .iter()
             .map(|(item, demand)| (item, player.get_item_amount(item) - demand))
-            .filter(|(item, dif)| *dif < 0)
+            .filter(|(_item, dif)| *dif < 0)
             .collect::<Vec<(&Item, i32)>>();
         if dif.iter().any(|(_, demand)| *demand < 0) {
             let mut missing_items = String::new();
@@ -205,10 +155,10 @@ impl Area for Machine {
             // if the state changed
             match (&self.state, &t.resulting_state) {
                 (Broken, Idle) | (Idle, Broken) => {}
-                (Broken, Running) | (Idle, Running) => {
+                (Broken | Idle, Running) => {
                     player.resources_change = player.resources_change + self.running_resources;
                 }
-                (Running, Broken) | (Running, Idle) => {
+                (Running, Broken | Idle) => {
                     player.resources_change = player.resources_change - self.running_resources;
                 }
                 _ => {

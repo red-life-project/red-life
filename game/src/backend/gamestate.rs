@@ -52,7 +52,7 @@ impl GameState {
         info!("Creating new gamestate");
         let mut result = GameState::default();
         result.load_assets(ctx)?;
-        result.create_machine()?; //////////// SANDER TESTING TOBE RM
+        result.create_machine(); //TODO add creating mashien on continue
         Ok(result)
     }
     /// Gets called every tick in the update fn to update the internal game logic.

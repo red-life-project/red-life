@@ -8,7 +8,7 @@ use tracing::info;
 
 #[derive(Debug, Clone)]
 pub struct MachineSprite {
-    name: String,
+    name: String, // used for debug only
     pub idle: Image,
     pub broken: Image,
     pub running: Image,
