@@ -26,9 +26,9 @@ use std::ops::Deref;
 use std::sync::mpsc::{Receiver, Sender};
 use tracing::info;
 
-pub(crate) enum GameCommand {
+pub enum GameCommand {
     Receive(Item),
-    Resource(Resources<i16>),
+    ResourceChange(Resources<i16>),
 }
 
 /// This is the game state. It contains all the data that is needed to run the game.
@@ -340,7 +340,7 @@ impl Screen for GameState {
             scale
         );
         self.draw_resources(&mut canvas, scale, ctx)?;
-        self.draw_machines(&mut canvas, scale, ctx);
+        self.draw_machines(&mut canvas, scale, ctx)?;
         self.draw_items(&mut canvas, ctx)?;
         #[cfg(debug_assertions)]
         {
