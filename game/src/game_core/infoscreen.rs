@@ -108,7 +108,7 @@ impl Screen for InfoScreen {
             if key == &VirtualKeyCode::Space && self.screentype == ScreenType::Intro {
                 self.sender.send(StackCommand::Pop)?;
                 self.sender.send(StackCommand::Push(Box::new({
-                    let mut gamestate = GameState::load(false).unwrap_or_default();
+                    let mut gamestate = GameState::new(ctx).unwrap_or_default();
                     gamestate.load_assets(ctx)?;
                     gamestate
                 })))?;

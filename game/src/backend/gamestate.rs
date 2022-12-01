@@ -268,7 +268,7 @@ impl GameState {
     /// divided into 3 milestones
     fn get_current_milestone(&mut self, ctx: &mut Context) {
         match self.player.milestone {
-            1 => {
+            0 => {
                 if self.player.match_milestone == 0 {
                     self.player.resources_change.oxygen = -1;
                     self.player.resources_change.energy = -1;
@@ -282,14 +282,18 @@ impl GameState {
                     "Stromgenerator".to_string(),
                 ]);
             }
-            2 => {
+            1 => {
                 self.check_on_milestone(vec!["Kommunikationsmodul".to_string()]);
             }
-            3 => {
-                self.sender
+            2 => {
+                let cloned_sender = self.screen_sender.as_mut().unwrap().clone();
+                self.screen_sender
+                    .as_mut()
+                    .expect("No Screensender")
                     .send(StackCommand::Push(Box::new(InfoScreen::new_winningscreen(
-                        self.sender.clone(),
-                    ))))?;
+                        cloned_sender,
+                    ))))
+                    .expect("Show Winning Screen");
             }
             _ => {}
         }
