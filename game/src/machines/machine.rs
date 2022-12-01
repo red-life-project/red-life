@@ -115,8 +115,7 @@ impl Machine {
         Trade::default()
     }
 
-    fn check_change(&self, before:&State, after:&State)
-    {
+    fn check_change(&self, before: &State, after: &State) {
         match (before, after) {
             (Broken, Idle) | (Idle, Broken) => {}
             (Broken | Idle, Running) => {
@@ -142,16 +141,14 @@ impl Machine {
             }
             _ => {
                 info!(
-                        "unexpected case in Match. machine state changed from {} to {}",
-                        before.clone(),after.clone()
-                    );
+                    "unexpected case in Match. machine state changed from {} to {}",
+                    before.clone(),
+                    after.clone()
+                );
             }
         }
     }
 }
-
-
-
 
 impl Area for Machine {
     fn interact(&mut self, player: &mut Player, sender: &Sender<StackCommand>) -> Player {
@@ -183,7 +180,7 @@ impl Area for Machine {
 
         // all checks have been pased taking items
         info!("Executing trade:{} ", trade.name);
-        self.last_trade=trade.clone();
+        self.last_trade = trade.clone();
         self.time_remaining = trade.time_ticks;
         if trade.time_ticks > 0 {
             self.time_change = 1;
@@ -195,9 +192,8 @@ impl Area for Machine {
 
         if self.state != trade.resulting_state {
             // if the state changed
-            self.check_change(&self.state,&trade.resulting_state);
+            self.check_change(&self.state, &trade.resulting_state);
             self.state = trade.resulting_state;
-
         }
 
         player.clone()
@@ -248,7 +244,7 @@ impl Area for Machine {
         let x = if self.last_trade.time_ticks == 0 {
             -1.0
         } else {
-           f32::from(self.time_remaining)/f32::from(self.last_trade.time_ticks)
+            f32::from(self.time_remaining) / f32::from(self.last_trade.time_ticks)
         };
         x
     }
