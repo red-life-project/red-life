@@ -27,7 +27,7 @@ use std::sync::mpsc::{Receiver, Sender};
 use tracing::info;
 
 pub enum GameCommand {
-    Receive(Item),
+    AddItems(Vec<(Item, i32)>),
     ResourceChange(Resources<i16>),
 }
 
@@ -64,7 +64,7 @@ impl GameState {
         result.sender = Some(sender);
         result.receiver = Some(receiver);
         result.load_assets(ctx)?;
-        result.create_machine()?; //////////// SANDER TESTING TOBE RM
+        result.create_machine(); //TODO add creating mashien on continue
         Ok(result)
     }
     /// Gets called every tick in the update fn to update the internal game logic.
@@ -102,6 +102,22 @@ impl GameState {
                     ))))?;
             };
         }
+        if let Ok(msg) = self.receiver.as_ref().unwrap().try_recv() {
+            match msg {
+                GameCommand::ResourceChange(new_rs) => {
+                    self.player.resources_change = self.player.resources_change + new_rs;
+                }
+                GameCommand::AddItems(item) => {
+
+                    // self.player.add_item()
+                }
+
+                _ => {}
+            }
+        };
+
+        self.areas.iter_mut().for_each(|a| a.tick(1));
+
         Ok(())
     }
 
