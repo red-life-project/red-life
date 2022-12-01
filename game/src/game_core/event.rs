@@ -1,6 +1,5 @@
 use crate::backend::gamestate::GameState;
 use crate::backend::screen::{Popup, StackCommand};
-use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
 use crate::languages::german::{
     INFORMATIONSPOPUP_MARS, INFORMATIONSPOPUP_NASA, KOMETENEINSCHLAG, SANDSTURM, STROMAUSFALL,
@@ -16,7 +15,6 @@ use tracing::info;
 /// defines an event which has an impact on the game and the player
 /// for example a popup or a change in the player's resources
 /// events can just fade off or stay as long as the player didnt interact with them
-
 // resources
 pub const DEBUG_CR: Resources<i16> = Resources {
     oxygen: 10,

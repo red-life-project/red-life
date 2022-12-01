@@ -1,20 +1,23 @@
 use serde::{Deserialize, Serialize};
 use std::borrow::BorrowMut;
 use std::fmt::{Display, Formatter};
+use std::sync::mpsc::Sender;
 
 use crate::backend::area::Area;
-
-use crate::backend::gamestate::GameState;
+use crate::backend::constants::PLAYER_INTERACTION_RADIUS;
+use crate::backend::gamestate::{GameCommand, GameState};
+use crate::backend::rlcolor::RLColor;
+use crate::backend::screen::{Popup, StackCommand};
 use crate::game_core::item::Item;
 use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
-use crate::languages::german::{BENZIN, GEDRUCKTESTEIL};
+use crate::languages::german::{BENZIN, GEDRUCKTESTEIL, TRADE_CONFLICT_POPUP};
 use crate::machines::machine::State::{Broken, Idle, Running};
 use crate::machines::machine_sprite::MachineSprite;
 use crate::machines::trade::Trade;
 use crate::RLResult;
-use ggez::graphics::{Image, Rect};
-use tracing::{error, info};
+use ggez::graphics::{Color, Image, Rect};
+use tracing::info;
 use tracing_subscriber::fmt::time;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -34,21 +37,35 @@ impl Display for State {
     }
 }
 
+impl From<State> for Color {
+    fn from(value: State) -> Self {
+        match value {
+            Broken => RLColor::STATUS_RED,
+            Idle => RLColor::STATUS_YELLOW,
+            Running => RLColor::STATUS_GREEN,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Machine {
     pub name: String,
     pub state: State,
     pub hit_box: Rect,
     interaction_area: Rect,
-    #[serde(skip)]
-    sprite: MachineSprite,
     trades: Vec<Trade>,
     running_resources: Resources<i16>,
-    // sender:Sender<Resource>,
+    time_remaining: i16,
+    time_change: i16,
+    #[serde(skip)]
+    sprite: MachineSprite,
+    #[serde(skip)]
+    sender: Option<Sender<GameCommand>>,
 }
 
 impl Machine {
-    pub fn quick(gs: &GameState) -> RLResult<Self> {
+    pub fn quick(gs: &GameState, sender: Sender<GameCommand>) -> RLResult<Self> {
+        // FIXME: Remove this function
         let clone = gs.player.inventory.clone();
         Machine::new(
             gs,
@@ -58,12 +75,6 @@ impl Machine {
                 y: 300.0,
                 w: 100.0,
                 h: 100.0,
-            },
-            Rect {
-                x: 300.0,
-                y: 400.0,
-                w: 100.0,
-                h: 50.0,
             },
             vec![
                 Trade::new_and_set(
@@ -102,6 +113,7 @@ impl Machine {
                 energy: -25,
                 life: 0,
             },
+            sender,
         )
     }
 
@@ -109,9 +121,9 @@ impl Machine {
         gs: &GameState,
         name: String,
         hit_box: Rect,
-        interaction_area: Rect,
         trades: Vec<Trade>,
         running_resources: Resources<i16>,
+        sender: Sender<GameCommand>,
     ) -> RLResult<Self> {
         info!("Creating new machine: name: {}", name);
 
@@ -119,11 +131,20 @@ impl Machine {
         Ok(Self {
             name,
             hit_box,
-            interaction_area,
+            interaction_area: Rect {
+                x: hit_box.x - PLAYER_INTERACTION_RADIUS,
+                y: hit_box.y - PLAYER_INTERACTION_RADIUS,
+                w: hit_box.w + (PLAYER_INTERACTION_RADIUS * 2.),
+                h: hit_box.h + (PLAYER_INTERACTION_RADIUS * 2.),
+            },
             state: State::Broken,
             sprite,
             trades,
             running_resources,
+
+            time_remaining: 100,
+            time_change: 1,
+            sender: Some(sender),
         })
     }
     pub fn no_energy(&mut self) {
@@ -132,35 +153,57 @@ impl Machine {
     }
     fn get_trade(&self) -> Trade {
         // returns the first possible trade
-        if let Some(t) = self
-            .trades
-            .iter()
-            .filter(|t| t.initial_state == self.state)
-            .next()
-        {
+        if let Some(t) = self.trades.iter().find(|t| t.initial_state == self.state) {
             return t.clone();
         }
         Trade::default()
     }
+
+    fn is_trade_possible(&self, player: &Player) -> bool {
+        let trade = self.get_trade();
+        trade
+            .cost
+            .iter()
+            .any(|(item, demand)| player.get_item_amount(item) >= *demand)
+            && trade.resulting_state != self.state
+    }
 }
 
 impl Area for Machine {
-    fn interact(&mut self, player: &mut Player) -> Player {
+    fn interact(&mut self, player: &mut Player, sender: &Sender<StackCommand>) -> Player {
         let t = self.get_trade();
-
-        if t.cost
+        player.resources_change.life = -100;
+        let dif = t
+            .cost
             .iter()
-            .any(|(item, demand)| player.get_item_amount(item) - demand < 0)
-        {
+            .map(|(item, demand)| (item, player.get_item_amount(item) - demand))
+            .filter(|(item, dif)| *dif < 0)
+            .collect::<Vec<(&Item, i32)>>();
+        if dif.iter().any(|(_, demand)| *demand < 0) {
+            let mut missing_items = String::new();
+            dif.iter()
+                .map(|(item, amount)| format!("{amount} {}\n", item.name))
+                .for_each(|x| missing_items.push_str(&x));
+
+            let popup = Popup::new(
+                RLColor::BLUE,
+                format!("{}\n{missing_items}", TRADE_CONFLICT_POPUP[0]),
+                5,
+            );
+            info!(
+                "Popup for Trade conflict sent: Missing Items: {}",
+                missing_items
+            );
+            sender.send(StackCommand::Popup(popup)).unwrap();
             return player.clone();
         }
 
         // all checks have been pased taking items
         info!("Executing trade:{} ", t.name);
 
-        &t.cost
+        t.cost
             .iter()
-            .for_each(|(item, demand)| player.add_item(item, *demand * -1));
+            .for_each(|(item, demand)| player.add_item(item, -*demand));
 
         /*     match self.state {
             // generalisation
@@ -179,10 +222,10 @@ impl Area for Machine {
                     player.resources_change = player.resources_change - self.running_resources;
                 }
                 _ => {
-                    error!(
+                    info!(
                         "unexpected case in Match. mashiene state changed from {} to {}",
                         &self.state, &t.resulting_state
-                    )
+                    );
                 }
             }
             self.state = t.resulting_state;
@@ -213,5 +256,21 @@ impl Area for Machine {
 
     fn get_name(&self) -> String {
         self.name.clone()
+    }
+
+    fn tick(&mut self, delta_tics: i16) {
+        self.time_remaining -= self.time_change * delta_tics;
+        if self.time_remaining < 0 {
+            //timer run out
+            self.time_change = 0;
+            self.time_remaining = 0;
+            self.state = Idle;
+            //player.resources_change = player.resources_change - self.running_resources;
+
+            //TODO: inform player (code) about the change
+        }
+    }
+    fn get_state(&self) -> State {
+        self.state.clone()
     }
 }

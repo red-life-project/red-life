@@ -10,12 +10,13 @@ use crate::game_core::deathscreen::DeathReason::Both;
 use crate::game_core::deathscreen::DeathScreen;
 use crate::game_core::event::{Event, NO_CHANGE};
 use crate::game_core::infoscreen::InfoScreen;
+use crate::game_core::item::Item;
 use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
 use crate::languages::german::RESOURCE_NAME;
 use crate::{draw, RLResult};
 use ggez::glam::Vec2;
-use ggez::graphics::{Canvas, Color, Image};
+use ggez::graphics::{Canvas, Image};
 use ggez::graphics::{DrawMode, Mesh, Rect};
 use ggez::{graphics, Context};
 use serde::{Deserialize, Serialize};
@@ -23,8 +24,13 @@ use std::collections::HashMap;
 use std::fs;
 use std::fs::read_dir;
 use std::ops::Deref;
-use std::sync::mpsc::Sender;
+use std::sync::mpsc::{Receiver, Sender};
 use tracing::info;
+
+pub enum GameCommand {
+    Receive(Item),
+    ResourceChange(Resources<i16>),
+}
 
 /// This is the game state. It contains all the data that is needed to run the game.
 #[derive(Debug, Default, Serialize, Deserialize)]
@@ -38,6 +44,10 @@ pub struct GameState {
     pub areas: Vec<Box<dyn Area>>,
     #[serde(skip)]
     pub(crate) screen_sender: Option<Sender<StackCommand>>,
+    #[serde(skip)]
+    pub(crate) receiver: Option<Receiver<GameCommand>>,
+    #[serde(skip)]
+    pub(crate) sender: Option<Sender<GameCommand>>,
 }
 
 impl PartialEq for GameState {
@@ -51,7 +61,10 @@ impl GameState {
     /// It loads all the assets and creates the areas of the machines.
     pub fn new(ctx: &mut Context) -> RLResult<Self> {
         info!("Creating new gamestate");
+        let (sender, receiver) = std::sync::mpsc::channel();
         let mut result = GameState::default();
+        result.sender = Some(sender);
+        result.receiver = Some(receiver);
         result.load_assets(ctx)?;
         result.create_machine()?; //////////// SANDER TESTING TOBE RM
         Ok(result)
@@ -276,7 +289,7 @@ impl GameState {
                     self.events = Vec::new();
                     self.player.match_milestone = 1;
                 }
-                Event::update_events(&ctx, self);
+                Event::update_events(ctx, self);
                 self.check_on_milestone(vec![
                     "Sauerstoffgenerator".to_string(),
                     "Stromgenerator".to_string(),
@@ -338,7 +351,7 @@ impl Screen for GameState {
             scale
         );
         self.draw_resources(&mut canvas, scale, ctx)?;
-        self.draw_machines(&mut canvas, scale, ctx);
+        self.draw_machines(&mut canvas, scale, ctx)?;
         self.draw_items(&mut canvas, ctx)?;
         #[cfg(debug_assertions)]
         {

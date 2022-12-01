@@ -1,5 +1,6 @@
 //!DIESE DATEI IST ZUM TESTEN VON SANDER
 use crate::backend::gamestate::GameState;
+
 use crate::game_core::item::Item;
 use crate::game_core::resources::Resources;
 use crate::languages::german::{BENZIN, GEDRUCKTESTEIL};
@@ -7,14 +8,15 @@ use crate::machines::machine::{Machine, State};
 use crate::machines::trade::Trade;
 use crate::{draw, RLResult};
 use ggez::glam::Vec2;
-use ggez::graphics::{Canvas, Rect};
+use ggez::graphics::{Canvas, Mesh, Rect};
 use ggez::Context;
 use tracing::info;
 
 impl GameState {
     pub fn create_machine(&mut self) -> RLResult {
         info!("Generating all Machines");
-        let new_ms = Machine::quick(self)?;
+        let sender_clone = self.sender.as_mut().unwrap().clone();
+        let new_ms = Machine::quick(self, sender_clone.clone())?;
         self.areas.push(Box::new(new_ms));
 
         let clone = self.player.inventory.clone();
@@ -26,12 +28,6 @@ impl GameState {
                 y: 300.0,
                 w: 100.0,
                 h: 100.0,
-            },
-            Rect {
-                x: 600.0,
-                y: 400.0,
-                w: 100.0,
-                h: 50.0,
             },
             vec![
                 Trade::new_and_set(
@@ -70,6 +66,7 @@ impl GameState {
                 energy: -5,
                 life: 0,
             },
+            sender_clone,
         )?;
 
         self.areas.push(Box::new(ms_2));
@@ -77,14 +74,26 @@ impl GameState {
         Ok(())
     }
 
-    pub fn draw_machines(&self, canvas: &mut Canvas, scale: Vec2, ctx: &mut Context) {
+    pub fn draw_machines(&self, canvas: &mut Canvas, scale: Vec2, ctx: &mut Context) -> RLResult {
         for area in &self.areas {
             let machine = area.get_graphic();
-            let pos = Vec2 {
+            let mut pos = Vec2 {
                 x: area.get_collision_area().x,
                 y: area.get_collision_area().y,
             };
             draw!(canvas, &machine, pos, scale);
+            let status = Mesh::new_circle(
+                ctx,
+                ggez::graphics::DrawMode::fill(),
+                Vec2::new(0.0, 0.0),
+                15.0,
+                0.1,
+                area.get_state().into(),
+            )?;
+            pos.x += 20.;
+            pos.y += 20.;
+            draw!(canvas, &status, pos, scale);
         }
+        Ok(())
     }
 }

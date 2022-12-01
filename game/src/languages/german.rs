@@ -76,3 +76,4 @@ pub const INFORMATIONSPOPUP_MARS: [&str; 2] = [
     "InformationspopupMars",
     "Ein Informationspopup über Mars, welches Fakten und Informationen über den Mars enthält",
 ];
+pub const TRADE_CONFLICT_POPUP: [&str; 1] = ["Es fehlen folgende Items, um den Trade auszuführen:"];

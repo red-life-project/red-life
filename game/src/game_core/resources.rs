@@ -127,6 +127,6 @@ mod test {
         assert_eq!(ait.next().unwrap(), 3);
         assert_eq!(ait.next().unwrap(), 2);
         assert_eq!(ait.next().unwrap(), 1);
-        assert_eq!(Some(ait.next()), Some(None))
+        assert_eq!(Some(ait.next()), Some(None));
     }
 }
