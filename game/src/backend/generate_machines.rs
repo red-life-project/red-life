@@ -11,6 +11,7 @@ use ggez::glam::Vec2;
 use ggez::graphics::{Canvas, Mesh, Rect};
 use ggez::Context;
 use tracing::info;
+use crate::backend::rlcolor::RLColor;
 
 impl GameState {
     pub fn create_machine(&mut self) -> RLResult {
@@ -93,6 +94,26 @@ impl GameState {
             pos.x += 20.;
             pos.y += 20.;
             draw!(canvas, &status, pos, scale);
+            // Bar for machine Timer
+            pos.x += 50.;
+            let rect1 = Mesh::new_rounded_rectangle(
+                ctx,
+                ggez::graphics::DrawMode::fill(),
+                Rect::new(0.0, 0.0, 100.0, 10.0),
+                15.,
+                RLColor::DARK_GREY,
+            )?;
+            draw!(canvas, &rect1, pos, scale);
+            // Bar for current time
+            let time = area.get_time_percentage();
+            let rect2 = Mesh::new_rounded_rectangle(
+                ctx,
+                ggez::graphics::DrawMode::fill(),
+                Rect::new(0.0, 0.0, 100.0 * time, 10.0),
+                15.,
+                RLColor::LIGHT_BLUE,
+            )?;
+            draw!(canvas, &rect2, pos, scale);
         }
         Ok(())
     }

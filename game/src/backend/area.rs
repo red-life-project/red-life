@@ -19,4 +19,5 @@ pub trait Area: Debug {
     fn get_name(&self) -> String;
     fn tick(&mut self, delta_tics: i16);
     fn get_state(&self) -> State;
+    fn get_time_percentage(&self) -> f32;
 }
