@@ -1,15 +1,16 @@
-use std::fmt::{Display, Formatter};
 use crate::backend::gamestate::GameState;
 use crate::backend::screen::{Screen, StackCommand};
 use crate::backend::utils::get_scale;
 use crate::languages::german::{
-    ADDITIONAL_INFO_STRING, BUTTON_INFO, DEATH_REASON_STRING, INTRO_TEXT, TURTORIAL_TEXT, AIR_STRING,ENERGY_STRING,AIR_AND_ENERGY_STRING
+    ADDITIONAL_INFO_STRING, AIR_AND_ENERGY_STRING, AIR_STRING, BUTTON_INFO, DEATH_REASON_STRING,
+    ENERGY_STRING, INTRO_TEXT, TURTORIAL_TEXT,
 };
 use crate::main_menu::mainmenu::MainMenu;
 use crate::{draw, RLResult};
 use ggez::glam::Vec2;
 use ggez::winit::event::VirtualKeyCode;
 use ggez::{graphics, Context};
+use std::fmt::{Display, Formatter};
 use std::sync::mpsc::Sender;
 use tracing::info;
 ///Authors Leo and Maxi
