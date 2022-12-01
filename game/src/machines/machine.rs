@@ -1,11 +1,11 @@
 use serde::{Deserialize, Serialize};
+use std::borrow::BorrowMut;
 use std::fmt::{Display, Formatter};
-use std::ops::Add;
 use std::sync::mpsc::Sender;
 
 use crate::backend::area::Area;
 use crate::backend::constants::PLAYER_INTERACTION_RADIUS;
-use crate::backend::gamestate::GameState;
+use crate::backend::gamestate::{GameCommand, GameState};
 use crate::backend::rlcolor::RLColor;
 use crate::backend::screen::{Popup, StackCommand};
 use crate::game_core::item::Item;
@@ -53,17 +53,19 @@ pub struct Machine {
     pub state: State,
     pub hit_box: Rect,
     interaction_area: Rect,
-    #[serde(skip)]
-    sprite: MachineSprite,
     trades: Vec<Trade>,
     running_resources: Resources<i16>,
     time_remaining: i16,
     time_change: i16,
-    // sender:Sender<Resource>,
+    #[serde(skip)]
+    sprite: MachineSprite,
+    #[serde(skip)]
+    sender: Option<Sender<GameCommand>>,
 }
 
 impl Machine {
-    pub fn quick(gs: &GameState) -> RLResult<Self> {
+    pub fn quick(gs: &GameState, sender: Sender<GameCommand>) -> RLResult<Self> {
+        // FIXME: Remove this function
         let clone = gs.player.inventory.clone();
         Machine::new(
             gs,
@@ -111,6 +113,7 @@ impl Machine {
                 energy: -25,
                 life: 0,
             },
+            sender,
         )
     }
 
@@ -120,6 +123,7 @@ impl Machine {
         hit_box: Rect,
         trades: Vec<Trade>,
         running_resources: Resources<i16>,
+        sender: Sender<GameCommand>,
     ) -> RLResult<Self> {
         info!("Creating new machine: name: {}", name);
 
@@ -140,6 +144,7 @@ impl Machine {
 
             time_remaining: 100,
             time_change: 1,
+            sender: Some(sender),
         })
     }
     pub fn no_energy(&mut self) {
@@ -152,6 +157,15 @@ impl Machine {
             return t.clone();
         }
         Trade::default()
+    }
+
+    fn is_trade_possible(&self, player: &Player) -> bool {
+        let trade = self.get_trade();
+        trade
+            .cost
+            .iter()
+            .any(|(item, demand)| player.get_item_amount(item) >= *demand)
+            && trade.resulting_state != self.state
     }
 }
 
@@ -189,7 +203,7 @@ impl Area for Machine {
 
         t.cost
             .iter()
-            .for_each(|(item, demand)| player.add_item(item, *demand * -1));
+            .for_each(|(item, demand)| player.add_item(item, -*demand));
 
         /*     match self.state {
             // generalisation

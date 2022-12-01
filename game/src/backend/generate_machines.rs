@@ -15,7 +15,8 @@ use tracing::info;
 impl GameState {
     pub fn create_machine(&mut self) -> RLResult {
         info!("Generating all Machines");
-        let new_ms = Machine::quick(self)?;
+        let sender_clone = self.sender.as_mut().unwrap().clone();
+        let new_ms = Machine::quick(self, sender_clone.clone())?;
         self.areas.push(Box::new(new_ms));
 
         let clone = self.player.inventory.clone();
@@ -65,6 +66,7 @@ impl GameState {
                 energy: -5,
                 life: 0,
             },
+            sender_clone,
         )?;
 
         self.areas.push(Box::new(ms_2));
