@@ -248,4 +248,8 @@ impl Area for Machine {
     fn get_state(&self) -> State {
         self.state.clone()
     }
+
+    fn get_time_percentage(&self) -> f32 {
+        0.5
+    }
 }
