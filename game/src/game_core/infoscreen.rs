@@ -13,7 +13,7 @@ use ggez::{graphics, Context};
 use std::fmt::{Display, Formatter};
 use std::sync::mpsc::Sender;
 use tracing::info;
-///Authors Leo and Maxi
+
 /// Defines the reason for the death of the player and is used to display the reason on the screen
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum DeathReason {
