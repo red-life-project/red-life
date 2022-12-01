@@ -40,7 +40,7 @@ impl GameState {
                 area.get_state().into(),
             )?;
             let time = area.get_time_percentage();
-            if time >= 0. {
+            if time > 0. {
                 pos.x += 20.;
                 pos.y += 20.;
                 draw!(canvas, &status, pos, scale);

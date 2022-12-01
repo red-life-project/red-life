@@ -98,8 +98,8 @@ impl Machine {
             last_trade: Trade::default(),
             running_resources,
 
-            time_remaining: 100,
-            time_change: 1,
+            time_remaining: 0,
+            time_change: 0,
             sender: Some(sender),
         })
     }
@@ -146,11 +146,11 @@ impl Area for Machine {
 
         // all checks have been pased taking items
         info!("Executing trade:{} ", trade.name);
+        self.last_trade=trade.clone();
         self.time_remaining = trade.time_ticks;
         if trade.time_ticks > 0 {
             self.time_change = 1;
         }
-        self.time_change = trade.time_ticks;
         trade
             .cost
             .iter()
@@ -250,10 +250,10 @@ impl Area for Machine {
     }
 
     fn get_time_percentage(&self) -> f32 {
-        let x = if self.last_trade.time_ticks != 0 {
-            self.last_trade.time_ticks as f32 / self.time_remaining as f32
-        } else {
+        let x = if self.last_trade.time_ticks == 0 {
             -1.0
+        } else {
+           f32::from(self.time_remaining)/f32::from(self.last_trade.time_ticks)
         };
         x
     }
