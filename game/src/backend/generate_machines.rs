@@ -31,6 +31,7 @@ impl GameState {
                 y: machine.get_collision_area().y,
             };
             draw!(canvas, &image, pos, scale);
+            // Draws the machine status on top of the machine
             let status = Mesh::new_circle(
                 ctx,
                 ggez::graphics::DrawMode::fill(),
@@ -39,13 +40,15 @@ impl GameState {
                 0.1,
                 machine.get_state().into(),
             )?;
+            // Draws the machine timer on top of the machine
             let time = machine.get_time_percentage();
             if time > 0. {
                 pos.x += 20.;
                 pos.y += 20.;
                 draw!(canvas, &status, pos, scale);
                 // Bar for machine Timer
-                pos.x += 50.;
+                pos.x += 40.;
+                pos.y -= 30.;
                 let rect1 = Mesh::new_rounded_rectangle(
                     ctx,
                     ggez::graphics::DrawMode::fill(),
@@ -54,13 +57,13 @@ impl GameState {
                     RLColor::DARK_GREY,
                 )?;
                 draw!(canvas, &rect1, pos, scale);
-                // Bar for current time
+                // Bar of current time
                 let rect2 = Mesh::new_rounded_rectangle(
                     ctx,
                     ggez::graphics::DrawMode::fill(),
                     Rect::new(0.0, 0.0, 100.0 * time, 10.0),
                     15.,
-                    RLColor::LIGHT_BLUE,
+                    RLColor::BLACK,
                 )?;
                 draw!(canvas, &rect2, pos, scale);
             }
