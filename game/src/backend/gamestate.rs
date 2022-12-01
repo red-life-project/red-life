@@ -1,5 +1,4 @@
 //! Contains the game logic, updates the game and draws the current board
-use crate::backend::area::Area;
 use crate::backend::constants::COLORS;
 use crate::backend::constants::{DESIRED_FPS, MAP_BORDER, RESOURCE_POSITION};
 use crate::backend::rlcolor::RLColor;
@@ -8,11 +7,12 @@ use crate::backend::utils::{get_scale, is_colliding};
 use crate::backend::{error::RLError, screen::Screen};
 use crate::game_core::deathscreen::DeathReason::Both;
 use crate::game_core::deathscreen::DeathScreen;
-use crate::game_core::event::{Event, NO_CHANGE};
+use crate::game_core::event::Event;
 use crate::game_core::item::Item;
 use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
 use crate::languages::german::RESOURCE_NAME;
+use crate::machines::machine::Machine;
 use crate::{draw, RLResult};
 use ggez::glam::Vec2;
 use ggez::graphics::{Canvas, Image};
@@ -37,10 +37,9 @@ pub struct GameState {
     /// Contains the current player position, resources(air, energy, life) and the inventory and their change rates
     pub player: Player,
     pub(crate) events: Vec<Event>,
+    pub machines: Vec<Machine>,
     #[serde(skip)]
     assets: HashMap<String, Image>,
-    #[serde(skip)]
-    pub areas: Vec<Box<dyn Area>>,
     #[serde(skip)]
     pub(crate) screen_sender: Option<Sender<StackCommand>>,
     #[serde(skip)]
@@ -213,10 +212,10 @@ impl GameState {
         Ok(game_state)
     }
     /// Returns the area the player needs to stand in to interact with a machine
-    pub(crate) fn get_interactable(&mut self) -> Option<&mut Box<dyn Area>> {
-        self.areas
+    pub(crate) fn get_interactable(&mut self) -> Option<&mut Machine> {
+        self.machines
             .iter_mut()
-            .find(|area| area.is_interactable(self.player.position))
+            .find(|machine| machine.is_interactable(self.player.position))
     }
 
     /// Returns if the player would collide with a border if they moved in the given direction
@@ -233,7 +232,7 @@ impl GameState {
     /// # Arguments
     /// * `next_player_pos` - A tuple containing the next position of the player
     pub(crate) fn collision_detection(&self, next_player_pos: (usize, usize)) -> bool {
-        self.areas
+        self.machines
             .iter()
             .map(|area| area.get_collision_area())
             .any(|area| is_colliding(next_player_pos, &area))
@@ -256,11 +255,10 @@ impl GameState {
         //let a = self.areas.get(0).unwrap().deref(); erst einfügen, wenn man es auch benutzt
 
         let running_machine = self
-            .areas
+            .machines
             .iter()
-            .map(Deref::deref)
             .filter(|m| m.is_non_broken_machine())
-            .map(Area::get_name)
+            .map(Machine::get_name)
             .collect::<Vec<String>>();
 
         if !running_machine.is_empty() {
