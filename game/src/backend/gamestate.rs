@@ -63,7 +63,7 @@ impl GameState {
         result.sender = Some(sender);
         result.receiver = Some(receiver);
         result.load_assets(ctx)?;
-        result.create_machine(); //TODO add creating mashien on continue
+        result.create_machine(); //TODO add creating machine on continue
         Ok(result)
     }
     /// Gets called every tick in the update fn to update the internal game logic.
@@ -186,6 +186,33 @@ impl GameState {
             self.assets
                 .insert(name, Image::from_bytes(ctx, bytes.as_slice()).unwrap());
         });
+        let machine_assets: Vec<[Image; 3]> = self
+            .machines
+            .iter()
+            .map(|m| m.name.clone())
+            .map(|name| {
+                [
+                    self.assets
+                        .get(&format!("{name}_Idle.png"))
+                        .unwrap()
+                        .clone(),
+                    self.assets
+                        .get(&format!("{name}_Broken.png"))
+                        .unwrap()
+                        .clone(),
+                    self.assets
+                        .get(&format!("{name}_Running.png"))
+                        .unwrap()
+                        .clone(),
+                ]
+            })
+            .collect();
+        self.machines
+            .iter_mut()
+            .zip(machine_assets)
+            .for_each(|(m, a)| {
+                m.load_sprites(&a);
+            });
         if self.assets.is_empty() {
             return Err(RLError::AssetError("Could not find assets!".to_string()));
         }

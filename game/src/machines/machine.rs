@@ -58,7 +58,7 @@ pub struct Machine {
     time_remaining: i16,
     time_change: i16,
     #[serde(skip)]
-    sprite: MachineSprite,
+    sprite: Option<MachineSprite>,
     #[serde(skip)]
     sender: Option<Sender<GameCommand>>,
 }
@@ -96,7 +96,7 @@ impl Machine {
                 h: hit_box.h + (PLAYER_INTERACTION_RADIUS * 2.),
             },
             state: State::Broken,
-            sprite,
+            sprite: Some(sprite),
             trades,
             last_trade: Trade::default(),
             running_resources,
@@ -213,10 +213,14 @@ impl Machine {
 
     pub(crate) fn get_graphic(&self) -> Image {
         match self.state {
-            Broken => self.sprite.broken.clone(),
-            Idle => self.sprite.idle.clone(),
-            Running => self.sprite.running.clone(),
+            Broken => self.sprite.as_ref().unwrap().broken.clone(),
+            Idle => self.sprite.as_ref().unwrap().idle.clone(),
+            Running => self.sprite.as_ref().unwrap().running.clone(),
         }
+    }
+    /// Loads the Machine Sprites. Has to be called before drawing.
+    pub(crate) fn load_sprites(&mut self, images: &[Image]) {
+        self.sprite = Some(images.into());
     }
 
     pub(crate) fn is_non_broken_machine(&self) -> bool {

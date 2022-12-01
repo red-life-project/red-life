@@ -8,29 +8,20 @@ use tracing::info;
 
 #[derive(Debug, Clone)]
 pub struct MachineSprite {
-    name: String, // used for debug only
     pub idle: Image,
     pub broken: Image,
     pub running: Image,
 }
 
-impl Default for MachineSprite {
-    fn default() -> Self {
-        let bytes = fs::read("assets/error.png").unwrap();
-        let ctx = ggez::ContextBuilder::new("img_default", "sander")
-            .window_setup(ggez::conf::WindowSetup::default())
-            .build()
-            .unwrap();
-        let error = Image::from_bytes(&ctx.0, bytes.as_slice()).unwrap();
+impl From<&[Image]> for MachineSprite {
+    fn from(value: &[Image]) -> Self {
         Self {
-            name: String::new(),
-            idle: error.clone(),
-            broken: error.clone(),
-            running: error,
+            idle: value[0].clone(),
+            broken: value[1].clone(),
+            running: value[2].clone(),
         }
     }
 }
-
 impl MachineSprite {
     pub fn new(gs: &GameState, name: &str) -> RLResult<Self> {
         //test_Broken.png
@@ -42,7 +33,6 @@ impl MachineSprite {
             .get_asset(format!("{name}_Running.png").as_str())?
             .clone();
         Ok(Self {
-            name: name.to_string(),
             idle,
             broken,
             running,
