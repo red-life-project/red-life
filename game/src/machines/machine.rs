@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
-use std::ops::Add;
+
 use std::sync::mpsc::Sender;
 
 use crate::backend::area::Area;
@@ -18,7 +18,7 @@ use crate::machines::trade::Trade;
 use crate::RLResult;
 use ggez::graphics::{Color, Image, Rect};
 use tracing::info;
-use tracing_subscriber::fmt::time;
+
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum State {
@@ -112,6 +112,11 @@ impl Machine {
                 life: 0,
             },
         )
+    }
+
+    pub fn new_by_const(gs: &GameState, (name, hit_box, trades, running_resources): (String, Rect, Vec<Trade>, Resources<i16>)) -> RLResult<Self>
+    {
+        Machine::new(gs, name, hit_box, trades, running_resources)
     }
 
     pub fn new(
@@ -208,7 +213,7 @@ impl Area for Machine {
                 }
                 _ => {
                     info!(
-                        "unexpected case in Match. mashiene state changed from {} to {}",
+                        "unexpected case in Match. machine state changed from {} to {}",
                         &self.state, &t.resulting_state
                     );
                 }
