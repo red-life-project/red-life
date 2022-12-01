@@ -285,6 +285,12 @@ impl GameState {
             2 => {
                 self.check_on_milestone(vec!["Kommunikationsmodul".to_string()]);
             }
+            3 => {
+                self.sender
+                    .send(StackCommand::Push(Box::new(InfoScreen::new_winningscreen(
+                        self.sender.clone(),
+                    ))))?;
+            }
             _ => {}
         }
     }

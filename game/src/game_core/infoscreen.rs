@@ -13,14 +13,14 @@ use ggez::{graphics, Context};
 use std::sync::mpsc::Sender;
 use tracing::info;
 
-/// Defines the type of Screen wich is Infoscreen corrently scowing
+/// Defines the type of Screen which is Infoscreen currently showing
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum ScreenType {
     Death,
     Intro,
     Winning,
 }
-/// Create `DeathScreen`, `IntroScreen` or `WinningSreen`. Deathscreen needs the reason of death from `DeathReason` enum.
+/// Create `DeathScreen`, `IntroScreen` or `WinningSreen`. DeathScreen needs the reason of death from `DeathReason` enum.
 #[derive(Debug)]
 pub struct InfoScreen {
     background: String,
@@ -97,15 +97,15 @@ impl Screen for InfoScreen {
         if let Some(key) = keys.iter().next() {
             info!("The player wants to got to the next screen with: {:?}", key);
             if key == &VirtualKeyCode::Escape {
-                if self.screentype == ScreenType::Death{
+                if self.screentype == ScreenType::Death {
                     self.sender.send(StackCommand::Push(Box::new(MainMenu::new(
                         self.sender.clone(),
                     ))))?;
-                }else {
+                } else {
                     self.sender.send(StackCommand::Pop)?;
                 }
             }
-            if key == &VirtualKeyCode::Space && self.screentype == ScreenType::Intro{
+            if key == &VirtualKeyCode::Space && self.screentype == ScreenType::Intro {
                 self.sender.send(StackCommand::Pop)?;
                 self.sender.send(StackCommand::Push(Box::new({
                     let mut gamestate = GameState::load(false).unwrap_or_default();
