@@ -250,6 +250,12 @@ impl Area for Machine {
     }
 
     fn get_time_percentage(&self) -> f32 {
-        0.5
+        let x = if (self.last_trade.time_ticks != 0)
+        {
+            self.last_trade.time_ticks as f32 / self.time_remaining as f32
+        } else {
+            -1.0
+        };
+        x
     }
 }

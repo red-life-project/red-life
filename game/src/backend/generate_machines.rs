@@ -1,13 +1,13 @@
 //!DIESE DATEI IST ZUM TESTEN VON SANDER
-use crate::backend::gamestate::{GameCommand, GameState};
-use std::sync::mpsc::Sender;
+use crate::backend::gamestate::{GameState};
+
 
 use crate::machines::machine::Machine;
 
 use crate::backend::constants::gen_all_machines;
 use crate::{draw, RLResult};
 use ggez::glam::Vec2;
-use ggez::graphics::{Canvas, Mesh};
+use ggez::graphics::{Canvas, Mesh, Rect};
 use ggez::Context;
 use tracing::info;
 use crate::backend::rlcolor::RLColor;
