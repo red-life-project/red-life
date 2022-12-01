@@ -1,5 +1,4 @@
 use serde::{Deserialize, Serialize};
-use std::borrow::BorrowMut;
 use std::fmt::{Display, Formatter};
 
 use std::sync::mpsc::Sender;
@@ -54,6 +53,7 @@ pub struct Machine {
     pub hit_box: Rect,
     interaction_area: Rect,
     trades: Vec<Trade>,
+    last_trade : Trade,
     running_resources: Resources<i16>,
     time_remaining: i16,
     time_change: i16,
@@ -65,7 +65,8 @@ pub struct Machine {
 
 impl Machine {
     pub fn new_by_const(
-        gs: &GameState,sender: Sender<GameCommand>,
+        gs: &GameState,
+        sender: Sender<GameCommand>,
         (name, hit_box, trades, running_resources): (String, Rect, Vec<Trade>, Resources<i16>),
     ) -> RLResult<Self> {
         Machine::new(gs, name, hit_box, trades, running_resources, sender)
@@ -94,6 +95,7 @@ impl Machine {
             state: State::Broken,
             sprite,
             trades,
+            last_trade: Trade::default(),
             running_resources,
 
             time_remaining: 100,
@@ -112,21 +114,12 @@ impl Machine {
         }
         Trade::default()
     }
-
-    fn is_trade_possible(&self, player: &Player) -> bool {
-        let trade = self.get_trade();
-        trade
-            .cost
-            .iter()
-            .any(|(item, demand)| player.get_item_amount(item) >= *demand)
-            && trade.resulting_state != self.state
-    }
 }
 
 impl Area for Machine {
     fn interact(&mut self, player: &mut Player, sender: &Sender<StackCommand>) -> Player {
-        let t = self.get_trade();
-        let dif = t
+        let trade = self.get_trade();
+        let dif = trade
             .cost
             .iter()
             .map(|(item, demand)| (item, player.get_item_amount(item) - demand))
@@ -152,36 +145,50 @@ impl Area for Machine {
         }
 
         // all checks have been pased taking items
-        info!("Executing trade:{} ", t.name);
-
-        t.cost
+        info!("Executing trade:{} ", trade.name);
+        self.time_remaining = trade.time_ticks;
+        if trade.time_ticks>0 {
+            self.time_change = 1;
+        }
+        self.time_change = trade.time_ticks;
+        trade.cost
             .iter()
             .for_each(|(item, demand)| player.add_item(item, -*demand));
 
-        /*     match self.state {
-            // generalisation
-            Broken => self.state = Idle,
-            Idle => self.state = Running,
-            Running => self.state = Running,
-        };*/
-        if self.state != t.resulting_state {
+
+        if self.state != trade.resulting_state {
             // if the state changed
-            match (&self.state, &t.resulting_state) {
+            match (&self.state, &trade.resulting_state) {
                 (Broken, Idle) | (Idle, Broken) => {}
                 (Broken | Idle, Running) => {
-                    player.resources_change = player.resources_change + self.running_resources;
+                    let _e = self
+                        .sender
+                        .as_ref()
+                        .unwrap()
+                        .send(GameCommand::ResourceChange(self.running_resources));
                 }
                 (Running, Broken | Idle) => {
-                    player.resources_change = player.resources_change - self.running_resources;
+                    let _e = self
+                        .sender
+                        .as_ref()
+                        .unwrap()
+                        .send(GameCommand::ResourceChange(
+                            // 0-n = n*-1  = n.invert()                            // TODO: add .invert() to Resources
+                            Resources {
+                                oxygen: 0,
+                                energy: 0,
+                                life: 0,
+                            } - self.running_resources,
+                        ));
                 }
                 _ => {
                     info!(
                         "unexpected case in Match. machine state changed from {} to {}",
-                        &self.state, &t.resulting_state
+                        &self.state, &trade.resulting_state
                     );
                 }
             }
-            self.state = t.resulting_state;
+            self.state = trade.resulting_state;
         }
 
         player.clone()
@@ -217,10 +224,25 @@ impl Area for Machine {
             //timer run out
             self.time_change = 0;
             self.time_remaining = 0;
-            self.state = Idle;
-            //player.resources_change = player.resources_change - self.running_resources;
 
-            //TODO: inform player (code) about the change
+            if self.state == Running {
+                self.state = Idle;
+                //player.resources_change = player.resources_change - self.running_resources;
+
+                //TODO: inform player (code) about the change
+                let _e = self
+                    .sender
+                    .as_ref()
+                    .unwrap()
+                    .send(GameCommand::ResourceChange(
+                        // 0-n = n*-1  = n.invert()                            // TODO: add .invert() to Resources
+                        Resources {
+                            oxygen: 0,
+                            energy: 0,
+                            life: 0,
+                        } - self.running_resources,
+                    ));
+            }
         }
     }
     fn get_state(&self) -> State {

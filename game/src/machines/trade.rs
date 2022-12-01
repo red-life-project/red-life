@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Trade {
     pub(crate) name: String,
-    time_ticks: usize,
+    pub time_ticks: i16,
     pub initial_state: State,
     pub resulting_state: State,
     // the Machine needs to be in this state for the trade to be accessible
@@ -20,7 +20,7 @@ impl Default for Trade {
     fn default() -> Self {
         Self {
             name: "default".to_string(),
-            time_ticks: 1000,
+            time_ticks: 0,
             initial_state: State::Broken,
             resulting_state: State::Running,
             cost: vec![],
@@ -33,7 +33,7 @@ impl Default for Trade {
 impl Trade {
     pub fn new(
         name: String,
-        time_ticks: usize,
+        time_ticks: i16,
         initial_state: State,
         resulting_state: State,
         cost: Vec<(Item, i32)>,

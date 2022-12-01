@@ -8,7 +8,7 @@ use crate::backend::utils::{get_scale, is_colliding};
 use crate::backend::{error::RLError, screen::Screen};
 use crate::game_core::deathscreen::DeathReason::Both;
 use crate::game_core::deathscreen::DeathScreen;
-use crate::game_core::event::{Event, NO_CHANGE};
+use crate::game_core::event::Event;
 use crate::game_core::item::Item;
 use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
@@ -27,7 +27,7 @@ use std::sync::mpsc::{Receiver, Sender};
 use tracing::info;
 
 pub enum GameCommand {
-    Receive(Item),
+    AddItems(Vec<(Item, i32)>),
     ResourceChange(Resources<i16>),
 }
 
@@ -103,6 +103,24 @@ impl GameState {
                     ))))?;
             };
         }
+        if let Ok(msg) = self.receiver.as_ref().unwrap().try_recv() {
+            match msg {
+                GameCommand::ResourceChange(new_rs) => {
+                    self.player.resources_change = self.player.resources_change + new_rs;
+                }
+                GameCommand::AddItems(item) => {
+
+                    // self.player.add_item()
+                }
+
+                _ => {}
+            }
+        };
+
+        self.areas
+            .iter_mut()
+            .for_each(|a|a.tick(1));
+
         Ok(())
     }
 

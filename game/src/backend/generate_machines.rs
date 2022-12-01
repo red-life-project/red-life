@@ -1,5 +1,6 @@
 //!DIESE DATEI IST ZUM TESTEN VON SANDER
-use crate::backend::gamestate::GameState;
+use crate::backend::gamestate::{GameCommand, GameState};
+use std::sync::mpsc::Sender;
 
 use crate::machines::machine::Machine;
 
@@ -17,7 +18,7 @@ impl GameState {
         let all = gen_all_machines();
         for m in &all {
             //code can panic @cargo bene fix
-            let new_ms = Machine::new_by_const(self, m.clone(),sender_clone.clone()).unwrap();
+            let new_ms = Machine::new_by_const(self, sender_clone.clone(), m.clone()).unwrap();
             self.areas.push(Box::new(new_ms));
         }
     }
