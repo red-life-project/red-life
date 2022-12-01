@@ -1,10 +1,9 @@
 //! This file contains constants that are necessary for the game.
 use crate::backend::rlcolor::RLColor;
 use crate::backend::utils::gen_inventory;
-use crate::draw;
 use crate::game_core::item::Item;
 use crate::game_core::resources::Resources;
-use crate::languages::german::{BENZIN, GEDRUCKTESTEIL, SUPER_GLUE};
+use crate::languages::german::{BENZIN, GEDRUCKTESTEIL};
 use crate::machines::machine::State;
 use crate::machines::trade::Trade;
 use ggez::graphics::{Color, Rect};

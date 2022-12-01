@@ -22,7 +22,6 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
 use std::fs::read_dir;
-use std::ops::Deref;
 use std::sync::mpsc::{Receiver, Sender};
 use tracing::info;
 
@@ -111,8 +110,6 @@ impl GameState {
 
                     // self.player.add_item()
                 }
-
-                _ => {}
             }
         };
 
