@@ -114,7 +114,44 @@ impl Machine {
         }
         Trade::default()
     }
+
+    fn check_change(&self, before:&State, after:&State)
+    {
+        match (before, after) {
+            (Broken, Idle) | (Idle, Broken) => {}
+            (Broken | Idle, Running) => {
+                let _e = self
+                    .sender
+                    .as_ref()
+                    .unwrap()
+                    .send(GameCommand::ResourceChange(self.running_resources));
+            }
+            (Running, Broken | Idle) => {
+                let _e = self
+                    .sender
+                    .as_ref()
+                    .unwrap()
+                    .send(GameCommand::ResourceChange(
+                        // 0-n = n*-1  = n.invert()                            // TODO: add .invert() to Resources
+                        Resources {
+                            oxygen: 0,
+                            energy: 0,
+                            life: 0,
+                        } - self.running_resources,
+                    ));
+            }
+            _ => {
+                info!(
+                        "unexpected case in Match. machine state changed from {} to {}",
+                        before.clone(),after.clone()
+                    );
+            }
+        }
+    }
 }
+
+
+
 
 impl Area for Machine {
     fn interact(&mut self, player: &mut Player, sender: &Sender<StackCommand>) -> Player {
@@ -158,37 +195,9 @@ impl Area for Machine {
 
         if self.state != trade.resulting_state {
             // if the state changed
-            match (&self.state, &trade.resulting_state) {
-                (Broken, Idle) | (Idle, Broken) => {}
-                (Broken | Idle, Running) => {
-                    let _e = self
-                        .sender
-                        .as_ref()
-                        .unwrap()
-                        .send(GameCommand::ResourceChange(self.running_resources));
-                }
-                (Running, Broken | Idle) => {
-                    let _e = self
-                        .sender
-                        .as_ref()
-                        .unwrap()
-                        .send(GameCommand::ResourceChange(
-                            // 0-n = n*-1  = n.invert()                            // TODO: add .invert() to Resources
-                            Resources {
-                                oxygen: 0,
-                                energy: 0,
-                                life: 0,
-                            } - self.running_resources,
-                        ));
-                }
-                _ => {
-                    info!(
-                        "unexpected case in Match. machine state changed from {} to {}",
-                        &self.state, &trade.resulting_state
-                    );
-                }
-            }
+            self.check_change(&self.state,&trade.resulting_state);
             self.state = trade.resulting_state;
+
         }
 
         player.clone()
@@ -225,23 +234,9 @@ impl Area for Machine {
             self.time_change = 0;
             self.time_remaining = 0;
 
-            if self.state == Running {
-                self.state = Idle;
-                //player.resources_change = player.resources_change - self.running_resources;
-
-                //TODO: inform player (code) about the change
-                let _e = self
-                    .sender
-                    .as_ref()
-                    .unwrap()
-                    .send(GameCommand::ResourceChange(
-                        // 0-n = n*-1  = n.invert()                            // TODO: add .invert() to Resources
-                        Resources {
-                            oxygen: 0,
-                            energy: 0,
-                            life: 0,
-                        } - self.running_resources,
-                    ));
+            if self.state != self.last_trade.initial_state {
+                self.check_change(&self.state, &self.last_trade.initial_state);
+                self.state = self.last_trade.initial_state.clone();
             }
         }
     }
