@@ -90,4 +90,5 @@ saves/
 
 game/saves/
 
-log/
+logs/*
+

@@ -29,9 +29,9 @@ pub enum DeathReason {
 impl Display for DeathReason {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            DeathReason::Oxygen => write!(f, "{}", AIR_STRING),
-            DeathReason::Energy => write!(f, "{}", ENERGY_STRING),
-            DeathReason::Both => write!(f, "{}", AIR_AND_ENERGY_STRING),
+            DeathReason::Oxygen => write!(f, "{AIR_STRING}"),
+            DeathReason::Energy => write!(f, "{ENERGY_STRING}"),
+            DeathReason::Both => write!(f, "{AIR_AND_ENERGY_STRING}"),
         }
     }
 }
@@ -54,7 +54,7 @@ impl DeathScreen {
         info!("The player died due to a lack of : {:?}", death_reason);
 
         let mut death_message =
-            graphics::Text::new(format!("{} {death_reason}", DEATH_REASON_STRING));
+            graphics::Text::new(format!("{DEATH_REASON_STRING} {death_reason}"));
         death_message.set_scale(70.);
         let mut additional_text = graphics::Text::new(ADDITIONAL_INFO_STRING);
         additional_text.set_scale(70.);
