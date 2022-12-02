@@ -22,7 +22,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
 use std::fs::read_dir;
-use std::sync::mpsc::{Receiver, Sender};
+use std::sync::mpsc::{channel, Receiver, Sender};
 use tracing::info;
 use tracing_subscriber::fmt::time;
 use crate::machines::machine::State::Broken;
@@ -278,7 +278,11 @@ impl GameState {
             info!("Loading autosave...");
             fs::read_to_string("./saves/autosave.yaml")
         }?;
-        let game_state: GameState = serde_yaml::from_str(&save_data)?;
+        let mut game_state: GameState = serde_yaml::from_str(&save_data)?;
+        let (sender, receiver) = channel();
+        game_state.sender = Some(sender);
+        game_state.receiver = Some(receiver);
+
         Ok(game_state)
     }
     /// Returns the area the player needs to stand in to interact with a machine
@@ -330,10 +334,6 @@ impl GameState {
             .filter(|m| m.get_state()!=Broken)
             .map(Machine::get_name)
             .collect::<Vec<String>>();
-
-        if !running_machine.is_empty() {
-            info!("found running_machines len: {}", running_machine.len());
-        }
 
         if milestone_machines
             .iter()
