@@ -1,5 +1,4 @@
 //! Contains the game logic, updates the game and draws the current board
-use crate::backend::area::Area;
 use crate::backend::constants::COLORS;
 use crate::backend::constants::{DESIRED_FPS, MAP_BORDER, RESOURCE_POSITION};
 use crate::backend::rlcolor::RLColor;
@@ -13,6 +12,7 @@ use crate::game_core::item::Item;
 use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
 use crate::languages::german::RESOURCE_NAME;
+use crate::machines::machine::Machine;
 use crate::{draw, RLResult};
 use ggez::glam::Vec2;
 use ggez::graphics::{Canvas, Image};
@@ -22,12 +22,11 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
 use std::fs::read_dir;
-use std::ops::Deref;
 use std::sync::mpsc::{Receiver, Sender};
 use tracing::info;
 
 pub enum GameCommand {
-    Receive(Item),
+    AddItems(Vec<(Item, i32)>),
     ResourceChange(Resources<i16>),
 }
 
@@ -37,10 +36,9 @@ pub struct GameState {
     /// Contains the current player position, resources(air, energy, life) and the inventory and their change rates
     pub player: Player,
     pub(crate) events: Vec<Event>,
+    pub machines: Vec<Machine>,
     #[serde(skip)]
     assets: HashMap<String, Image>,
-    #[serde(skip)]
-    pub areas: Vec<Box<dyn Area>>,
     #[serde(skip)]
     pub(crate) screen_sender: Option<Sender<StackCommand>>,
     #[serde(skip)]
@@ -65,7 +63,7 @@ impl GameState {
         result.sender = Some(sender);
         result.receiver = Some(receiver);
         result.load_assets(ctx)?;
-        result.create_machine()?; //////////// SANDER TESTING TOBE RM
+        result.create_machine(); //TODO add creating machine on continue
         Ok(result)
     }
     /// Gets called every tick in the update fn to update the internal game logic.
@@ -103,6 +101,20 @@ impl GameState {
                     ))))?;
             };
         }
+        if let Ok(msg) = self.receiver.as_ref().unwrap().try_recv() {
+            match msg {
+                GameCommand::ResourceChange(new_rs) => {
+                    self.player.resources_change = self.player.resources_change + new_rs;
+                }
+                GameCommand::AddItems(item) => {
+
+                    // self.player.add_item()
+                }
+            }
+        };
+
+        self.machines.iter_mut().for_each(|a| a.tick(1));
+
         Ok(())
     }
 
@@ -174,6 +186,33 @@ impl GameState {
             self.assets
                 .insert(name, Image::from_bytes(ctx, bytes.as_slice()).unwrap());
         });
+        let machine_assets: Vec<[Image; 3]> = self
+            .machines
+            .iter()
+            .map(|m| m.name.clone())
+            .map(|name| {
+                [
+                    self.assets
+                        .get(&format!("{name}_Idle.png"))
+                        .unwrap()
+                        .clone(),
+                    self.assets
+                        .get(&format!("{name}_Broken.png"))
+                        .unwrap()
+                        .clone(),
+                    self.assets
+                        .get(&format!("{name}_Running.png"))
+                        .unwrap()
+                        .clone(),
+                ]
+            })
+            .collect();
+        self.machines
+            .iter_mut()
+            .zip(machine_assets)
+            .for_each(|(m, a)| {
+                m.load_sprites(&a);
+            });
         if self.assets.is_empty() {
             return Err(RLError::AssetError("Could not find assets!".to_string()));
         }
@@ -213,10 +252,10 @@ impl GameState {
         Ok(game_state)
     }
     /// Returns the area the player needs to stand in to interact with a machine
-    pub(crate) fn get_interactable(&mut self) -> Option<&mut Box<dyn Area>> {
-        self.areas
+    pub(crate) fn get_interactable(&mut self) -> Option<&mut Machine> {
+        self.machines
             .iter_mut()
-            .find(|area| area.is_interactable(self.player.position))
+            .find(|machine| machine.is_interactable(self.player.position))
     }
 
     /// Returns if the player would collide with a border if they moved in the given direction
@@ -233,7 +272,7 @@ impl GameState {
     /// # Arguments
     /// * `next_player_pos` - A tuple containing the next position of the player
     pub(crate) fn collision_detection(&self, next_player_pos: (usize, usize)) -> bool {
-        self.areas
+        self.machines
             .iter()
             .map(|area| area.get_collision_area())
             .any(|area| is_colliding(next_player_pos, &area))
@@ -256,11 +295,10 @@ impl GameState {
         //let a = self.areas.get(0).unwrap().deref(); erst einfügen, wenn man es auch benutzt
 
         let running_machine = self
-            .areas
+            .machines
             .iter()
-            .map(Deref::deref)
             .filter(|m| m.is_non_broken_machine())
-            .map(Area::get_name)
+            .map(Machine::get_name)
             .collect::<Vec<String>>();
 
         if !running_machine.is_empty() {
