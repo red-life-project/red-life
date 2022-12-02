@@ -1,4 +1,5 @@
 #![warn(clippy::pedantic)]
+#![allow(clippy::cast_precision_loss)]
 mod backend;
 mod basis;
 mod game_core;

@@ -1,29 +1,34 @@
 //! Contains the game logic, updates the game and draws the current board
-use crate::backend::area::Area;
 use crate::backend::constants::COLORS;
 use crate::backend::constants::{DESIRED_FPS, MAP_BORDER, RESOURCE_POSITION};
 use crate::backend::rlcolor::RLColor;
 use crate::backend::screen::StackCommand;
 use crate::backend::utils::{get_scale, is_colliding};
 use crate::backend::{error::RLError, screen::Screen};
-use crate::game_core::deathscreen::DeathReason::Both;
-use crate::game_core::deathscreen::DeathScreen;
 use crate::game_core::event::{Event, NO_CHANGE};
+use crate::game_core::infoscreen::DeathReason::Both;
+use crate::game_core::infoscreen::InfoScreen;
+use crate::game_core::item::Item;
 use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
 use crate::languages::german::RESOURCE_NAME;
+use crate::machines::machine::Machine;
 use crate::{draw, RLResult};
 use ggez::glam::Vec2;
-use ggez::graphics::{Canvas, Color, Image};
+use ggez::graphics::{Canvas, Image};
 use ggez::graphics::{DrawMode, Mesh, Rect};
 use ggez::{graphics, Context};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
 use std::fs::read_dir;
-use std::ops::Deref;
-use std::sync::mpsc::Sender;
+use std::sync::mpsc::{channel, Receiver, Sender};
 use tracing::info;
+
+pub enum GameCommand {
+    AddItems(Vec<(Item, i32)>),
+    ResourceChange(Resources<i16>),
+}
 
 /// This is the game state. It contains all the data that is needed to run the game.
 #[derive(Debug, Default, Serialize, Deserialize)]
@@ -31,12 +36,15 @@ pub struct GameState {
     /// Contains the current player position, resources(air, energy, life) and the inventory and their change rates
     pub player: Player,
     pub(crate) events: Vec<Event>,
+    pub machines: Vec<Machine>,
     #[serde(skip)]
     assets: HashMap<String, Image>,
     #[serde(skip)]
-    pub areas: Vec<Box<dyn Area>>,
-    #[serde(skip)]
     pub(crate) screen_sender: Option<Sender<StackCommand>>,
+    #[serde(skip)]
+    pub(crate) receiver: Option<Receiver<GameCommand>>,
+    #[serde(skip)]
+    pub(crate) sender: Option<Sender<GameCommand>>,
 }
 
 impl PartialEq for GameState {
@@ -50,9 +58,12 @@ impl GameState {
     /// It loads all the assets and creates the areas of the machines.
     pub fn new(ctx: &mut Context) -> RLResult<Self> {
         info!("Creating new gamestate");
+        let (sender, receiver) = std::sync::mpsc::channel();
         let mut result = GameState::default();
+        result.sender = Some(sender);
+        result.receiver = Some(receiver);
         result.load_assets(ctx)?;
-        result.create_machine()?; //////////// SANDER TESTING TOBE RM
+        result.create_machine(); //TODO add creating machine on continue
         Ok(result)
     }
     /// Gets called every tick in the update fn to update the internal game logic.
@@ -84,12 +95,26 @@ impl GameState {
                 self.screen_sender
                     .as_mut()
                     .expect("No screen sender")
-                    .send(StackCommand::Push(Box::new(DeathScreen::new(
+                    .send(StackCommand::Push(Box::new(InfoScreen::new_deathscreen(
                         empty_resource,
                         cloned_sender,
                     ))))?;
             };
         }
+        if let Ok(msg) = self.receiver.as_ref().unwrap().try_recv() {
+            match msg {
+                GameCommand::ResourceChange(new_rs) => {
+                    self.player.resources_change = self.player.resources_change + new_rs;
+                }
+                GameCommand::AddItems(item) => {
+
+                    // self.player.add_item()
+                }
+            }
+        };
+
+        self.machines.iter_mut().for_each(|a| a.tick(1));
+
         Ok(())
     }
 
@@ -161,6 +186,33 @@ impl GameState {
             self.assets
                 .insert(name, Image::from_bytes(ctx, bytes.as_slice()).unwrap());
         });
+        let machine_assets: Vec<[Image; 3]> = self
+            .machines
+            .iter()
+            .map(|m| m.name.clone())
+            .map(|name| {
+                [
+                    self.assets
+                        .get(&format!("{name}_Idle.png"))
+                        .unwrap()
+                        .clone(),
+                    self.assets
+                        .get(&format!("{name}_Broken.png"))
+                        .unwrap()
+                        .clone(),
+                    self.assets
+                        .get(&format!("{name}_Running.png"))
+                        .unwrap()
+                        .clone(),
+                ]
+            })
+            .collect();
+        self.machines
+            .iter_mut()
+            .zip(machine_assets)
+            .for_each(|(m, a)| {
+                m.load_sprites(&a);
+            });
         if self.assets.is_empty() {
             return Err(RLError::AssetError("Could not find assets!".to_string()));
         }
@@ -196,14 +248,18 @@ impl GameState {
             info!("Loading autosave...");
             fs::read_to_string("./saves/autosave.yaml")
         }?;
-        let game_state: GameState = serde_yaml::from_str(&save_data)?;
+        let mut game_state: GameState = serde_yaml::from_str(&save_data)?;
+        let (sender, receiver) = channel();
+        game_state.sender = Some(sender);
+        game_state.receiver = Some(receiver);
+
         Ok(game_state)
     }
     /// Returns the area the player needs to stand in to interact with a machine
-    pub(crate) fn get_interactable(&mut self) -> Option<&mut Box<dyn Area>> {
-        self.areas
+    pub(crate) fn get_interactable(&mut self) -> Option<&mut Machine> {
+        self.machines
             .iter_mut()
-            .find(|area| area.is_interactable(self.player.position))
+            .find(|machine| machine.is_interactable(self.player.position))
     }
 
     /// Returns if the player would collide with a border if they moved in the given direction
@@ -220,7 +276,7 @@ impl GameState {
     /// # Arguments
     /// * `next_player_pos` - A tuple containing the next position of the player
     pub(crate) fn collision_detection(&self, next_player_pos: (usize, usize)) -> bool {
-        self.areas
+        self.machines
             .iter()
             .map(|area| area.get_collision_area())
             .any(|area| is_colliding(next_player_pos, &area))
@@ -243,16 +299,11 @@ impl GameState {
         //let a = self.areas.get(0).unwrap().deref(); erst einfügen, wenn man es auch benutzt
 
         let running_machine = self
-            .areas
+            .machines
             .iter()
-            .map(Deref::deref)
             .filter(|m| m.is_non_broken_machine())
-            .map(Area::get_name)
+            .map(Machine::get_name)
             .collect::<Vec<String>>();
-
-        if !running_machine.is_empty() {
-            info!("found running_machines len: {}", running_machine.len());
-        }
 
         if milestone_machines
             .iter()
@@ -267,7 +318,7 @@ impl GameState {
     /// divided into 3 milestones
     fn get_current_milestone(&mut self, ctx: &mut Context) {
         match self.player.milestone {
-            1 => {
+            0 => {
                 if self.player.match_milestone == 0 {
                     self.player.resources_change.oxygen = -1;
                     self.player.resources_change.energy = -1;
@@ -275,14 +326,24 @@ impl GameState {
                     self.events = Vec::new();
                     self.player.match_milestone = 1;
                 }
-                Event::update_events(&ctx, self);
+                Event::update_events(ctx, self);
                 self.check_on_milestone(vec![
                     "Sauerstoffgenerator".to_string(),
                     "Stromgenerator".to_string(),
                 ]);
             }
-            2 => {
+            1 => {
                 self.check_on_milestone(vec!["Kommunikationsmodul".to_string()]);
+            }
+            2 => {
+                let cloned_sender = self.screen_sender.as_mut().unwrap().clone();
+                self.screen_sender
+                    .as_mut()
+                    .expect("No Screensender")
+                    .send(StackCommand::Push(Box::new(InfoScreen::new_winningscreen(
+                        cloned_sender,
+                    ))))
+                    .expect("Show Winning Screen");
             }
             _ => {}
         }
@@ -327,7 +388,7 @@ impl Screen for GameState {
             scale
         );
         self.draw_resources(&mut canvas, scale, ctx)?;
-        self.draw_machines(&mut canvas, scale, ctx);
+        self.draw_machines(&mut canvas, scale, ctx)?;
         self.draw_items(&mut canvas, ctx)?;
         #[cfg(debug_assertions)]
         {

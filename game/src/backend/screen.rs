@@ -12,7 +12,8 @@ use std::sync::mpsc::{channel, Receiver, Sender};
 use std::time::Instant;
 use tracing::info;
 
-/// A screen is every drawable object in the game, so the main menu is a screen too
+/// Screens are used to facilitate drawing menus, the game etc. to the screen. They can also send
+/// back command to the `ScreenStack` to change the current screen.
 pub trait Screen: Debug {
     /// Used for updating the screen. Returns a `StackCommand` used to either push a new screen or pop
     /// the current one.
@@ -23,14 +24,15 @@ pub trait Screen: Debug {
     fn set_sender(&mut self, sender: Sender<StackCommand>);
 }
 
-/// A Screenstack contains multiple screens, the first one of which is the current screen
+/// A Screenstack contains multiple screens, the first one of which is drawn to the screen and
+/// updated.
 pub struct Screenstack {
     screens: Vec<Box<dyn Screen>>,
     popup: Vec<Popup>,
     receiver: Receiver<StackCommand>,
     sender: Sender<StackCommand>,
 }
-/// Popups are used to display ingame information/notification on screen (toplevel)
+/// Popups are used to display information sent by the game on screen (toplevel)
 #[derive(Debug, PartialEq, Clone)]
 pub struct Popup {
     color: Color,
@@ -64,8 +66,8 @@ impl Screenstack {
     /// The popup will be removed after the given duration
     fn draw_popups(&mut self, ctx: &mut Context) -> RLResult {
         let mut canvas = graphics::Canvas::from_frame(ctx, None);
+        let scale = get_scale(ctx);
         for (pos, popup) in self.popup.iter().enumerate() {
-            let scale = get_scale(ctx);
             let mut text = graphics::Text::new(popup.text.clone());
             text.set_scale(18.);
             let dimensions = text.measure(ctx)?;
@@ -96,9 +98,13 @@ impl Screenstack {
         canvas.finish(ctx)?;
         Ok(())
     }
-    /// handels what to do with the given commands (Push, Pop, None)
-    /// Push: Pushes a new screen on the stack
-    /// Pop: Pops the current screen
+    /// Handles what to do with the given commands (Push, Pop, None)
+    ///
+    /// # Arguments
+    /// * `command` - The command to handle
+    ///
+    /// Push: Pushes a new screen on the stack,
+    /// Pop: Pops the current screen,
     /// None: Does nothing
     fn process_command(&mut self, command: StackCommand) {
         // Match the command given back by the screen
@@ -154,8 +160,8 @@ impl event::EventHandler<RLError> for Screenstack {
         self.draw_popups(ctx)?;
         Ok(())
     }
-    /// Override the quit event so we don't actually quit the game.
-    fn quit_event(&mut self, ctx: &mut Context) -> RLResult<bool> {
+    /// Overrides the quit event so we do nothing instead of quitting the game.
+    fn quit_event(&mut self, _ctx: &mut Context) -> RLResult<bool> {
         Ok(true)
     }
 }

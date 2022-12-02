@@ -1,4 +1,4 @@
-use crate::game_core::deathscreen::DeathReason;
+use crate::game_core::infoscreen::DeathReason;
 use serde::{Deserialize, Serialize};
 use std::cmp::PartialOrd;
 use std::ops;
@@ -127,6 +127,6 @@ mod test {
         assert_eq!(ait.next().unwrap(), 3);
         assert_eq!(ait.next().unwrap(), 2);
         assert_eq!(ait.next().unwrap(), 1);
-        assert_eq!(Some(ait.next()), Some(None))
+        assert_eq!(Some(ait.next()), Some(None));
     }
 }
