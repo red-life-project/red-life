@@ -18,9 +18,25 @@ use tracing::info;
 /// events can just fade off or stay as long as the player didnt interact with them
 
 // resources
+//TODO: trigger no_energy() on machine and spawn Loch instead
 pub const DEBUG_CR: Resources<i16> = Resources {
     oxygen: 10,
     energy: 10,
+    life: 0,
+};
+pub const STROMAUSFALL_CR: Resources<i16> = Resources {
+    oxygen: 0,
+    energy: 10,
+    life: 0,
+};
+pub const KOMETENEINSCHLAG_CR: Resources<i16> = Resources {
+    oxygen: 10,
+    energy: 0,
+    life: 0,
+};
+pub const SANDSTURM_CR: Resources<i16> = Resources {
+    oxygen: 5,
+    energy: 5,
     life: 0,
 };
 // for info events
@@ -74,7 +90,7 @@ impl Event {
                 KOMETENEINSCHLAG,
                 WARNINGS[0],
                 "warning",
-                DEBUG_CR,
+                KOMETENEINSCHLAG_CR,
                 10,
             )),
             11 => Some(Event::new(
@@ -84,12 +100,18 @@ impl Event {
                 NO_CHANGE,
                 10,
             )),
-            22 => Some(Event::new(SANDSTURM, WARNINGS[2], "warning", DEBUG_CR, 10)),
+            22 => Some(Event::new(
+                SANDSTURM,
+                WARNINGS[2],
+                "warning",
+                SANDSTURM_CR,
+                10,
+            )),
             33 => Some(Event::new(
                 STROMAUSFALL,
                 WARNINGS[1],
                 "warning",
-                DEBUG_CR,
+                STROMAUSFALL_CR,
                 10,
             )),
             44 => Some(Event::new(
