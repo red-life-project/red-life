@@ -13,7 +13,6 @@ use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
 use crate::languages::german::RESOURCE_NAME;
 use crate::machines::machine::Machine;
-use crate::machines::machine::State::Broken;
 use crate::{draw, RLResult};
 use ggez::glam::Vec2;
 use ggez::graphics::{Canvas, Image};
@@ -26,6 +25,7 @@ use std::fs::read_dir;
 use std::sync::mpsc::{channel, Receiver, Sender};
 use tracing::info;
 use tracing_subscriber::fmt::time;
+use crate::machines::machine::State::Broken;
 
 pub enum GameCommand {
     AddItems(Vec<(Item, i32)>),
@@ -36,7 +36,7 @@ pub enum GameCommand {
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct GameState {
     /// Contains the current player position, resources(air, energy, life) and the inventory and their change rates
-    tick_counter: i16,
+    tick_counter:i16,
 
     pub player: Player,
     pub(crate) events: Vec<Event>,
@@ -49,6 +49,7 @@ pub struct GameState {
     pub(crate) receiver: Option<Receiver<GameCommand>>,
     #[serde(skip)]
     pub(crate) sender: Option<Sender<GameCommand>>,
+
 }
 
 impl PartialEq for GameState {
@@ -74,9 +75,9 @@ impl GameState {
     /// It updates the player resources, checks on the current milestone if the player has reached a new one
     /// and checks if the player has died.
 
-    pub fn tick(&mut self, ctx: &mut Context) -> RLResult {
+     pub fn tick(&mut self, ctx: &mut Context) -> RLResult {
         // Iterate over every resource and add the change rate to the current value
-        self.tick_counter += 1;
+        self.tick_counter +=1;
 
         //Update Recouces
         self.player.resources = self
@@ -88,11 +89,12 @@ impl GameState {
             .collect::<Resources<_>>();
 
         // every thing inside will only be checked every 15 tics
-        match self.tick_counter % 15 {
-            0 => {
+        match self.tick_counter%15 {
+
+            0=>{
                 self.get_current_milestone(ctx);
             }
-            3 => {
+            3=>{
                 // Check if the player is dead
                 if let Some(empty_resource) = Resources::get_death_reason(&self.player.resources) {
                     match empty_resource {
@@ -113,12 +115,12 @@ impl GameState {
                     };
                 }
             }
-            6 => {
-                // Check if player is able to regenerate life
-                self.player
-                    .life_regeneration(&self.screen_sender.as_ref().unwrap().clone());
+            6=>{
+                    // Check if player is able to regenerate life
+                    self.player
+                        .life_regeneration(&self.screen_sender.as_ref().unwrap().clone());
             }
-            9 => {
+            9=>{
                 // update recources change oder neue items
                 if let Ok(msg) = self.receiver.as_ref().unwrap().try_recv() {
                     match msg {
@@ -132,13 +134,14 @@ impl GameState {
                     }
                 };
             }
-            12 => {
-                // update alle maschiene
+            12=>
+                {
+                    // update alle maschiene
+                }
+            14=>{
+                self.tick_counter -=15;
             }
-            14 => {
-                self.tick_counter -= 15;
-            }
-            _ => {}
+            _ => {},
         }
         self.machines.iter_mut().for_each(|a| a.tick(1));
 
@@ -238,7 +241,7 @@ impl GameState {
             .iter_mut()
             .zip(machine_assets)
             .for_each(|(m, a)| {
-                m.init(&a, self.sender.clone().unwrap());
+                m.load_sprites(&a);
             });
         if self.assets.is_empty() {
             return Err(RLError::AssetError("Could not find assets!".to_string()));
@@ -328,7 +331,7 @@ impl GameState {
         let running_machine = self
             .machines
             .iter()
-            .filter(|m| m.get_state() != Broken)
+            .filter(|m| m.get_state()!=Broken)
             .map(Machine::get_name)
             .collect::<Vec<String>>();
 
