@@ -19,7 +19,7 @@ pub struct Trade {
 impl Default for Trade {
     fn default() -> Self {
         Self {
-            name: "default".to_string(),
+            name: "no_Trade".to_string(),
             time_ticks: 0,
             initial_state: State::Broken,
             resulting_state: State::Running,

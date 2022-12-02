@@ -42,10 +42,11 @@ impl GameState {
             )?;
             // Draws the machine timer on top of the machine
             let time = machine.get_time_percentage();
-            if time > 0. {
+            
                 pos.x += 20.;
                 pos.y += 20.;
                 draw!(canvas, &status, pos, scale);
+            if time > 0. {
                 // Bar for machine Timer
                 pos.x += 40.;
                 pos.y -= 30.;
