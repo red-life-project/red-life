@@ -55,7 +55,7 @@ pub struct Machine {
     trades: Vec<Trade>,
     last_trade: Trade,
     running_resources: Resources<i16>,
-    og_time:i16,
+    og_time: i16,
     time_remaining: i16,
     time_change: i16,
     #[serde(skip)]
@@ -77,8 +77,9 @@ impl Machine {
     }
 
     /// Loads the Machine Sprites. Has to be called before drawing.
-    pub(crate) fn load_sprites(&mut self, images: &[Image]) {
+    pub(crate) fn init(&mut self, images: &[Image], sender: Sender<GameCommand>) {
         self.sprite = Some(images.into());
+        self.sender = Some(sender);
     }
 
     pub fn new(
@@ -158,10 +159,9 @@ impl Machine {
         }
     }
 
-    pub(crate) fn change_state_to(&self, newstate:&State){
-        if self.state != *newstate
-        {
-            self.check_change(&self.state,newstate);
+    pub(crate) fn change_state_to(&self, newstate: &State) {
+        if self.state != *newstate {
+            self.check_change(&self.state, newstate);
         }
     }
 
@@ -171,13 +171,17 @@ impl Machine {
         sender: &Sender<StackCommand>,
     ) -> Player {
         let trade = self.get_trade();
-        if trade.name == "no_Trade".to_string()
-        {
+        if trade.name == "no_Trade".to_string() {
             return player.clone();
         }
 
         // dif = items the player has - the cost of the trade
-        let dif = trade.cost.iter().map(|(item, demand)| (item, player.get_item_amount(item) - demand)).filter(|(_item, dif)| *dif < 0).collect::<Vec<(&Item, i32)>>();
+        let dif = trade
+            .cost
+            .iter()
+            .map(|(item, demand)| (item, player.get_item_amount(item) - demand))
+            .filter(|(_item, dif)| *dif < 0)
+            .collect::<Vec<(&Item, i32)>>();
         if dif.iter().any(|(_, demand)| *demand < 0) {
             // If one item is not available in enough quantity
             let mut missing_items = String::new();
@@ -203,12 +207,10 @@ impl Machine {
         if trade.time_ticks == 0 {
             // this trade has no timer
             self.time_change = 0;
-
         } else {
             //this trade has a timer
 
-            if self.time_remaining == 0
-            {
+            if self.time_remaining == 0 {
                 //if no timer is running set timer up
                 self.last_trade = trade.clone();
                 self.time_remaining = trade.time_ticks;
@@ -218,7 +220,10 @@ impl Machine {
             self.time_change = 1;
         }
 
-        trade.cost.iter().for_each(|(item, demand)| player.add_item(item, -*demand)); //TODO Replace with sender system // todo move to after trade
+        trade
+            .cost
+            .iter()
+            .for_each(|(item, demand)| player.add_item(item, -*demand)); //TODO Replace with sender system // todo move to after trade
 
         if self.state != trade.resulting_state {
             // if the state changed
