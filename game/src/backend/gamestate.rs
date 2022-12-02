@@ -5,9 +5,9 @@ use crate::backend::rlcolor::RLColor;
 use crate::backend::screen::StackCommand;
 use crate::backend::utils::{get_scale, is_colliding};
 use crate::backend::{error::RLError, screen::Screen};
-use crate::game_core::deathscreen::DeathReason::Both;
-use crate::game_core::deathscreen::DeathScreen;
-use crate::game_core::event::Event;
+use crate::game_core::event::{Event, NO_CHANGE};
+use crate::game_core::infoscreen::DeathReason::Both;
+use crate::game_core::infoscreen::InfoScreen;
 use crate::game_core::item::Item;
 use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
@@ -95,7 +95,7 @@ impl GameState {
                 self.screen_sender
                     .as_mut()
                     .expect("No screen sender")
-                    .send(StackCommand::Push(Box::new(DeathScreen::new(
+                    .send(StackCommand::Push(Box::new(InfoScreen::new_deathscreen(
                         empty_resource,
                         cloned_sender,
                     ))))?;
@@ -318,7 +318,7 @@ impl GameState {
     /// divided into 3 milestones
     fn get_current_milestone(&mut self, ctx: &mut Context) {
         match self.player.milestone {
-            1 => {
+            0 => {
                 if self.player.match_milestone == 0 {
                     self.player.resources_change.oxygen = -1;
                     self.player.resources_change.energy = -1;
@@ -332,8 +332,18 @@ impl GameState {
                     "Stromgenerator".to_string(),
                 ]);
             }
-            2 => {
+            1 => {
                 self.check_on_milestone(vec!["Kommunikationsmodul".to_string()]);
+            }
+            2 => {
+                let cloned_sender = self.screen_sender.as_mut().unwrap().clone();
+                self.screen_sender
+                    .as_mut()
+                    .expect("No Screensender")
+                    .send(StackCommand::Push(Box::new(InfoScreen::new_winningscreen(
+                        cloned_sender,
+                    ))))
+                    .expect("Show Winning Screen");
             }
             _ => {}
         }
