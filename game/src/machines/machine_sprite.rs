@@ -29,18 +29,19 @@ impl MachineSprite {
         let broken;
         let idle;
         let running;
-/*        if let Ok(img)= gs.get_asset(format!("{name}.png").as_str())
+        /*        if let Ok(img)= gs.get_asset(format!("{name}.png").as_str())
         {
             broken = img.clone();
             idle = img.clone();
             running = img.clone();
         }*/
-     //   else {
-             broken = gs.get_asset(format!("{name}_Broken.png").as_str())?.clone();
-             idle = gs.get_asset(format!("{name}_Idle.png").as_str())?.clone();
-             running = gs
-                .get_asset(format!("{name}_Running.png").as_str())?.clone();
-    //    }
+        //   else {
+        broken = gs.get_asset(format!("{name}_Broken.png").as_str())?.clone();
+        idle = gs.get_asset(format!("{name}_Idle.png").as_str())?.clone();
+        running = gs
+            .get_asset(format!("{name}_Running.png").as_str())?
+            .clone();
+        //    }
 
         Ok(Self {
             idle,

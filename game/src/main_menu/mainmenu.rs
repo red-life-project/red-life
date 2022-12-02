@@ -67,7 +67,7 @@ impl MainMenu {
             screen_sender,
         }
     }
-   /* fn DEGUG_SKIP(&self, ctx: &mut Context) -> RLResult
+    /* fn DEGUG_SKIP(&self, ctx: &mut Context) -> RLResult
     {
        // self.screen_sender.send(StackCommand::Pop)?;
         self.screen_sender.send(StackCommand::Push(Box::new({
@@ -82,7 +82,6 @@ impl MainMenu {
 impl Screen for MainMenu {
     /// Updates the screen every tick
     fn update(&mut self, ctx: &mut Context) -> RLResult {
-
         //TODO FIXME
         //self.DEGUG_SKIP(ctx);
         //TODO FIXME

@@ -79,9 +79,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                 life: -4,
             },
         ),
-
         /////////////////////////////////////////////////////////////////////////////////////////////
-
         (
             "Oxygen".to_string(),
             Rect {
@@ -125,9 +123,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                 life: 0,
             },
         ),
-
         /////////////////////////////////////////////////////////////////////////////////////////////
-
         (
             "Stromgenerator".to_string(),
             Rect {
@@ -172,7 +168,6 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
             },
         ),
         /////////////////////////////////////////////////////////////////////////////////////////////
-
         (
             "werkermaschine".to_string(),
             Rect {
@@ -199,16 +194,16 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                     gen_inventory(-1, 0, 0),
                     Item::new(BENZIN),
                     0,
-                ),/*
-                Trade::new(
-                    "repair_test".to_string(),
-                    100,
-                    State::Running,
-                    State::Idle,
-                    gen_inventory(0, 0, 0),
-                    Item::new(GEDRUCKTESTEIL),
-                    1,
-                ),*/
+                ), /*
+                   Trade::new(
+                       "repair_test".to_string(),
+                       100,
+                       State::Running,
+                       State::Idle,
+                       gen_inventory(0, 0, 0),
+                       Item::new(GEDRUCKTESTEIL),
+                       1,
+                   ),*/
             ],
             Resources {
                 oxygen: 0,
@@ -217,7 +212,6 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
             },
         ),
         /////////////////////////////////////////////////////////////////////////////////////////////
-
         (
             "3d_printer".to_string(),
             Rect {
@@ -262,7 +256,6 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
             },
         ),
         /////////////////////////////////////////////////////////////////////////////////////////////
-
         (
             "test".to_string(),
             Rect {
