@@ -229,12 +229,16 @@ impl Machine {
             self.time_change = 1;
         }
 
-        trade
-            .cost
-            .iter()
-            .for_each(|(item, demand)| player.add_item(item, -*demand)); //TODO Replace with sender system // todo move to after trade
+
+        //TODO Replace with sender system // todo move to after trade
         if trade.return_after_timer {
             self.change_state_to(&trade.resulting_state);
+            // Send GameCommand to change the player resources after trade has finished
+            self.sender
+                .as_ref()
+                .unwrap()
+                .send(GameCommand::AddItems(trade.clone()))
+                .expect("could not send AddItems");
         }
 
         player.clone()

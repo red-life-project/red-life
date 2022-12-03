@@ -15,6 +15,7 @@ use crate::game_core::resources::Resources;
 use crate::languages::german::RESOURCE_NAME;
 use crate::machines::machine::Machine;
 use crate::machines::machine::State::Broken;
+use crate::machines::trade::Trade;
 use crate::{draw, RLResult};
 use ggez::glam::Vec2;
 use ggez::graphics::{Canvas, Image};
@@ -28,7 +29,7 @@ use std::sync::mpsc::{channel, Receiver, Sender};
 use tracing::info;
 
 pub enum GameCommand {
-    AddItems(Vec<(Item, i32)>),
+    AddItems(Trade),
     ResourceChange(Resources<i16>),
     Milestone(),
 }
@@ -120,12 +121,14 @@ impl GameState {
                         GameCommand::ResourceChange(new_rs) => {
                             self.player.resources_change = self.player.resources_change + new_rs;
                         }
-                        GameCommand::AddItems(item) => {
-
-                            //TODO: Isuie #174
+                        GameCommand::AddItems(trade) => {
+                            trade
+                                .cost
+                                .iter()
+                                .for_each(|(item, demand)| self.player.add_item(item, -*demand));
                         }
                         GameCommand::Milestone() => {
-                            //TODO Change how the Milestones work
+                            // TODO: Change how the Milestones work
                         }
                     }
                 };
