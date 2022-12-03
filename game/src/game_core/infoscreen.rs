@@ -1,7 +1,10 @@
 use crate::backend::gamestate::GameState;
 use crate::backend::screen::{Screen, StackCommand};
 use crate::backend::utils::get_scale;
-use crate::languages::german::{ADDITIONAL_INFO_STRING, AIR_AND_ENERGY_STRING, AIR_STRING, BUTTON_INFO, DEATH_REASON_STRING, ENERGY_STRING, INTRO_TEXT, TURTORIAL_TEXT, WINNING_TEXT};
+use crate::languages::german::{
+    ADDITIONAL_INFO_STRING, AIR_AND_ENERGY_STRING, AIR_STRING, BUTTON_INFO, DEATH_REASON_STRING,
+    ENERGY_STRING, INTRO_TEXT, TURTORIAL_TEXT, WINNING_TEXT,
+};
 use crate::main_menu::mainmenu::MainMenu;
 use crate::{draw, RLResult};
 use ggez::glam::Vec2;
@@ -141,8 +144,7 @@ impl Screen for InfoScreen {
         canvas.draw(&background, graphics::DrawParam::default().scale(scale));
         if self.screentype == ScreenType::Intro {
             draw!(canvas, &self.main_message, Vec2::new(300., 300.), scale);
-        }
-        else {
+        } else {
             draw!(canvas, &self.main_message, Vec2::new(372., 500.), scale);
         }
 
