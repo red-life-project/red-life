@@ -1,9 +1,7 @@
 //! This file contains constants that are necessary for the game.
 use crate::backend::rlcolor::RLColor;
 use crate::backend::utils::gen_inventory;
-use crate::game_core::item::Item;
 use crate::game_core::resources::Resources;
-use crate::languages::german::{BENZIN, GEDRUCKTESTEIL};
 use crate::machines::machine::State;
 use crate::machines::trade::Trade;
 use ggez::graphics::{Color, Rect};
@@ -31,11 +29,9 @@ pub(crate) const PLAYER_ICON_SIZE: (usize, usize) = (58, 96);
 pub(crate) const PLAYER_INTERACTION_RADIUS: f32 = 50.;
 // pub const MACHINE_POSITIONS: [[i32; 4]; 4] = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
 
-//"its a const lol" // problem ist das ich nicht vec![] in const aufrufen darf und es wäre anstrengend
 #[allow(clippy::too_many_lines)]
 pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>); 7] {
     [
-        //("BEISPIEL".to_string() , Rect::default(), vec![Trade::default()], Resources::default()),
         (
             "test".to_string(),
             Rect {
@@ -183,14 +179,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                     State::Running,
                     true,
                     gen_inventory(-1, 0, 0),
-                ), /*
-                   Trade::new(
-                       "repair_test".to_string(),
-                       100,
-                       State::Running,
-                       State::Idle,
-                       gen_inventory(0, 0, 0),
-                   ),*/
+                ),
             ],
             Resources {
                 oxygen: 0,
@@ -223,15 +212,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                     State::Running,
                     true,
                     gen_inventory(2, 0, -1),
-                ), /*
-                   Trade::new(
-                       "pause_3d_print".to_string(),
-                       0,
-                       State::Running,
-                       State::Idle,
-                       false,
-                       gen_inventory(0, 0, 0),
-                   ),*/
+                ),
             ],
             Resources {
                 oxygen: 0,
@@ -239,7 +220,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                 life: 0,
             },
         ),
-        /// //////////////////////////////////////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////////////////////////////////////////
         (
             "Kommunikationsmodul".to_string(),
             Rect {
@@ -264,15 +245,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                     State::Running,
                     true,
                     gen_inventory(0, 0, 0),
-                ), /*
-                   Trade::new(
-                       "pause_3d_print".to_string(),
-                       0,
-                       State::Running,
-                       State::Idle,
-                       false,
-                       gen_inventory(0, 0, 0),
-                   ),*/
+                ),
             ],
             Resources {
                 oxygen: 0,
@@ -289,35 +262,14 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                 w: 100.0,
                 h: 100.0,
             },
-            vec![
-                /*
-                Trade::new(
-                    "loch".to_string(),
-                    0,
-                    State::Broken,
-                    State::Idle,
-                    gen_inventory(2, 2, 2),
-                    Item::new(BENZIN),
-                    0,
-                ),
-                Trade::new(
-                    "repair_test".to_string(),
-                    0,
-                    State::Idle,
-                    State::Running,
-                    gen_inventory(0, 1, 2),
-                    Item::new(BENZIN),
-                    0,
-                ),*/
-                Trade::new(
-                    "Loch_reparien".to_string(),
-                    100,
-                    State::Running,
-                    State::Idle,
-                    false,
-                    gen_inventory(2, 0, 0),
-                ),
-            ],
+            vec![Trade::new(
+                "Loch_reparien".to_string(),
+                100,
+                State::Running,
+                State::Idle,
+                false,
+                gen_inventory(2, 0, 0),
+            )],
             Resources {
                 oxygen: -20,
                 energy: -5,

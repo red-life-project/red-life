@@ -3,9 +3,10 @@ use crate::backend::constants::COLORS;
 use crate::backend::constants::{DESIRED_FPS, MAP_BORDER, RESOURCE_POSITION};
 use crate::backend::rlcolor::RLColor;
 use crate::backend::screen::StackCommand;
-use crate::backend::utils::{get_scale, is_colliding, print_type_of};
+use crate::backend::utils::get_scale;
+use crate::backend::utils::is_colliding;
 use crate::backend::{error::RLError, screen::Screen};
-use crate::game_core::event::{Event, NO_CHANGE};
+use crate::game_core::event::Event;
 use crate::game_core::infoscreen::DeathReason::Both;
 use crate::game_core::infoscreen::InfoScreen;
 use crate::game_core::item::Item;
@@ -14,24 +15,22 @@ use crate::game_core::resources::Resources;
 use crate::languages::german::RESOURCE_NAME;
 use crate::machines::machine::Machine;
 use crate::machines::machine::State::Broken;
-use crate::machines::machine_sprite::MachineSprite;
 use crate::{draw, RLResult};
 use ggez::glam::Vec2;
 use ggez::graphics::{Canvas, Image};
 use ggez::graphics::{DrawMode, Mesh, Rect};
 use ggez::{graphics, Context};
 use serde::{Deserialize, Serialize};
-use std::borrow::{Borrow, BorrowMut};
 use std::collections::HashMap;
 use std::fs;
 use std::fs::read_dir;
 use std::sync::mpsc::{channel, Receiver, Sender};
 use tracing::info;
-use tracing_subscriber::fmt::{init, time};
 
 pub enum GameCommand {
     AddItems(Vec<(Item, i32)>),
     ResourceChange(Resources<i16>),
+    Milestone(),
 }
 
 /// This is the game state. It contains all the data that is needed to run the game.
@@ -114,7 +113,6 @@ impl GameState {
                     };
                 }
             }
-            6 => {}
             9 => {
                 // update recources change oder neue items
                 if let Ok(msg) = self.receiver.as_ref().unwrap().try_recv() {
@@ -126,12 +124,13 @@ impl GameState {
 
                             //TODO: Isuie #174
                         }
+                        GameCommand::Milestone() => {
+                            //TODO Change how the Milestones work
+                        }
                     }
                 };
             }
-            12 => {
-                // update alle maschiene
-            }
+
             14 => {
                 self.tick_counter -= 15;
             }
@@ -214,39 +213,12 @@ impl GameState {
                 .insert(name, Image::from_bytes(ctx, bytes.as_slice()).unwrap());
         });
 
-        //remove coments after review
-        //The code here was moved to its own function
-        //to prevent code duplication i deuse the init code for the new gamestate
-        // new funktion(inti_all_machine) will almost always be caled after this one
-        // with the exeption on creatin a new game look at gamestate.rs:70
-
         if self.assets.is_empty() {
             return Err(RLError::AssetError("Could not find assets!".to_string()));
         }
         Ok(())
     }
     pub(crate) fn inti_all_machine(&mut self) {
-        /*
-        self.machines
-            .iter_mut()
-
-            .for_each(|m|
-                {
-                    // print_type_of(m);
-
-                    self.clone()
-                        .inti_machine(m)
-                });
-
-        let s: &GameState = self.borrow();
-        let machines_mut: &mut Vec<Machine> = self.machines.as_mut();
-        // let machines_ref :& Vec<Machine>  = machines_mut.as_ref();
-        for machine in machines_mut {
-
-            s.inti_machine( machine);
-        }
-
-        */
         let machine_assets: Vec<[Image; 3]> = self
             .machines
             .iter()
@@ -278,27 +250,6 @@ impl GameState {
                     self.screen_sender.clone().unwrap(),
                 );
             });
-    }
-    pub(crate) fn inti_machine(&self, machine: &mut Machine) {
-        let machine_assets: [Image; 3] = [
-            self.assets
-                .get(&format!("{}_Idle.png", machine.name))
-                .unwrap()
-                .clone(),
-            self.assets
-                .get(&format!("{}_Broken.png", machine.name))
-                .unwrap()
-                .clone(),
-            self.assets
-                .get(&format!("{}_Running.png", machine.name))
-                .unwrap()
-                .clone(),
-        ];
-        machine.init(
-            &machine_assets,
-            self.sender.clone().unwrap(),
-            self.screen_sender.clone().unwrap(),
-        );
     }
 
     /// Saves the active game state to a file. The boolean value "milestone" determines whether this is a milestone or an autosave.

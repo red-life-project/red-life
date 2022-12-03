@@ -1,11 +1,5 @@
-use serde::{Deserialize, Serialize};
-use std::fmt::{Display, Formatter};
-use std::ptr::addr_of_mut;
-
-use std::sync::mpsc::Sender;
-
 use crate::backend::constants::PLAYER_INTERACTION_RADIUS;
-use crate::backend::gamestate::{GameCommand, GameState};
+use crate::backend::gamestate::GameCommand;
 use crate::backend::rlcolor::RLColor;
 use crate::backend::screen::{Popup, StackCommand};
 use crate::backend::utils::is_colliding;
@@ -17,7 +11,10 @@ use crate::languages::german::TRADE_CONFLICT_POPUP;
 use crate::machines::machine::State::{Broken, Idle, Running};
 use crate::machines::machine_sprite::MachineSprite;
 use crate::machines::trade::Trade;
-use crate::RLResult;
+use serde::{Deserialize, Serialize};
+use std::fmt::{Display, Formatter};
+use std::sync::mpsc::Sender;
+
 use ggez::graphics::{Color, Image, Rect};
 use tracing::info;
 
@@ -73,10 +70,9 @@ impl Machine {
         is_colliding(pos, &self.get_interaction_area())
     }
     pub fn new_by_const(
-        gs: &GameState,
         (name, hit_box, trades, running_resources): (String, Rect, Vec<Trade>, Resources<i16>),
-    ) -> RLResult<Self> {
-        Machine::new(gs, name, hit_box, trades, running_resources)
+    ) -> Self {
+        Machine::new(name, hit_box, trades, running_resources)
     }
 
     /// Loads the Machine Sprites. Has to be called before drawing.
@@ -93,16 +89,15 @@ impl Machine {
 
     fn new(
         // this funktion is interinoly not pub
-        gs: &GameState,
         name: String,
         hit_box: Rect,
         trades: Vec<Trade>,
         running_resources: Resources<i16>,
-    ) -> RLResult<Self> {
+    ) -> Self {
         info!("Creating new machine: name: {}", name);
 
         //let sprite = MachineSprite::new(gs, name.as_str())?;
-        Ok(Self {
+        Self {
             name,
             hit_box,
             interaction_area: Rect {
@@ -121,7 +116,7 @@ impl Machine {
             time_change: 0,
             sender: None,
             screen_sender: None,
-        })
+        }
     }
     pub fn no_energy(&mut self) {
         if self.running_resources.energy < 0 {
