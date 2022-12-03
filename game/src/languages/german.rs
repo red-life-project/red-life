@@ -50,10 +50,15 @@ pub const AIR_AND_ENERGY_STRING: &str = "Luft und Energie";
 pub const DEATH_REASON_STRING: &str = "Dein Todesgrund: ";
 pub const ADDITIONAL_INFO_STRING: &str = "Bitte drücke ESC!";
 
-/// Constants for all strings used in introscreen
-pub const INTRO_TEXT: &str = "Du bist auf dem Mars gestrandet \nund musst überleben";
-pub const TURTORIAL_TEXT: &str = "Bewege dich mit WASD. \nInteragiere mit E";
+/// Constants for all strings used in IntroScreen
+pub const INTRO_TEXT: &str = "Du bist auf dem Mars gestrandet und musst überleben.\nDazu musst du die \
+Sauerstoffproduktion wiederherstellen.\nHoffentlich schaffst du es die Kommunikation zu reparieren, \ndamit du gerettet werden kannst.\n";
+pub const TUTORIAL_TEXT: &str =
+    "Bewege dich mit WASD. Interagiere mit E.\nZum Nachschlagen hast du auf H dein Handbuch.";
 pub const BUTTON_INFO: &str = "Bitte drücke die Leertaste!";
+
+/// Constants for all strings used in WinningScreen
+pub const WINNING_TEXT: &str = "Du wurdest gerettet!";
 
 /// Constants for the events that can occur.
 pub const KOMETENEINSCHLAG: [&str; 2] = [
