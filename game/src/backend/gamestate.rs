@@ -289,7 +289,7 @@ impl GameState {
         Ok(game_state)
     }
     /// Returns the area the player needs to stand in to interact with a machine
-    pub(crate) fn get_intractable(&mut self) -> Option<&mut Machine> {
+    pub(crate) fn get_interactable(&mut self) -> Option<&mut Machine> {
         self.machines
             .iter_mut()
             .find(|machine| machine.is_intractable(self.player.position))

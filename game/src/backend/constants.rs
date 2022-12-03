@@ -32,6 +32,7 @@ pub(crate) const PLAYER_INTERACTION_RADIUS: f32 = 50.;
 #[allow(clippy::too_many_lines)]
 pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>); 7] {
     [
+        //Die Test maschine wird zu testen des spieles genutzt. Sie gibt einem free items
         (
             "test".to_string(),
             Rect {
@@ -58,7 +59,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                     gen_inventory(100, 97, 99),
                 ),
                 Trade::new(
-                    "set_future_start_items".to_string(),
+                    "free_items".to_string(),
                     0,
                     State::Running,
                     State::Idle,
@@ -72,7 +73,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                 life: -4,
             },
         ),
-        /////////////////////////////////////////////////////////////////////////////////////////////
+        //Definition Oxygen Maschine
         (
             "Oxygen".to_string(),
             Rect {
@@ -83,7 +84,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
             },
             vec![
                 Trade::new(
-                    "repair_o2".to_string(),
+                    "repair_Oxygen".to_string(),
                     100,
                     State::Broken,
                     State::Idle,
@@ -91,7 +92,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                     gen_inventory(2, 0, 0),
                 ),
                 Trade::new(
-                    "start_02".to_string(),
+                    "start_Oxygen".to_string(),
                     0,
                     State::Idle,
                     State::Running,
@@ -99,7 +100,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                     gen_inventory(0, 0, 0),
                 ),
                 Trade::new(
-                    "stop_02".to_string(),
+                    "stop_Oxygen".to_string(),
                     0,
                     State::Running,
                     State::Idle,
@@ -113,7 +114,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                 life: 0,
             },
         ),
-        /////////////////////////////////////////////////////////////////////////////////////////////
+        //Definition Stromgenerator Maschine
         (
             "Stromgenerator".to_string(),
             Rect {
@@ -124,7 +125,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
             },
             vec![
                 Trade::new(
-                    "Stromgenerator_fueld".to_string(),
+                    "fueling_Stromgenerator".to_string(),
                     1000,
                     State::Broken,
                     State::Running,
@@ -132,7 +133,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                     gen_inventory(0, 1, 0),
                 ),
                 Trade::new(
-                    "Stromgenerator_Starten".to_string(),
+                    "start_Stromgenerator".to_string(),
                     1,
                     State::Idle,
                     State::Running,
@@ -140,7 +141,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                     gen_inventory(0, 0, 0),
                 ),
                 Trade::new(
-                    "Stromgenerator_Pausiert".to_string(),
+                    "stop_Stromgenerator".to_string(),
                     0,
                     State::Running,
                     State::Idle,
@@ -154,9 +155,9 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                 life: 0,
             },
         ),
-        /////////////////////////////////////////////////////////////////////////////////////////////
+        //Definition werkermaschine Maschine
         (
-            "werkermaschine".to_string(),
+            "werkemaschine".to_string(),
             Rect {
                 x: 600.0,
                 y: 600.0,
@@ -165,7 +166,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
             },
             vec![
                 Trade::new(
-                    "repair_test".to_string(),
+                    "repair_werkermaschine".to_string(),
                     100,
                     State::Broken,
                     State::Idle,
@@ -173,7 +174,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                     gen_inventory(0, 0, 1),
                 ),
                 Trade::new(
-                    "repair_test".to_string(),
+                    "produce_superglue".to_string(),
                     120,
                     State::Idle,
                     State::Running,
@@ -187,7 +188,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                 life: 0,
             },
         ),
-        /////////////////////////////////////////////////////////////////////////////////////////////
+        //Definition 3d_printer Maschine
         (
             "3d_printer".to_string(),
             Rect {
@@ -198,7 +199,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
             },
             vec![
                 Trade::new(
-                    "repair_3d".to_string(),
+                    "repair_3d_printer".to_string(),
                     300,
                     State::Broken,
                     State::Idle,
@@ -206,7 +207,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                     gen_inventory(2, 1, 0),
                 ),
                 Trade::new(
-                    "print_3d_part".to_string(),
+                    "produce_3d_teil".to_string(),
                     200,
                     State::Idle,
                     State::Running,
@@ -220,7 +221,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                 life: 0,
             },
         ),
-        /////////////////////////////////////////////////////////////////////////////////////////////
+        //Definition Kommunikationsmodul Maschine
         (
             "Kommunikationsmodul".to_string(),
             Rect {
@@ -239,7 +240,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                     gen_inventory(5, 0, 3),
                 ),
                 Trade::new(
-                    "Notfal_signal_absetzen".to_string(),
+                    "Notfall_signal_absetzen".to_string(),
                     1000,
                     State::Idle,
                     State::Running,
@@ -253,7 +254,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                 life: 0,
             },
         ),
-        /////////////////////////////////////////////////////////////////////////////////////////////
+        //Definition vom ersten Loch
         (
             "Loch".to_string(),
             Rect {
@@ -263,7 +264,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                 h: 100.0,
             },
             vec![Trade::new(
-                "Loch_reparien".to_string(),
+                "repair_Loch".to_string(),
                 100,
                 State::Running,
                 State::Idle,

@@ -21,9 +21,9 @@ impl GameState {
                 .send(StackCommand::Pop)?;
         }
         if ctx.keyboard.is_key_just_pressed(VirtualKeyCode::E) {
-            info!("Interacting with Area: {:?}", self.get_intractable());
+            info!("Interacting with Area: {:?}", self.get_interactable());
             let player_ref = &mut self.player.clone();
-            if let Some(interactable) = self.get_intractable() {
+            if let Some(interactable) = self.get_interactable() {
                 self.player = interactable.interact(player_ref);
             }
         }
