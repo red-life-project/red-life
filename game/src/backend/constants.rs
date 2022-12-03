@@ -226,7 +226,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
             Rect {
                 x: 1000.0,
                 y: 230.0,
-                w: 100.0,
+                w: 300.0,
                 h: 100.0,
             },
             vec![
