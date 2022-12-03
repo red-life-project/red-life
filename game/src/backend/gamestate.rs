@@ -67,7 +67,7 @@ impl GameState {
         result.sender = Some(sender);
         result.receiver = Some(receiver);
         result.load_assets(ctx)?;
-        result.create_machine(); //TODO add creating machine on continue
+        result.create_machine(); 
         Ok(result)
     }
     /// Gets called every tick in the update fn to update the internal game logic.

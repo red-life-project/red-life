@@ -114,8 +114,11 @@ impl Machine {
         })
     }
     pub fn no_energy(&mut self) {
-        self.state = State::Idle;
-        //TODO: timer pausieren
+        if self.running_resources.energy <0 {
+            // if the is no energy and the machine needs some we stop it
+            self.change_state_to(&Idle);
+            self.time_change = 0;
+        }
     }
     fn get_trade(&self) -> Trade {
         // returns the first possible trade

@@ -51,8 +51,6 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                     State::Broken,
                     State::Idle,
                     gen_inventory(-100, -100, -100),
-                    Item::new(BENZIN),
-                    0,
                 ),
                 Trade::new(
                     "reset_items".to_string(),
@@ -60,8 +58,6 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                     State::Idle,
                     State::Running,
                     gen_inventory(100, 97, 99),
-                    Item::new(BENZIN),
-                    0,
                 ),
                 Trade::new(
                     "set_future_start_items".to_string(),
@@ -69,8 +65,6 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                     State::Running,
                     State::Idle,
                     gen_inventory(-100, -100, -100),
-                    Item::new(GEDRUCKTESTEIL),
-                    1,
                 ),
             ],
             Resources {
@@ -95,8 +89,6 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                     State::Broken,
                     State::Idle,
                     gen_inventory(2, 0, 0),
-                    Item::new(BENZIN),
-                    0,
                 ),
                 Trade::new(
                     "start_02".to_string(),
@@ -104,8 +96,6 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                     State::Idle,
                     State::Running,
                     gen_inventory(0, 0, 0),
-                    Item::new(BENZIN),
-                    0,
                 ),
                 Trade::new(
                     "stop_02".to_string(),
@@ -113,8 +103,6 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                     State::Running,
                     State::Idle,
                     gen_inventory(0, 0, 0),
-                    Item::new(GEDRUCKTESTEIL),
-                    1,
                 ),
             ],
             Resources {
@@ -139,8 +127,6 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                     State::Broken,
                     State::Running,
                     gen_inventory(0, 1, 0),
-                    Item::new(BENZIN),
-                    0,
                 ),
                 Trade::new(
                     "Stromgenerator_Starten".to_string(),
@@ -148,8 +134,6 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                     State::Idle,
                     State::Running,
                     gen_inventory(0, 0, 0),
-                    Item::new(BENZIN),
-                    0,
                 ),
                 Trade::new(
                     "Stromgenerator_Pausiert".to_string(),
@@ -157,8 +141,6 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                     State::Running,
                     State::Idle,
                     gen_inventory(0, 0, 0),
-                    Item::new(GEDRUCKTESTEIL),
-                    1,
                 ),
             ],
             Resources {
@@ -183,8 +165,6 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                     State::Broken,
                     State::Idle,
                     gen_inventory(0, 0, 1),
-                    Item::new(BENZIN),
-                    0,
                 ),
                 Trade::new(
                     "repair_test".to_string(),
@@ -192,8 +172,6 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                     State::Idle,
                     State::Running,
                     gen_inventory(-1, 0, 0),
-                    Item::new(BENZIN),
-                    0,
                 ), /*
                    Trade::new(
                        "repair_test".to_string(),
@@ -201,8 +179,6 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                        State::Running,
                        State::Idle,
                        gen_inventory(0, 0, 0),
-                       Item::new(GEDRUCKTESTEIL),
-                       1,
                    ),*/
             ],
             Resources {
@@ -227,8 +203,6 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                     State::Broken,
                     State::Idle,
                     gen_inventory(2, 2, 2),
-                    Item::new(BENZIN),
-                    0,
                 ),
                 Trade::new(
                     "repair_test".to_string(),
@@ -236,8 +210,6 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                     State::Idle,
                     State::Running,
                     gen_inventory(0, 1, 2),
-                    Item::new(BENZIN),
-                    0,
                 ),
                 Trade::new(
                     "repair_test".to_string(),
@@ -245,8 +217,6 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                     State::Running,
                     State::Idle,
                     gen_inventory(0, 0, 0),
-                    Item::new(GEDRUCKTESTEIL),
-                    1,
                 ),
             ],
             Resources {
@@ -264,7 +234,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                 w: 100.0,
                 h: 100.0,
             },
-            vec![
+            vec![/*
                 Trade::new(
                     "loch".to_string(),
                     0,
@@ -282,15 +252,13 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                     gen_inventory(0, 1, 2),
                     Item::new(BENZIN),
                     0,
-                ),
+                ),*/
                 Trade::new(
                     "repair_test".to_string(),
                     100,
                     State::Running,
                     State::Idle,
-                    gen_inventory(0, 0, 0),
-                    Item::new(GEDRUCKTESTEIL),
-                    1,
+                    gen_inventory(2, 0, 0),
                 ),
             ],
             Resources {

@@ -10,6 +10,7 @@ use ggez::glam::Vec2;
 use ggez::graphics::{Canvas, Mesh, Rect};
 use ggez::Context;
 use tracing::info;
+use crate::machines::machine::State::Running;
 
 impl GameState {
     pub fn create_machine(&mut self) {
@@ -19,6 +20,9 @@ impl GameState {
         for m in &all {
             //code can panic @cargo bene fix
             let new_ms = Machine::new_by_const(self, sender_clone.clone(), m.clone()).unwrap();
+            if new_ms.name == *"Loch" {
+                new_ms.change_state_to(&Running);
+            }
             self.machines.push(new_ms);
         }
     }
