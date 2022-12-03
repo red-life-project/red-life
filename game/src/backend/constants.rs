@@ -1,4 +1,5 @@
 //! This file contains constants that are necessary for the game.
+use std::string::ToString;
 use crate::backend::rlcolor::RLColor;
 use crate::backend::utils::gen_inventory;
 use crate::game_core::item::Item;
@@ -7,7 +8,7 @@ use crate::languages::german::{BENZIN, GEDRUCKTESTEIL};
 use crate::machines::machine::State;
 use crate::machines::trade::Trade;
 use ggez::graphics::{Color, Rect};
-use std::string::ToString;
+
 
 /// Contains the screen resolution of the game.
 pub const SCREEN_RESOLUTION: (f32, f32) = (1920., 1080.);
@@ -30,6 +31,7 @@ pub(crate) const PLAYER_ICON_SIZE: (usize, usize) = (58, 96);
 /// Contains the interaction radius of the player.
 pub(crate) const PLAYER_INTERACTION_RADIUS: f32 = 50.;
 // pub const MACHINE_POSITIONS: [[i32; 4]; 4] = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
+pub const HANDBOOK_TEXT: &str= "Werker macht was Sauerstoff auch Ich auch";
 
 //"its a const lol" // problem ist das ich nicht vec![] in const aufrufen darf und es wäre anstrengend
 pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>); 2] {

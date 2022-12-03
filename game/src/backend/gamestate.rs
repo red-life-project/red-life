@@ -1,5 +1,5 @@
 //! Contains the game logic, updates the game and draws the current board
-use crate::backend::constants::COLORS;
+use crate::backend::constants::{COLORS, HANDBOOK_TEXT};
 use crate::backend::constants::{DESIRED_FPS, MAP_BORDER, RESOURCE_POSITION};
 use crate::backend::rlcolor::RLColor;
 use crate::backend::screen::StackCommand;
@@ -15,7 +15,7 @@ use crate::languages::german::RESOURCE_NAME;
 use crate::machines::machine::Machine;
 use crate::{draw, RLResult};
 use ggez::glam::Vec2;
-use ggez::graphics::{Canvas, Image};
+use ggez::graphics::{Canvas, Image, TextFragment};
 use ggez::graphics::{DrawMode, Mesh, Rect};
 use ggez::{graphics, Context};
 use serde::{Deserialize, Serialize};
@@ -23,6 +23,7 @@ use std::collections::HashMap;
 use std::fs;
 use std::fs::read_dir;
 use std::sync::mpsc::{channel, Receiver, Sender};
+use ggez::input::mouse::CursorIcon::Text;
 use tracing::info;
 
 pub enum GameCommand {
@@ -45,6 +46,7 @@ pub struct GameState {
     pub(crate) receiver: Option<Receiver<GameCommand>>,
     #[serde(skip)]
     pub(crate) sender: Option<Sender<GameCommand>>,
+    pub handbook_visible: bool,
 }
 
 impl PartialEq for GameState {
@@ -149,6 +151,14 @@ impl GameState {
             .for_each(drop);
         Ok(())
     }
+    /// draws the handbook while pressing the H key
+    pub fn draw_handbook(&self, canvas: &mut Canvas, ctx: &mut Context) {
+            let scale = get_scale(ctx);
+            let image = self.assets.get("Handbook.png").unwrap();
+            let text = graphics::Text::new(TextFragment::new(HANDBOOK_TEXT).color(RLColor::BLACK));
+            draw!(canvas, image, Vec2::new(900.0, 500.0), scale);
+            draw!(canvas,&text,Vec2::new(950.0, 550.0),scale);
+    }
     /// iterates trough the inventory and draws the amount of every item in the inventory.
     fn draw_items(&self, canvas: &mut Canvas, ctx: &mut Context) -> RLResult {
         self.player
@@ -182,6 +192,7 @@ impl GameState {
         read_dir("assets")?.for_each(|file| {
             let file = file.unwrap();
             let bytes = fs::read(file.path()).unwrap();
+            let name = file.file_name().into_string().unwrap();
             let name = file.file_name().into_string().unwrap();
             self.assets
                 .insert(name, Image::from_bytes(ctx, bytes.as_slice()).unwrap());
@@ -390,6 +401,9 @@ impl Screen for GameState {
         self.draw_resources(&mut canvas, scale, ctx)?;
         self.draw_machines(&mut canvas, scale, ctx)?;
         self.draw_items(&mut canvas, ctx)?;
+        if self.handbook_visible {
+            self.draw_handbook(&mut canvas, ctx);
+        }
         #[cfg(debug_assertions)]
         {
             let fps = graphics::Text::new(format!("FPS: {}", ctx.time.fps()));

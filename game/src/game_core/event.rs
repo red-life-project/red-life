@@ -164,7 +164,7 @@ impl Event {
         // have a maximum of three active events
         if ctx.time.ticks() % 5000 == 0 && gamestate.events.len() < 3 {
             // generate new event
-            // might not return an event
+            // might nots return an event
             let gen_event =
                 Event::event_generator(&gamestate.screen_sender.as_ref().unwrap().clone());
             // only push events that change the change_rate of the player (at least one field is not 0)
