@@ -50,6 +50,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                     0,
                     State::Broken,
                     State::Idle,
+                    false,
                     gen_inventory(-100, -100, -100),
                 ),
                 Trade::new(
@@ -57,6 +58,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                     0,
                     State::Idle,
                     State::Running,
+                    false,
                     gen_inventory(100, 97, 99),
                 ),
                 Trade::new(
@@ -64,6 +66,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                     0,
                     State::Running,
                     State::Idle,
+                    false,
                     gen_inventory(-100, -100, -100),
                 ),
             ],
@@ -85,9 +88,10 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
             vec![
                 Trade::new(
                     "repair_o2".to_string(),
-                    0,
+                    100,
                     State::Broken,
                     State::Idle,
+                    false,
                     gen_inventory(2, 0, 0),
                 ),
                 Trade::new(
@@ -95,6 +99,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                     0,
                     State::Idle,
                     State::Running,
+                    false,
                     gen_inventory(0, 0, 0),
                 ),
                 Trade::new(
@@ -102,6 +107,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                     0,
                     State::Running,
                     State::Idle,
+                    false,
                     gen_inventory(0, 0, 0),
                 ),
             ],
@@ -126,6 +132,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                     1000,
                     State::Broken,
                     State::Running,
+                    true,
                     gen_inventory(0, 1, 0),
                 ),
                 Trade::new(
@@ -133,6 +140,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                     1,
                     State::Idle,
                     State::Running,
+                    false,
                     gen_inventory(0, 0, 0),
                 ),
                 Trade::new(
@@ -140,6 +148,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                     0,
                     State::Running,
                     State::Idle,
+                    false,
                     gen_inventory(0, 0, 0),
                 ),
             ],
@@ -161,9 +170,10 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
             vec![
                 Trade::new(
                     "repair_test".to_string(),
-                    0,
+                    100,
                     State::Broken,
                     State::Idle,
+                    false,
                     gen_inventory(0, 0, 1),
                 ),
                 Trade::new(
@@ -171,6 +181,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                     120,
                     State::Idle,
                     State::Running,
+                    true,
                     gen_inventory(-1, 0, 0),
                 ), /*
                    Trade::new(
@@ -198,26 +209,29 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
             },
             vec![
                 Trade::new(
-                    "repair_test".to_string(),
-                    0,
+                    "repair_3d".to_string(),
+                    300,
                     State::Broken,
                     State::Idle,
-                    gen_inventory(2, 2, 2),
+                    false,
+                    gen_inventory(2, 1, 0),
                 ),
                 Trade::new(
-                    "repair_test".to_string(),
+                    "print_3d_part".to_string(),
+                    200,
+                    State::Idle,
+                    State::Running,
+                    true,
+                    gen_inventory(2, 0, -1),
+                ),/*
+                Trade::new(
+                    "pause_3d_print".to_string(),
                     0,
-                    State::Idle,
-                    State::Running,
-                    gen_inventory(0, 1, 2),
-                ),
-                Trade::new(
-                    "repair_test".to_string(),
-                    100,
                     State::Running,
                     State::Idle,
+                    false,
                     gen_inventory(0, 0, 0),
-                ),
+                ),*/
             ],
             Resources {
                 oxygen: 0,
@@ -254,10 +268,11 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                     0,
                 ),*/
                 Trade::new(
-                    "repair_test".to_string(),
+                    "Loch_reparien".to_string(),
                     100,
                     State::Running,
                     State::Idle,
+                    false,
                     gen_inventory(2, 0, 0),
                 ),
             ],

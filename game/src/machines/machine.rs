@@ -162,9 +162,10 @@ impl Machine {
         }
     }
 
-    pub(crate) fn change_state_to(&self, newstate: &State) {
+    pub(crate) fn change_state_to(&mut self, newstate: &State) {
         if self.state != *newstate {
             self.check_change(&self.state, newstate);
+            self.state = newstate.clone();
         }
     }
 
@@ -227,12 +228,10 @@ impl Machine {
             .cost
             .iter()
             .for_each(|(item, demand)| player.add_item(item, -*demand)); //TODO Replace with sender system // todo move to after trade
-
-        if self.state != trade.resulting_state {
-            // if the state changed
-            self.check_change(&self.state, &trade.resulting_state);
-            self.state = trade.resulting_state;
+        if trade.return_after_timer {
+            self.change_state_to(&trade.resulting_state);
         }
+
 
         player.clone()
     }
@@ -260,9 +259,11 @@ impl Machine {
             self.time_change = 0;
             self.time_remaining = 0;
 
-            if self.state != self.last_trade.initial_state {
-                self.check_change(&self.state, &self.last_trade.initial_state);
-                self.state = self.last_trade.initial_state.clone();
+            if self.last_trade.return_after_timer {
+                self.change_state_to(&self.last_trade.initial_state.clone());
+            }else {
+                self.change_state_to(&self.last_trade.resulting_state.clone());
+
             }
         }
     }
