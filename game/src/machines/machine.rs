@@ -9,6 +9,7 @@ use crate::backend::gamestate::{GameCommand, GameState};
 use crate::backend::rlcolor::RLColor;
 use crate::backend::screen::{Popup, StackCommand};
 use crate::backend::utils::is_colliding;
+use crate::game_core::infoscreen::InfoScreen;
 use crate::game_core::item::Item;
 use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
@@ -47,7 +48,7 @@ impl From<State> for Color {
     }
 }
 
-#[derive( Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Machine {
     pub name: String,
     pub state: State,
@@ -65,7 +66,6 @@ pub struct Machine {
     sender: Option<Sender<GameCommand>>,
     #[serde(skip)]
     screen_sender: Option<Sender<StackCommand>>,
-
 }
 
 impl Machine {
@@ -80,13 +80,19 @@ impl Machine {
     }
 
     /// Loads the Machine Sprites. Has to be called before drawing.
-    pub(crate) fn init(&mut self, images: &[Image], sender: Sender<GameCommand>, screen_sender: Sender<StackCommand>) {
+    pub(crate) fn init(
+        &mut self,
+        images: &[Image],
+        sender: Sender<GameCommand>,
+        screen_sender: Sender<StackCommand>,
+    ) {
         self.sprite = Some(images.into());
         self.sender = Some(sender);
-        self.screen_sender =Some(screen_sender);
+        self.screen_sender = Some(screen_sender);
     }
 
-    fn new( // this funktion is interinoly not pub
+    fn new(
+        // this funktion is interinoly not pub
         gs: &GameState,
         name: String,
         hit_box: Rect,
@@ -114,11 +120,11 @@ impl Machine {
             time_remaining: 0,
             time_change: 0,
             sender: None,
-            screen_sender: None
+            screen_sender: None,
         })
     }
     pub fn no_energy(&mut self) {
-        if self.running_resources.energy <0 {
+        if self.running_resources.energy < 0 {
             // if the is no energy and the machine needs some we stop it
             self.change_state_to(&Idle);
             self.time_change = 0;
@@ -173,10 +179,7 @@ impl Machine {
         }
     }
 
-    pub(crate) fn interact(
-        &mut self,
-        player: &mut Player,
-    ) -> Player {
+    pub(crate) fn interact(&mut self, player: &mut Player) -> Player {
         let trade = self.get_trade();
         if trade.name == *"no_Trade" {
             return player.clone();
@@ -205,7 +208,11 @@ impl Machine {
                 "Popup for Trade conflict sent: Missing Items: {}",
                 missing_items
             );
-            self.screen_sender.as_ref().unwrap().send(StackCommand::Popup(popup)).unwrap();
+            self.screen_sender
+                .as_ref()
+                .unwrap()
+                .send(StackCommand::Popup(popup))
+                .unwrap();
             return player.clone();
         }
 
@@ -235,7 +242,6 @@ impl Machine {
             self.change_state_to(&trade.resulting_state);
         }
 
-
         player.clone()
     }
 
@@ -263,15 +269,13 @@ impl Machine {
             self.time_remaining = 0;
 
             if self.last_trade.return_after_timer {
-                if self.last_trade.name == "Notfal_signal_absetzen"
-                {
-                 dbg!("GAME END");
+                if self.last_trade.name == "Notfal_signal_absetzen" {
+                    InfoScreen::new_winningscreen(self.screen_sender.clone().unwrap());
                 }
 
                 self.change_state_to(&self.last_trade.initial_state.clone());
-            }else {
+            } else {
                 self.change_state_to(&self.last_trade.resulting_state.clone());
-
             }
         }
     }

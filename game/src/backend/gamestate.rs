@@ -1,5 +1,4 @@
 //! Contains the game logic, updates the game and draws the current board
-use std::borrow::{Borrow, BorrowMut};
 use crate::backend::constants::COLORS;
 use crate::backend::constants::{DESIRED_FPS, MAP_BORDER, RESOURCE_POSITION};
 use crate::backend::rlcolor::RLColor;
@@ -15,19 +14,20 @@ use crate::game_core::resources::Resources;
 use crate::languages::german::RESOURCE_NAME;
 use crate::machines::machine::Machine;
 use crate::machines::machine::State::Broken;
+use crate::machines::machine_sprite::MachineSprite;
 use crate::{draw, RLResult};
 use ggez::glam::Vec2;
 use ggez::graphics::{Canvas, Image};
 use ggez::graphics::{DrawMode, Mesh, Rect};
 use ggez::{graphics, Context};
 use serde::{Deserialize, Serialize};
+use std::borrow::{Borrow, BorrowMut};
 use std::collections::HashMap;
 use std::fs;
 use std::fs::read_dir;
 use std::sync::mpsc::{channel, Receiver, Sender};
 use tracing::info;
 use tracing_subscriber::fmt::{init, time};
-use crate::machines::machine_sprite::MachineSprite;
 
 pub enum GameCommand {
     AddItems(Vec<(Item, i32)>),
@@ -114,11 +114,7 @@ impl GameState {
                     };
                 }
             }
-            6 => {
-                // Check if player is able to regenerate life
-                self.player
-                    .life_regeneration(&self.screen_sender.as_ref().unwrap().clone());
-            }
+            6 => {}
             9 => {
                 // update recources change oder neue items
                 if let Ok(msg) = self.receiver.as_ref().unwrap().try_recv() {
@@ -128,7 +124,7 @@ impl GameState {
                         }
                         GameCommand::AddItems(item) => {
 
-                            // self.player.add_item()
+                            //TODO: Isuie #174
                         }
                     }
                 };
@@ -141,6 +137,9 @@ impl GameState {
             }
             _ => {}
         }
+        // Check if player is able to regenerate life
+        self.player
+            .life_regeneration(&self.screen_sender.as_ref().unwrap().clone());
         self.machines.iter_mut().for_each(|a| a.tick(1));
 
         Ok(())
@@ -226,35 +225,34 @@ impl GameState {
         }
         Ok(())
     }
-    pub(crate) fn inti_all_machine(&mut self)
-    {
+    pub(crate) fn inti_all_machine(&mut self) {
         /*
-                self.machines
-                    .iter_mut()
+        self.machines
+            .iter_mut()
 
-                    .for_each(|m|
-                        {
-                            // print_type_of(m);
+            .for_each(|m|
+                {
+                    // print_type_of(m);
 
-                            self.clone()
-                                .inti_machine(m)
-                        });
+                    self.clone()
+                        .inti_machine(m)
+                });
 
-                let s: &GameState = self.borrow();
-                let machines_mut: &mut Vec<Machine> = self.machines.as_mut();
-                // let machines_ref :& Vec<Machine>  = machines_mut.as_ref();
-                for machine in machines_mut {
+        let s: &GameState = self.borrow();
+        let machines_mut: &mut Vec<Machine> = self.machines.as_mut();
+        // let machines_ref :& Vec<Machine>  = machines_mut.as_ref();
+        for machine in machines_mut {
 
-                    s.inti_machine( machine);
-                }
+            s.inti_machine( machine);
+        }
 
-                */
+        */
         let machine_assets: Vec<[Image; 3]> = self
             .machines
             .iter()
             .map(|m| m.name.clone())
             .map(|name| {
-               [
+                [
                     self.assets
                         .get(&format!("{name}_Idle.png"))
                         .unwrap()
@@ -274,27 +272,33 @@ impl GameState {
             .iter_mut()
             .zip(machine_assets)
             .for_each(|(m, a)| {
-                m.init(&a, self.sender.clone().unwrap(), self.screen_sender.clone().unwrap());
+                m.init(
+                    &a,
+                    self.sender.clone().unwrap(),
+                    self.screen_sender.clone().unwrap(),
+                );
             });
     }
-    pub(crate) fn inti_machine(&self, machine: &mut Machine)
-    {
-        let machine_assets: [Image; 3] =
-            [
-                self.assets
-                    .get(&format!("{}_Idle.png", machine.name))
-                    .unwrap()
-                    .clone(),
-                self.assets
-                    .get(&format!("{}_Broken.png", machine.name))
-                    .unwrap()
-                    .clone(),
-                self.assets
-                    .get(&format!("{}_Running.png", machine.name))
-                    .unwrap()
-                    .clone(),
-            ];
-        machine.init(&machine_assets, self.sender.clone().unwrap(), self.screen_sender.clone().unwrap());
+    pub(crate) fn inti_machine(&self, machine: &mut Machine) {
+        let machine_assets: [Image; 3] = [
+            self.assets
+                .get(&format!("{}_Idle.png", machine.name))
+                .unwrap()
+                .clone(),
+            self.assets
+                .get(&format!("{}_Broken.png", machine.name))
+                .unwrap()
+                .clone(),
+            self.assets
+                .get(&format!("{}_Running.png", machine.name))
+                .unwrap()
+                .clone(),
+        ];
+        machine.init(
+            &machine_assets,
+            self.sender.clone().unwrap(),
+            self.screen_sender.clone().unwrap(),
+        );
     }
 
     /// Saves the active game state to a file. The boolean value "milestone" determines whether this is a milestone or an autosave.
@@ -479,6 +483,7 @@ impl Screen for GameState {
     }
     fn set_sender(&mut self, sender: Sender<StackCommand>) {
         self.screen_sender = Some(sender);
+        self.inti_all_machine();
     }
 }
 

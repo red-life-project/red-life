@@ -1,5 +1,5 @@
-use ggez::winit::platform::unix::x11::ffi::Bool;
 use crate::game_core::item::Item;
+use ggez::winit::platform::unix::x11::ffi::Bool;
 
 use crate::machines::machine::State;
 use serde::{Deserialize, Serialize};
@@ -8,9 +8,9 @@ use serde::{Deserialize, Serialize};
 pub struct Trade {
     pub(crate) name: String,
     pub time_ticks: i16,
-    pub initial_state: State,     // the Machine needs to be in this state for the trade to be accessible
-    pub resulting_state: State,       // the Machine changes state to resulting state after pressing E
-    pub return_after_timer:bool,      // how the ms behaves after the timer run out 
+    pub initial_state: State, // the Machine needs to be in this state for the trade to be accessible
+    pub resulting_state: State, // the Machine changes state to resulting state after pressing E
+    pub return_after_timer: bool, // how the ms behaves after the timer run out
     pub(crate) cost: Vec<(Item, i32)>,
 }
 
@@ -34,7 +34,7 @@ impl Trade {
         time_ticks: i16,
         initial_state: State,
         resulting_state: State,
-        return_after_timer:bool,
+        return_after_timer: bool,
         cost: Vec<(Item, i32)>,
     ) -> Self {
         Self {

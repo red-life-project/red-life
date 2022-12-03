@@ -67,14 +67,12 @@ impl MainMenu {
             screen_sender,
         }
     }
-     fn DEGUG_SKIP(&self, ctx: &mut Context) -> RLResult
-    {
-       // self.screen_sender.send(StackCommand::Pop)?;
+    fn DEGUG_SKIP(&self, ctx: &mut Context) -> RLResult {
+        // self.screen_sender.send(StackCommand::Pop)?;
         self.screen_sender.send(StackCommand::Push(Box::new({
             let mut gamestate = GameState::new(ctx).unwrap_or_default();
             gamestate.load_assets(ctx)?;
             gamestate.create_machine();
-            gamestate.inti_all_machine();
             gamestate
         })))?;
         Ok(())
@@ -85,7 +83,7 @@ impl Screen for MainMenu {
     /// Updates the screen every tick
     fn update(&mut self, ctx: &mut Context) -> RLResult {
         //TODO FIXME
-        self.DEGUG_SKIP(ctx);
+        //self.DEGUG_SKIP(ctx);
         //TODO FIXME
 
         let scale = get_scale(ctx);
@@ -106,7 +104,6 @@ impl Screen for MainMenu {
                 Start => self.screen_sender.send(StackCommand::Push(Box::new({
                     let mut gamestate = GameState::load(false).unwrap_or_default();
                     gamestate.load_assets(ctx)?;
-                    gamestate.inti_all_machine();
                     gamestate
                 })))?,
             }

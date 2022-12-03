@@ -223,15 +223,15 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                     State::Running,
                     true,
                     gen_inventory(2, 0, -1),
-                ),/*
-                Trade::new(
-                    "pause_3d_print".to_string(),
-                    0,
-                    State::Running,
-                    State::Idle,
-                    false,
-                    gen_inventory(0, 0, 0),
-                ),*/
+                ), /*
+                   Trade::new(
+                       "pause_3d_print".to_string(),
+                       0,
+                       State::Running,
+                       State::Idle,
+                       false,
+                       gen_inventory(0, 0, 0),
+                   ),*/
             ],
             Resources {
                 oxygen: 0,
@@ -243,8 +243,8 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
         (
             "Kommunikationsmodul".to_string(),
             Rect {
-                x: 1722.0,
-                y: 840.0,
+                x: 1000.0,
+                y: 230.0,
                 w: 100.0,
                 h: 100.0,
             },
@@ -264,15 +264,15 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                     State::Running,
                     true,
                     gen_inventory(0, 0, 0),
-                ),/*
-                Trade::new(
-                    "pause_3d_print".to_string(),
-                    0,
-                    State::Running,
-                    State::Idle,
-                    false,
-                    gen_inventory(0, 0, 0),
-                ),*/
+                ), /*
+                   Trade::new(
+                       "pause_3d_print".to_string(),
+                       0,
+                       State::Running,
+                       State::Idle,
+                       false,
+                       gen_inventory(0, 0, 0),
+                   ),*/
             ],
             Resources {
                 oxygen: 0,
@@ -289,7 +289,8 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                 w: 100.0,
                 h: 100.0,
             },
-            vec![/*
+            vec![
+                /*
                 Trade::new(
                     "loch".to_string(),
                     0,

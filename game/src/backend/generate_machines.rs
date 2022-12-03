@@ -5,12 +5,12 @@ use crate::machines::machine::Machine;
 
 use crate::backend::constants::gen_all_machines;
 use crate::backend::rlcolor::RLColor;
+use crate::machines::machine::State::Running;
 use crate::{draw, RLResult};
 use ggez::glam::Vec2;
 use ggez::graphics::{Canvas, Mesh, Rect};
 use ggez::Context;
 use tracing::info;
-use crate::machines::machine::State::Running;
 
 impl GameState {
     pub fn create_machine(&mut self) {
@@ -19,9 +19,9 @@ impl GameState {
         let all = gen_all_machines();
         for m in &all {
             //code can panic @cargo bene fix
-            let mut new_ms = Machine::new_by_const(self,  m.clone()).unwrap();
-      //      self.inti_machine(&mut new_ms);
-  /*          if new_ms.name == *"Loch" {
+            let mut new_ms = Machine::new_by_const(self, m.clone()).unwrap();
+            //      self.inti_machine(&mut new_ms);
+            /*          if new_ms.name == *"Loch" {
                new_ms.change_state_to(&Running);
             }*/
             self.machines.push(new_ms);
