@@ -257,7 +257,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
         ),
         /////////////////////////////////////////////////////////////////////////////////////////////
         (
-            "test".to_string(),
+            "Loch".to_string(),
             Rect {
                 x: 1722.0,
                 y: 230.0,
