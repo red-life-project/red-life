@@ -82,9 +82,8 @@ impl MainMenu {
 impl Screen for MainMenu {
     /// Updates the screen every tick
     fn update(&mut self, ctx: &mut Context) -> RLResult {
-        //TODO FIXME
+        //@rewierer ich würde diese funktion später entfernen da ich sie aktuel noch nutze mag
         //self.DEGUG_SKIP(ctx);
-        //TODO FIXME
 
         let scale = get_scale(ctx);
         self.buttons.iter_mut().for_each(|btn| {

@@ -270,7 +270,14 @@ impl Machine {
 
             if self.last_trade.return_after_timer {
                 if self.last_trade.name == "Notfal_signal_absetzen" {
-                    InfoScreen::new_winningscreen(self.screen_sender.clone().unwrap());
+                    let clone = self.screen_sender.clone().unwrap();
+                    self.screen_sender
+                        .as_mut()
+                        .expect("No Screensender")
+                        .send(StackCommand::Push(Box::new(InfoScreen::new_winningscreen(
+                            clone,
+                        ))))
+                        .expect("Show Winning Screen");
                 }
 
                 self.change_state_to(&self.last_trade.initial_state.clone());
