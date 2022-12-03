@@ -5,6 +5,7 @@ use crate::machines::machine::Machine;
 
 use crate::backend::constants::gen_all_machines;
 use crate::backend::rlcolor::RLColor;
+use crate::machines::machine::State::Running;
 use crate::{draw, RLResult};
 use ggez::glam::Vec2;
 use ggez::graphics::{Canvas, Mesh, Rect};
@@ -14,11 +15,14 @@ use tracing::info;
 impl GameState {
     pub fn create_machine(&mut self) {
         info!("Generating all Machines");
-        let sender_clone = self.sender.as_mut().unwrap().clone();
         let all = gen_all_machines();
         for m in &all {
             //code can panic @cargo bene fix
-            let new_ms = Machine::new_by_const(self, sender_clone.clone(), m.clone()).unwrap();
+            let new_ms = Machine::new_by_const(m.clone());
+            //      self.inti_machine(&mut new_ms);
+            /*          if new_ms.name == *"Loch" {
+               new_ms.change_state_to(&Running);
+            }*/
             self.machines.push(new_ms);
         }
     }
@@ -42,10 +46,11 @@ impl GameState {
             )?;
             // Draws the machine timer on top of the machine
             let time = machine.get_time_percentage();
+
+            pos.x += 20.;
+            pos.y += 20.;
+            draw!(canvas, &status, pos, scale);
             if time > 0. {
-                pos.x += 20.;
-                pos.y += 20.;
-                draw!(canvas, &status, pos, scale);
                 // Bar for machine Timer
                 pos.x += 40.;
                 pos.y -= 30.;
