@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
+use std::ptr::addr_of_mut;
 
 use std::sync::mpsc::Sender;
 
@@ -46,7 +47,7 @@ impl From<State> for Color {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive( Debug, Clone, Serialize, Deserialize)]
 pub struct Machine {
     pub name: String,
     pub state: State,
@@ -62,6 +63,9 @@ pub struct Machine {
     sprite: Option<MachineSprite>,
     #[serde(skip)]
     sender: Option<Sender<GameCommand>>,
+    #[serde(skip)]
+    screen_sender: Option<Sender<StackCommand>>,
+
 }
 
 impl Machine {
@@ -70,29 +74,28 @@ impl Machine {
     }
     pub fn new_by_const(
         gs: &GameState,
-        sender: Sender<GameCommand>,
         (name, hit_box, trades, running_resources): (String, Rect, Vec<Trade>, Resources<i16>),
     ) -> RLResult<Self> {
-        Machine::new(gs, name, hit_box, trades, running_resources, sender)
+        Machine::new(gs, name, hit_box, trades, running_resources)
     }
 
     /// Loads the Machine Sprites. Has to be called before drawing.
-    pub(crate) fn init(&mut self, images: &[Image], sender: Sender<GameCommand>) {
+    pub(crate) fn init(&mut self, images: &[Image], sender: Sender<GameCommand>, screen_sender: Sender<StackCommand>) {
         self.sprite = Some(images.into());
         self.sender = Some(sender);
+        self.screen_sender =Some(screen_sender);
     }
 
-    pub fn new(
+    fn new( // this funktion is interinoly not pub
         gs: &GameState,
         name: String,
         hit_box: Rect,
         trades: Vec<Trade>,
         running_resources: Resources<i16>,
-        sender: Sender<GameCommand>,
     ) -> RLResult<Self> {
         info!("Creating new machine: name: {}", name);
 
-        let sprite = MachineSprite::new(gs, name.as_str())?;
+        //let sprite = MachineSprite::new(gs, name.as_str())?;
         Ok(Self {
             name,
             hit_box,
@@ -103,14 +106,15 @@ impl Machine {
                 h: hit_box.h + (PLAYER_INTERACTION_RADIUS * 2.),
             },
             state: State::Broken,
-            sprite: Some(sprite),
+            sprite: None,
             trades,
             last_trade: Trade::default(),
             running_resources,
             og_time: 0,
             time_remaining: 0,
             time_change: 0,
-            sender: Some(sender),
+            sender: None,
+            screen_sender: None
         })
     }
     pub fn no_energy(&mut self) {
@@ -172,7 +176,6 @@ impl Machine {
     pub(crate) fn interact(
         &mut self,
         player: &mut Player,
-        sender: &Sender<StackCommand>,
     ) -> Player {
         let trade = self.get_trade();
         if trade.name == *"no_Trade" {
@@ -202,7 +205,7 @@ impl Machine {
                 "Popup for Trade conflict sent: Missing Items: {}",
                 missing_items
             );
-            sender.send(StackCommand::Popup(popup)).unwrap();
+            self.screen_sender.as_ref().unwrap().send(StackCommand::Popup(popup)).unwrap();
             return player.clone();
         }
 
@@ -260,6 +263,11 @@ impl Machine {
             self.time_remaining = 0;
 
             if self.last_trade.return_after_timer {
+                if self.last_trade.name == "Notfal_signal_absetzen"
+                {
+                 dbg!("GAME END");
+                }
+
                 self.change_state_to(&self.last_trade.initial_state.clone());
             }else {
                 self.change_state_to(&self.last_trade.resulting_state.clone());

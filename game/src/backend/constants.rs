@@ -33,7 +33,7 @@ pub(crate) const PLAYER_INTERACTION_RADIUS: f32 = 50.;
 
 //"its a const lol" // problem ist das ich nicht vec![] in const aufrufen darf und es wäre anstrengend
 #[allow(clippy::too_many_lines)]
-pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>); 6] {
+pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>); 7] {
     [
         //("BEISPIEL".to_string() , Rect::default(), vec![Trade::default()], Resources::default()),
         (
@@ -236,6 +236,47 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
             Resources {
                 oxygen: 0,
                 energy: -25,
+                life: 0,
+            },
+        ),
+        /// //////////////////////////////////////////////////////////////////////////////////////////
+        (
+            "Kommunikationsmodul".to_string(),
+            Rect {
+                x: 1722.0,
+                y: 840.0,
+                w: 100.0,
+                h: 100.0,
+            },
+            vec![
+                Trade::new(
+                    "Kommunikationsmodul_reparieren".to_string(),
+                    400,
+                    State::Broken,
+                    State::Idle,
+                    false,
+                    gen_inventory(5, 0, 3),
+                ),
+                Trade::new(
+                    "Notfal_signal_absetzen".to_string(),
+                    1000,
+                    State::Idle,
+                    State::Running,
+                    true,
+                    gen_inventory(0, 0, 0),
+                ),/*
+                Trade::new(
+                    "pause_3d_print".to_string(),
+                    0,
+                    State::Running,
+                    State::Idle,
+                    false,
+                    gen_inventory(0, 0, 0),
+                ),*/
+            ],
+            Resources {
+                oxygen: 0,
+                energy: -20,
                 life: 0,
             },
         ),

@@ -19,10 +19,11 @@ impl GameState {
         let all = gen_all_machines();
         for m in &all {
             //code can panic @cargo bene fix
-            let mut new_ms = Machine::new_by_const(self, sender_clone.clone(), m.clone()).unwrap();
-            if new_ms.name == *"Loch" {
-                new_ms.change_state_to(&Running);
-            }
+            let mut new_ms = Machine::new_by_const(self,  m.clone()).unwrap();
+      //      self.inti_machine(&mut new_ms);
+  /*          if new_ms.name == *"Loch" {
+               new_ms.change_state_to(&Running);
+            }*/
             self.machines.push(new_ms);
         }
     }

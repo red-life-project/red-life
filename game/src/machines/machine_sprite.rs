@@ -22,23 +22,26 @@ impl From<&[Image]> for MachineSprite {
         }
     }
 }
+/*
 impl MachineSprite {
-    pub fn new(gs: &GameState, name: &str) -> RLResult<Self> {
+
+    pub fn new(images: &[Image; 3]) -> Self {
+        Self {
+            idle: images[0].clone(),
+            broken: images[1].clone(),
+            running: images[2].clone(),
+        }
+    }
+
+    // IN Process of removing this function do not use
+    /* fn new(gs: &GameState, name: &str) -> RLResult<Self> {
         //test_Broken.png
         info!("Creating new MachineSprite: name: {}", name);
-        let broken;
-        let idle;
-        let running;
-        /*        if let Ok(img)= gs.get_asset(format!("{name}.png").as_str())
-        {
-            broken = img.clone();
-            idle = img.clone();
-            running = img.clone();
-        }*/
-        //   else {
-        broken = gs.get_asset(format!("{name}_Broken.png").as_str())?.clone();
-        idle = gs.get_asset(format!("{name}_Idle.png").as_str())?.clone();
-        running = gs
+
+
+        let broken = gs.get_asset(format!("{name}_Broken.png").as_str())?.clone();
+        let idle = gs.get_asset(format!("{name}_Idle.png").as_str())?.clone();
+        let running = gs
             .get_asset(format!("{name}_Running.png").as_str())?
             .clone();
         //    }
@@ -48,5 +51,6 @@ impl MachineSprite {
             broken,
             running,
         })
-    }
+    }*/
 }
+*/

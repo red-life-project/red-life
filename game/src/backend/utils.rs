@@ -36,6 +36,11 @@ pub fn gen_inventory(super_glue: i32, benzin: i32, gedrucktesteil: i32) -> Vec<(
     ]
 }
 
+pub fn print_type_of<T>(_: &T) {
+    println!("{}", std::any::type_name::<T>())
+}
+
+
 /// This macro is used for simplifying drawing with scaling.
 /// It takes a canvas, a `Drawable`, an (optional) position(as `Vec2` for example) and a scale as `Vec2`.
 #[macro_export]

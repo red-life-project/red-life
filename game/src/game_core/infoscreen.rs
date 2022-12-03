@@ -127,6 +127,8 @@ impl Screen for InfoScreen {
                 self.sender.send(StackCommand::Push(Box::new({
                     let mut gamestate = GameState::new(ctx).unwrap_or_default();
                     gamestate.load_assets(ctx)?;
+                    gamestate.create_machine();
+                    gamestate.inti_all_machine();
                     gamestate
                 })))?;
             };

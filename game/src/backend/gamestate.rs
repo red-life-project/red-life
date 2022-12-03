@@ -1,9 +1,10 @@
 //! Contains the game logic, updates the game and draws the current board
+use std::borrow::{Borrow, BorrowMut};
 use crate::backend::constants::COLORS;
 use crate::backend::constants::{DESIRED_FPS, MAP_BORDER, RESOURCE_POSITION};
 use crate::backend::rlcolor::RLColor;
 use crate::backend::screen::StackCommand;
-use crate::backend::utils::{get_scale, is_colliding};
+use crate::backend::utils::{get_scale, is_colliding, print_type_of};
 use crate::backend::{error::RLError, screen::Screen};
 use crate::game_core::event::{Event, NO_CHANGE};
 use crate::game_core::infoscreen::DeathReason::Both;
@@ -25,7 +26,8 @@ use std::fs;
 use std::fs::read_dir;
 use std::sync::mpsc::{channel, Receiver, Sender};
 use tracing::info;
-use tracing_subscriber::fmt::time;
+use tracing_subscriber::fmt::{init, time};
+use crate::machines::machine_sprite::MachineSprite;
 
 pub enum GameCommand {
     AddItems(Vec<(Item, i32)>),
@@ -67,7 +69,6 @@ impl GameState {
         result.sender = Some(sender);
         result.receiver = Some(receiver);
         result.load_assets(ctx)?;
-        result.create_machine(); 
         Ok(result)
     }
     /// Gets called every tick in the update fn to update the internal game logic.
@@ -213,12 +214,47 @@ impl GameState {
             self.assets
                 .insert(name, Image::from_bytes(ctx, bytes.as_slice()).unwrap());
         });
+
+        //remove coments after review
+        //The code here was moved to its own function
+        //to prevent code duplication i deuse the init code for the new gamestate
+        // new funktion(inti_all_machine) will almost always be caled after this one
+        // with the exeption on creatin a new game look at gamestate.rs:70
+
+        if self.assets.is_empty() {
+            return Err(RLError::AssetError("Could not find assets!".to_string()));
+        }
+        Ok(())
+    }
+    pub(crate) fn inti_all_machine(&mut self)
+    {
+        /*
+                self.machines
+                    .iter_mut()
+
+                    .for_each(|m|
+                        {
+                            // print_type_of(m);
+
+                            self.clone()
+                                .inti_machine(m)
+                        });
+
+                let s: &GameState = self.borrow();
+                let machines_mut: &mut Vec<Machine> = self.machines.as_mut();
+                // let machines_ref :& Vec<Machine>  = machines_mut.as_ref();
+                for machine in machines_mut {
+
+                    s.inti_machine( machine);
+                }
+
+                */
         let machine_assets: Vec<[Image; 3]> = self
             .machines
             .iter()
             .map(|m| m.name.clone())
             .map(|name| {
-                [
+               [
                     self.assets
                         .get(&format!("{name}_Idle.png"))
                         .unwrap()
@@ -238,12 +274,27 @@ impl GameState {
             .iter_mut()
             .zip(machine_assets)
             .for_each(|(m, a)| {
-                m.init(&a, self.sender.clone().unwrap());
+                m.init(&a, self.sender.clone().unwrap(), self.screen_sender.clone().unwrap());
             });
-        if self.assets.is_empty() {
-            return Err(RLError::AssetError("Could not find assets!".to_string()));
-        }
-        Ok(())
+    }
+    pub(crate) fn inti_machine(&self, machine: &mut Machine)
+    {
+        let machine_assets: [Image; 3] =
+            [
+                self.assets
+                    .get(&format!("{}_Idle.png", machine.name))
+                    .unwrap()
+                    .clone(),
+                self.assets
+                    .get(&format!("{}_Broken.png", machine.name))
+                    .unwrap()
+                    .clone(),
+                self.assets
+                    .get(&format!("{}_Running.png", machine.name))
+                    .unwrap()
+                    .clone(),
+            ];
+        machine.init(&machine_assets, self.sender.clone().unwrap(), self.screen_sender.clone().unwrap());
     }
 
     /// Saves the active game state to a file. The boolean value "milestone" determines whether this is a milestone or an autosave.
@@ -463,6 +514,7 @@ mod test {
         GameState::default().save(true).unwrap();
         let _gamestate_loaded = GameState::load(true).unwrap();
     }
+
     #[test]
     fn test_delete_saves() {
         GameState::delete_saves().unwrap();
