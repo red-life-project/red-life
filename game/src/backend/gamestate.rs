@@ -38,8 +38,6 @@ pub enum GameCommand {
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct GameState {
     /// Contains the current player position, resources(air, energy, life) and the inventory and their change rates
-    tick_counter: i16,
-
     pub player: Player,
     pub(crate) events: Vec<Event>,
     pub machines: Vec<Machine>,
@@ -61,6 +59,11 @@ impl PartialEq for GameState {
 }
 
 impl GameState {
+    pub(crate) fn get_screen_sender(&mut self) -> RLResult<&mut Sender<StackCommand>> {
+        self.screen_sender.as_mut().ok_or(RLError::InitError(
+            "No Screen Sender found. The game was not initialized properly".to_string(),
+        ))
+    }
     /// Creates a new game state at the beginning of the game and after every loading.
     /// It loads all the assets and creates the areas of the machines.
     pub fn new(ctx: &mut Context) -> RLResult<Self> {
@@ -75,12 +78,8 @@ impl GameState {
     /// Gets called every tick in the update fn to update the internal game logic.
     /// It updates the player resources, checks on the current milestone if the player has reached a new one
     /// and checks if the player has died.
-
     pub fn tick(&mut self, ctx: &mut Context) -> RLResult {
-        // Iterate over every resource and add the change rate to the current value
-        self.tick_counter += 1;
-
-        //Update Recouces
+        // Update Resources
         self.player.resources = self
             .player
             .resources
@@ -89,8 +88,8 @@ impl GameState {
             .map(|(a, b)| a.saturating_add_signed(b))
             .collect::<Resources<_>>();
 
-        // every thing inside will only be checked every 15 tics
-        match self.tick_counter % 15 {
+        // Everything inside will only be checked every 15 ticks
+        match ctx.time.ticks() % 15 {
             0 => {
                 self.get_current_milestone(ctx);
             }
@@ -116,7 +115,7 @@ impl GameState {
                 }
             }
             9 => {
-                // update recources change oder neue items
+                // process received GameCommands
                 if let Ok(msg) = self.receiver.as_ref().unwrap().try_recv() {
                     match msg {
                         GameCommand::ResourceChange(new_rs) => {
@@ -124,7 +123,7 @@ impl GameState {
                         }
                         GameCommand::AddItems(item) => {
 
-                            //TODO: Isuie #174
+                            //TODO: Issue #174
                         }
                         GameCommand::Milestone() => {
                             //TODO Change how the Milestones work
@@ -132,13 +131,9 @@ impl GameState {
                     }
                 };
             }
-
-            14 => {
-                self.tick_counter -= 15;
-            }
             _ => {}
         }
-        // Check if player is able to regenerate life
+        // Regenerate life if applicable
         self.player
             .life_regeneration(&self.screen_sender.as_ref().unwrap().clone());
         self.machines.iter_mut().for_each(|a| a.tick(1));
@@ -185,7 +180,7 @@ impl GameState {
             draw!(canvas, image, Vec2::new(900.0, 500.0), scale);
             draw!(canvas,&text,Vec2::new(950.0, 550.0),scale);
     }
-    /// iterates trough the inventory and draws the amount of every item in the inventory.
+    /// Iterates trough the inventory and draws the amount of every item in the inventory.
     fn draw_items(&self, canvas: &mut Canvas, ctx: &mut Context) -> RLResult {
         self.player
             .inventory
