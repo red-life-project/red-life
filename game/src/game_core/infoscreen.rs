@@ -11,6 +11,7 @@ use ggez::glam::Vec2;
 use ggez::winit::event::VirtualKeyCode;
 use ggez::{graphics, Context};
 use std::fmt::{Display, Formatter};
+use std::fs;
 use std::sync::mpsc::Sender;
 use tracing::info;
 
@@ -45,6 +46,7 @@ pub struct InfoScreen {
     additional_text: graphics::Text,
     sender: Sender<StackCommand>,
     screentype: ScreenType,
+    background_image: Option<graphics::Image>,
 }
 
 impl InfoScreen {
@@ -67,6 +69,7 @@ impl InfoScreen {
             additional_text,
             sender,
             screentype,
+            background_image: None,
         }
     }
     /// Creates a new IntroScreen using InfoScreen
@@ -85,6 +88,7 @@ impl InfoScreen {
             additional_text,
             sender,
             screentype,
+            background_image: None,
         }
     }
     /// Creates a new Winning using InfoScreen
@@ -103,12 +107,21 @@ impl InfoScreen {
             additional_text,
             sender,
             screentype,
+            background_image: None,
         }
     }
 }
 
 impl Screen for InfoScreen {
     fn update(&mut self, ctx: &mut Context) -> RLResult {
+        if self.background_image.is_none() {
+            self.background_image = Some(graphics::Image::from_bytes(
+                ctx,
+                fs::read(format!("assets/{}.png", self.background).as_str())
+                    .unwrap()
+                    .as_slice(),
+            )?);
+        }
         let keys = ctx.keyboard.pressed_keys();
         if let Some(key) = keys.iter().next() {
             info!("The player wants to got to the next screen with: {:?}", key);
@@ -137,11 +150,10 @@ impl Screen for InfoScreen {
     fn draw(&self, ctx: &mut Context) -> RLResult {
         let scale = get_scale(ctx);
         let mut canvas = graphics::Canvas::from_frame(ctx, graphics::Color::RED);
-        let backgroundpath = format!("/{}.png", self.background);
 
-        let background = graphics::Image::from_path(ctx, backgroundpath)?;
-
-        canvas.draw(&background, graphics::DrawParam::default().scale(scale));
+        if let Some(background) = &self.background_image {
+            canvas.draw(background, graphics::DrawParam::default().scale(scale));
+        }
         if self.screentype == ScreenType::Intro {
             draw!(canvas, &self.main_message, Vec2::new(300., 300.), scale);
         } else {

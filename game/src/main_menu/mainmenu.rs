@@ -27,7 +27,6 @@ pub struct MainMenu {
     receiver: Receiver<Message>,
     sender: Sender<Message>,
     screen_sender: Sender<StackCommand>,
-    background: &'static [u8; 121631],
     background_image: Option<graphics::Image>,
 }
 
@@ -67,7 +66,6 @@ impl MainMenu {
             receiver,
             sender,
             screen_sender,
-            background: include_bytes!("../../../assets/mainmenu.png"),
             background_image: None,
         }
     }
@@ -95,7 +93,10 @@ impl Screen for MainMenu {
             btn.action(ctx, scale);
         });
         if self.background_image.is_none() {
-            self.background_image = Some(graphics::Image::from_bytes(ctx, self.background)?);
+            self.background_image = Some(graphics::Image::from_bytes(
+                ctx,
+                include_bytes!("../../../assets/mainmenu.png"),
+            )?);
         }
         if let Ok(msg) = self.receiver.try_recv() {
             match msg {
