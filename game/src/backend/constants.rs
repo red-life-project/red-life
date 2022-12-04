@@ -157,7 +157,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
         ),
         //Definition werkermaschine Maschine
         (
-            "werkemaschine".to_string(),
+            "werkermaschine".to_string(),
             Rect {
                 x: 600.0,
                 y: 600.0,
