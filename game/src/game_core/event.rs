@@ -3,10 +3,12 @@ use crate::backend::gamestate::GameState;
 use crate::backend::screen::{Popup, StackCommand};
 use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
+use crate::languages;
 use crate::languages::german::{
     INFORMATIONSPOPUP_MARS, INFORMATIONSPOPUP_NASA, KOMETENEINSCHLAG, SANDSTURM, STROMAUSFALL,
 };
 use crate::languages::german::{MARS_INFO, NASA_INFO, WARNINGS};
+use crate::machines::machine::State;
 use ggez::graphics::Color;
 use ggez::Context;
 use serde::{Deserialize, Serialize};
@@ -51,7 +53,7 @@ pub const NO_CHANGE: Resources<i16> = Resources {
 pub(crate) struct Event {
     name: String,
     info_text: String,
-    pub(crate) resources: Resources<i16>,
+    pub(crate) resources: Option<Resources<i16>>,
     duration: i32,
     popup_type: String,
     popup_message: String,
@@ -74,7 +76,7 @@ impl Event {
         Self {
             name: event[0].to_string(),
             info_text: event[1].to_string(),
-            resources,
+            resources: Option::from(resources),
             duration: duration * (DESIRED_FPS as i32),
             popup_type: popup_type.to_string(),
             popup_message: popup_message.to_string(),
@@ -82,7 +84,7 @@ impl Event {
     }
 
     /// if no Event is active it either chooses a random event of the Event enum or nothing every 60 seconds
-    pub fn event_generator() -> Option<Event> {
+    pub fn event_generator(sender: &Sender<StackCommand>) -> Option<Event> {
         let rng = fastrand::Rng::new();
         let event = rng.usize(..50);
         match event {
@@ -155,6 +157,47 @@ impl Event {
         // check if time since event creation is greater than the duration of the event
         !self.duration <= 0
     }
+    /// Triggers the event and activates its effect
+    /// # Arguments
+    /// * `restore` - If true the event will be deactivated and the resources will be restored
+    /// * `gamestate` - The gamestate which is used to access the player and the machines
+    /// * `sender` - The sender which is used to send the popup to the screen
+    pub fn action(&self, restore: bool, gamestate: &mut GameState, sender: &Sender<StackCommand>) {
+        const KOMETENEINSCHLAG_NAME: &str = KOMETENEINSCHLAG[0];
+        const STROMAUSTFALL_NAME: &str = STROMAUSFALL[0];
+        match self.name.as_str() {
+            KOMETENEINSCHLAG_NAME => {
+                Event::send_popup(&self.popup_message, sender, &self.popup_type, &self.name);
+                gamestate.machines.iter_mut().for_each(|machine| {
+                    if machine.name == "Loch" {
+                        machine.change_state_to(&State::Broken);
+                    }
+                });
+            }
+            STROMAUSTFALL_NAME => {
+                Event::send_popup(&self.popup_message, sender, &self.popup_type, &self.name);
+                gamestate.machines.iter_mut().for_each(|machine| {
+                    //Question: set broken or idle?
+                    if machine.name == "Stromgenerator" {
+                        machine.change_state_to(&State::Broken);
+                    }
+                });
+            }
+            (_) => {
+                if let Some(resources) = self.resources {
+                    if restore {
+                        gamestate.player.resources_change =
+                            gamestate.player.resources_change + resources;
+                    } else {
+                        gamestate.player.resources_change =
+                            gamestate.player.resources_change - resources;
+                    }
+                }
+            }
+        }
+        info!("Event triggered (restore: {}): {}", restore, self.name);
+    }
+
     /// Returns the name of the event
     pub fn get_name(&self) -> String {
         self.name.clone()
@@ -168,15 +211,10 @@ impl Event {
 
             gamestate.events.retain(|event| {
                 if event.is_active() {
-                    // event will remain in vector
                     true
                 } else {
+                    //TODO: restore resources
                     info!("Event {} is not active anymore", event.get_name());
-                    // the resources<i16> struct is then added to the players resources<i16>
-                    // removing the effect of the event
-                    gamestate.player.resources_change =
-                        gamestate.player.resources_change + event.resources;
-                    // event will be removed from the events vector
                     false
                 }
             });
@@ -185,34 +223,14 @@ impl Event {
         if ctx.time.ticks() % 1000 == 0 {
             // generate new event
             // might not return an event
-            let gen_event = Event::event_generator();
-            // only push events that change the change_rate of the player (at least one field is not 0)
-            // ignore info events (INFORMATIONSPOPUP_NASA, INFORMATIONSPOPUP_MARS) (all their fields are 0)
+            let gen_event =
+                Event::event_generator(&gamestate.screen_sender.as_ref().unwrap().clone());
             if let Some(event) = gen_event {
-                match (event.resources, gamestate.events.len()) {
-                    (NO_CHANGE, _) => {
-                        // info event
-                        Event::send_popup(
-                            &event.popup_message,
-                            &gamestate.screen_sender.as_ref().unwrap().clone(),
-                            &event.popup_type,
-                            &event.name,
-                        );
-                    }
-                    (_, 0) => {
-                        // event
-                        gamestate.events.push(event.clone());
-                        gamestate.player.resources_change =
-                            gamestate.player.resources_change - event.resources;
-                        Event::send_popup(
-                            &event.popup_message,
-                            &gamestate.screen_sender.as_ref().unwrap().clone(),
-                            &event.popup_type,
-                            &event.name,
-                        );
-                    }
-                    (_, _) => { /* do nothing */ }
-                }
+                event.action(
+                    false,
+                    gamestate,
+                    &gamestate.screen_sender.as_ref().unwrap().clone(),
+                );
             }
         }
     }
