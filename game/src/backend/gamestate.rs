@@ -404,6 +404,7 @@ impl Screen for GameState {
         if ctx.time.check_update_time(DESIRED_FPS) {
             self.tick(ctx)?;
             self.move_player(ctx)?;
+            Event::update_events(ctx, self);
         }
         Ok(())
     }

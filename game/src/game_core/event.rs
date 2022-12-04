@@ -170,7 +170,7 @@ impl Event {
                 Event::send_popup(&self.popup_message, sender, &self.popup_type, &self.name);
                 gamestate.machines.iter_mut().for_each(|machine| {
                     if machine.name == "Loch" {
-                        machine.change_state_to(&State::Broken);
+                        machine.change_state_to(&State::Idle);
                     }
                 });
             }
@@ -231,6 +231,7 @@ impl Event {
                     gamestate,
                     &gamestate.screen_sender.as_ref().unwrap().clone(),
                 );
+                gamestate.events.push(event);
             }
         }
     }
