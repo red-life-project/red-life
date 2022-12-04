@@ -2,9 +2,7 @@
 use std::string::ToString;
 use crate::backend::rlcolor::RLColor;
 use crate::backend::utils::gen_inventory;
-use crate::game_core::item::Item;
 use crate::game_core::resources::Resources;
-use crate::languages::german::{BENZIN, GEDRUCKTESTEIL};
 use crate::machines::machine::State;
 use crate::machines::trade::Trade;
 use ggez::graphics::{Color, Rect};
@@ -33,45 +31,190 @@ pub(crate) const PLAYER_INTERACTION_RADIUS: f32 = 50.;
 // pub const MACHINE_POSITIONS: [[i32; 4]; 4] = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
 pub const HANDBOOK_TEXT: &str= "Werker macht was Sauerstoff auch Ich auch";
 
-//"its a const lol" // problem ist das ich nicht vec![] in const aufrufen darf und es wäre anstrengend
-pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>); 2] {
+#[allow(clippy::too_many_lines)]
+pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>); 7] {
     [
-        //("BEISPIEL".to_string() , Rect::default(), vec![Trade::default()], Resources::default()),
+        //Die Test maschine wird zu testen des spieles genutzt. Sie gibt einem free items
         (
             "test".to_string(),
             Rect {
-                x: 300.0,
-                y: 200.0,
+                x: 284.0,
+                y: 230.0,
                 w: 100.0,
                 h: 100.0,
             },
             vec![
                 Trade::new(
-                    "repair_test".to_string(),
+                    "free_items".to_string(),
                     0,
                     State::Broken,
                     State::Idle,
-                    gen_inventory(-1, -1, -1),
-                    Item::new(BENZIN),
-                    0,
+                    true,
+                    gen_inventory(-100, -100, -100),
                 ),
                 Trade::new(
-                    "repair_test".to_string(),
+                    "reset_items".to_string(),
+                    0,
+                    State::Idle,
+                    State::Running,
+                    true,
+                    gen_inventory(100, 97, 99),
+                ),
+                Trade::new(
+                    "free_items".to_string(),
+                    0,
+                    State::Running,
+                    State::Idle,
+                    true,
+                    gen_inventory(-100, -100, -100),
+                ),
+            ],
+            Resources {
+                oxygen: -25,
+                energy: -25,
+                life: -4,
+            },
+        ),
+        //Definition Oxygen Maschine
+        (
+            "Oxygen".to_string(),
+            Rect {
+                x: 600.0,
+                y: 250.0,
+                w: 100.0,
+                h: 100.0,
+            },
+            vec![
+                Trade::new(
+                    "repair_Oxygen".to_string(),
                     100,
+                    State::Broken,
                     State::Idle,
-                    State::Running,
-                    gen_inventory(1, 1, 1),
-                    Item::new(BENZIN),
-                    0,
+                    false,
+                    gen_inventory(2, 0, 0),
                 ),
                 Trade::new(
-                    "repair_test".to_string(),
+                    "start_Oxygen".to_string(),
+                    0,
+                    State::Idle,
+                    State::Running,
+                    true,
+                    gen_inventory(0, 0, 0),
+                ),
+                Trade::new(
+                    "stop_Oxygen".to_string(),
                     0,
                     State::Running,
                     State::Idle,
-                    gen_inventory(-2, -2, -2),
-                    Item::new(GEDRUCKTESTEIL),
+                    true,
+                    gen_inventory(0, 0, 0),
+                ),
+            ],
+            Resources {
+                oxygen: 20,
+                energy: -30,
+                life: 0,
+            },
+        ),
+        //Definition Stromgenerator Maschine
+        (
+            "Stromgenerator".to_string(),
+            Rect {
+                x: 284.0,
+                y: 740.0,
+                w: 200.0,
+                h: 200.0,
+            },
+            vec![
+                Trade::new(
+                    "fueling_Stromgenerator".to_string(),
+                    1000,
+                    State::Broken,
+                    State::Running,
+                    true,
+                    gen_inventory(0, 1, 0),
+                ),
+                Trade::new(
+                    "start_Stromgenerator".to_string(),
                     1,
+                    State::Idle,
+                    State::Running,
+                    true,
+                    gen_inventory(0, 0, 0),
+                ),
+                Trade::new(
+                    "stop_Stromgenerator".to_string(),
+                    0,
+                    State::Running,
+                    State::Idle,
+                    true,
+                    gen_inventory(0, 0, 0),
+                ),
+            ],
+            Resources {
+                oxygen: -5,
+                energy: 50,
+                life: 0,
+            },
+        ),
+        //Definition werkermaschine Maschine
+        (
+            "werkermaschine".to_string(),
+            Rect {
+                x: 600.0,
+                y: 600.0,
+                w: 200.0,
+                h: 100.0,
+            },
+            vec![
+                Trade::new(
+                    "repair_werkermaschine".to_string(),
+                    100,
+                    State::Broken,
+                    State::Idle,
+                    false,
+                    gen_inventory(0, 0, 1),
+                ),
+                Trade::new(
+                    "produce_superglue".to_string(),
+                    120,
+                    State::Idle,
+                    State::Running,
+                    true,
+                    gen_inventory(-1, 0, 0),
+                ),
+            ],
+            Resources {
+                oxygen: 0,
+                energy: -15,
+                life: 0,
+            },
+        ),
+        //Definition 3d_printer Maschine
+        (
+            "3d_printer".to_string(),
+            Rect {
+                x: 1722.0,
+                y: 840.0,
+                w: 100.0,
+                h: 100.0,
+            },
+            vec![
+                Trade::new(
+                    "repair_3d_printer".to_string(),
+                    300,
+                    State::Broken,
+                    State::Idle,
+                    false,
+                    gen_inventory(2, 1, 0),
+                ),
+                Trade::new(
+                    "produce_3d_teil".to_string(),
+                    200,
+                    State::Idle,
+                    State::Running,
+                    true,
+                    gen_inventory(2, 0, -1),
                 ),
             ],
             Resources {
@@ -80,47 +223,60 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                 life: 0,
             },
         ),
+        //Definition Kommunikationsmodul Maschine
         (
-            "Oxygen".to_string(),
+            "Kommunikationsmodul".to_string(),
             Rect {
-                x: 600.0,
-                y: 200.0,
-                w: 100.0,
+                x: 1000.0,
+                y: 230.0,
+                w: 300.0,
                 h: 100.0,
             },
             vec![
                 Trade::new(
-                    "repair_test".to_string(),
-                    0,
+                    "Kommunikationsmodul_reparieren".to_string(),
+                    400,
                     State::Broken,
                     State::Idle,
-                    gen_inventory(2, 2, 2),
-                    Item::new(BENZIN),
-                    0,
+                    false,
+                    gen_inventory(5, 0, 3),
                 ),
                 Trade::new(
-                    "repair_test".to_string(),
-                    0,
+                    "Notfall_signal_absetzen".to_string(),
+                    1000,
                     State::Idle,
                     State::Running,
-                    gen_inventory(0, 1, 2),
-                    Item::new(BENZIN),
-                    0,
-                ),
-                Trade::new(
-                    "repair_test".to_string(),
-                    100,
-                    State::Running,
-                    State::Idle,
+                    true,
                     gen_inventory(0, 0, 0),
-                    Item::new(GEDRUCKTESTEIL),
-                    1,
                 ),
             ],
             Resources {
                 oxygen: 0,
-                energy: -25,
+                energy: -20,
                 life: 0,
+            },
+        ),
+        //Definition vom ersten Loch
+        (
+            "Loch".to_string(),
+            Rect {
+                x: 1722.0,
+                y: 230.0,
+                w: 100.0,
+                h: 100.0,
+            },
+            vec![Trade::new(
+                "repair_Loch".to_string(),
+                100,
+                State::Running,
+                State::Idle,
+                false,
+                gen_inventory(2, 0, 0),
+            )],
+            Resources {
+                oxygen: -20,
+                energy: -5,
+                life: -2,
             },
         ),
     ]

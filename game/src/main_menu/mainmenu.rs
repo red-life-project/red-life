@@ -19,6 +19,7 @@ pub enum Message {
     NewGame,
     Start,
 }
+
 /// Main menu screen of the game with buttons to start a new game, load a game or exit the game.
 #[derive(Debug)]
 pub struct MainMenu {
@@ -66,10 +67,25 @@ impl MainMenu {
             screen_sender,
         }
     }
+    //@rewierer ich würde diese funktion später entfernen da ich sie aktuel noch nutzen mag
+    fn DEGUG_SKIP(&self, ctx: &mut Context) -> RLResult {
+        // self.screen_sender.send(StackCommand::Pop)?;
+        self.screen_sender.send(StackCommand::Push(Box::new({
+            let mut gamestate = GameState::new(ctx).unwrap_or_default();
+            gamestate.load_assets(ctx)?;
+            gamestate.create_machine();
+            gamestate
+        })))?;
+        Ok(())
+    }
 }
+
 impl Screen for MainMenu {
     /// Updates the screen every tick
     fn update(&mut self, ctx: &mut Context) -> RLResult {
+        //@rewierer ich würde diese funktion später entfernen da ich sie aktuel noch nutzen mag
+        //self.DEGUG_SKIP(ctx);
+
         let scale = get_scale(ctx);
         self.buttons.iter_mut().for_each(|btn| {
             btn.action(ctx, scale);

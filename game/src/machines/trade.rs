@@ -1,5 +1,4 @@
 use crate::game_core::item::Item;
-
 use crate::machines::machine::State;
 use serde::{Deserialize, Serialize};
 
@@ -7,25 +6,22 @@ use serde::{Deserialize, Serialize};
 pub struct Trade {
     pub(crate) name: String,
     pub time_ticks: i16,
-    pub initial_state: State,
-    pub resulting_state: State,
-    // the Machine needs to be in this state for the trade to be accessible
-    //ggf eine weitere State in was dieser trade die maschiene ändert
+    pub initial_state: State, // the Machine needs to be in this state for the trade to be accessible
+    pub resulting_state: State, // the Machine changes state to resulting state after pressing E
+    pub return_after_timer: bool, // how the ms behaves after the timer run out
     pub(crate) cost: Vec<(Item, i32)>,
-    result: Item,
-    amount_produced: usize,
 }
 
 impl Default for Trade {
     fn default() -> Self {
         Self {
-            name: "default".to_string(),
+            name: "no_Trade".to_string(),
+            // default values have almost no meaning
             time_ticks: 0,
             initial_state: State::Broken,
             resulting_state: State::Running,
+            return_after_timer: false,
             cost: vec![],
-            result: Item::default(),
-            amount_produced: 0,
         }
     }
 }
@@ -36,18 +32,16 @@ impl Trade {
         time_ticks: i16,
         initial_state: State,
         resulting_state: State,
+        return_after_timer: bool,
         cost: Vec<(Item, i32)>,
-        result: Item,
-        amount_produced: usize,
     ) -> Self {
         Self {
             name,
             time_ticks,
             initial_state,
             resulting_state,
+            return_after_timer,
             cost,
-            result,
-            amount_produced,
         }
     }
 }

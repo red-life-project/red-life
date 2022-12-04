@@ -1,13 +1,9 @@
-use serde::{Deserialize, Serialize};
-use std::fmt::{Display, Formatter};
-
-use std::sync::mpsc::Sender;
-
 use crate::backend::constants::PLAYER_INTERACTION_RADIUS;
-use crate::backend::gamestate::{GameCommand, GameState};
+use crate::backend::gamestate::GameCommand;
 use crate::backend::rlcolor::RLColor;
 use crate::backend::screen::{Popup, StackCommand};
 use crate::backend::utils::is_colliding;
+use crate::game_core::infoscreen::InfoScreen;
 use crate::game_core::item::Item;
 use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
@@ -15,7 +11,10 @@ use crate::languages::german::TRADE_CONFLICT_POPUP;
 use crate::machines::machine::State::{Broken, Idle, Running};
 use crate::machines::machine_sprite::MachineSprite;
 use crate::machines::trade::Trade;
-use crate::RLResult;
+use serde::{Deserialize, Serialize};
+use std::fmt::{Display, Formatter};
+use std::sync::mpsc::Sender;
+
 use ggez::graphics::{Color, Image, Rect};
 use tracing::info;
 
@@ -55,38 +54,50 @@ pub struct Machine {
     trades: Vec<Trade>,
     last_trade: Trade,
     running_resources: Resources<i16>,
+    og_time: i16,
     time_remaining: i16,
     time_change: i16,
     #[serde(skip)]
     sprite: Option<MachineSprite>,
     #[serde(skip)]
     sender: Option<Sender<GameCommand>>,
+    #[serde(skip)]
+    screen_sender: Option<Sender<StackCommand>>,
 }
 
 impl Machine {
-    pub(crate) fn is_interactable(&self, pos: (usize, usize)) -> bool {
+    pub(crate) fn is_intractable(&self, pos: (usize, usize)) -> bool {
         is_colliding(pos, &self.get_interaction_area())
     }
     pub fn new_by_const(
-        gs: &GameState,
-        sender: Sender<GameCommand>,
         (name, hit_box, trades, running_resources): (String, Rect, Vec<Trade>, Resources<i16>),
-    ) -> RLResult<Self> {
-        Machine::new(gs, name, hit_box, trades, running_resources, sender)
+    ) -> Self {
+        Machine::new(name, hit_box, trades, running_resources)
     }
 
-    pub fn new(
-        gs: &GameState,
+    /// Loads the Machine Sprites. Has to be called before drawing.
+    pub(crate) fn init(
+        &mut self,
+        images: &[Image],
+        sender: Sender<GameCommand>,
+        screen_sender: Sender<StackCommand>,
+    ) {
+        self.sprite = Some(images.into());
+        self.sender = Some(sender);
+        self.screen_sender = Some(screen_sender);
+    }
+
+    fn new(
+        // this funktion is supposed to be private
         name: String,
         hit_box: Rect,
         trades: Vec<Trade>,
         running_resources: Resources<i16>,
-        sender: Sender<GameCommand>,
-    ) -> RLResult<Self> {
+    ) -> Self {
         info!("Creating new machine: name: {}", name);
 
-        let sprite = MachineSprite::new(gs, name.as_str())?;
-        Ok(Self {
+        //let sprite = MachineSprite::new(gs, name.as_str())?;
+        Self {
             name,
             hit_box,
             interaction_area: Rect {
@@ -95,20 +106,24 @@ impl Machine {
                 w: hit_box.w + (PLAYER_INTERACTION_RADIUS * 2.),
                 h: hit_box.h + (PLAYER_INTERACTION_RADIUS * 2.),
             },
-            state: State::Broken,
-            sprite: Some(sprite),
+            state: Broken,
+            sprite: None,
             trades,
             last_trade: Trade::default(),
             running_resources,
-
+            og_time: 0,
             time_remaining: 0,
             time_change: 0,
-            sender: Some(sender),
-        })
+            sender: None,
+            screen_sender: None,
+        }
     }
     pub fn no_energy(&mut self) {
-        self.state = State::Idle;
-        //TODO: timer pausieren
+        if self.running_resources.energy < 0 {
+            // if the is no energy and the machine needs some we stop it
+            self.change_state_to(&Idle);
+            self.time_change = 0;
+        }
     }
     fn get_trade(&self) -> Trade {
         // returns the first possible trade
@@ -151,12 +166,21 @@ impl Machine {
             }
         }
     }
-    pub(crate) fn interact(
-        &mut self,
-        player: &mut Player,
-        sender: &Sender<StackCommand>,
-    ) -> Player {
+
+    pub(crate) fn change_state_to(&mut self, new_state: &State) {
+        if self.state != *new_state {
+            self.check_change(&self.state, new_state);
+            self.state = new_state.clone();
+        }
+    }
+
+    pub(crate) fn interact(&mut self, player: &mut Player) -> Player {
         let trade = self.get_trade();
+        if trade.name == *"no_Trade" {
+            return player.clone();
+        }
+
+        // dif = items the player has - the cost of the trade
         let dif = trade
             .cost
             .iter()
@@ -164,6 +188,7 @@ impl Machine {
             .filter(|(_item, dif)| *dif < 0)
             .collect::<Vec<(&Item, i32)>>();
         if dif.iter().any(|(_, demand)| *demand < 0) {
+            // If one item is not available in enough quantity
             let mut missing_items = String::new();
             dif.iter()
                 .map(|(item, amount)| format!("{amount} {}\n", item.name))
@@ -178,26 +203,38 @@ impl Machine {
                 "Popup for Trade conflict sent: Missing Items: {}",
                 missing_items
             );
-            sender.send(StackCommand::Popup(popup)).unwrap();
+            self.screen_sender
+                .as_ref()
+                .unwrap()
+                .send(StackCommand::Popup(popup))
+                .unwrap();
             return player.clone();
         }
 
-        // all checks have been pased taking items
+        // the player has enough items for the trade so we will execute on it
         info!("Executing trade:{} ", trade.name);
-        self.last_trade = trade.clone();
-        self.time_remaining = trade.time_ticks;
-        if trade.time_ticks > 0 {
+        if trade.time_ticks == 0 {
+            // this trade has no timer
+            self.time_change = 0;
+        } else {
+            //this trade has a timer
+
+            if self.time_remaining == 0 {
+                //if no timer is running set timer up
+                self.last_trade = trade.clone();
+                self.time_remaining = trade.time_ticks;
+                self.og_time = trade.time_ticks;
+            }
+            //start the timer
             self.time_change = 1;
         }
+
         trade
             .cost
             .iter()
-            .for_each(|(item, demand)| player.add_item(item, -*demand));
-
-        if self.state != trade.resulting_state {
-            // if the state changed
-            self.check_change(&self.state, &trade.resulting_state);
-            self.state = trade.resulting_state;
+            .for_each(|(item, demand)| player.add_item(item, -*demand)); //TODO Replace with sender system // todo move to after trade
+        if trade.return_after_timer {
+            self.change_state_to(&trade.resulting_state);
         }
 
         player.clone()
@@ -218,18 +255,6 @@ impl Machine {
             Running => self.sprite.as_ref().unwrap().running.clone(),
         }
     }
-    /// Loads the Machine Sprites. Has to be called before drawing.
-    pub(crate) fn load_sprites(&mut self, images: &[Image]) {
-        self.sprite = Some(images.into());
-    }
-
-    pub(crate) fn is_non_broken_machine(&self) -> bool {
-        self.state != Broken
-    }
-
-    pub(crate) fn get_name(&self) -> String {
-        self.name.clone()
-    }
 
     pub(crate) fn tick(&mut self, delta_tics: i16) {
         self.time_remaining -= self.time_change * delta_tics;
@@ -238,22 +263,35 @@ impl Machine {
             self.time_change = 0;
             self.time_remaining = 0;
 
-            if self.state != self.last_trade.initial_state {
-                self.check_change(&self.state, &self.last_trade.initial_state);
-                self.state = self.last_trade.initial_state.clone();
+            if self.last_trade.return_after_timer {
+                if self.last_trade.name == "Notfall_signal_absetzen" {
+                    let clone = self.screen_sender.clone().unwrap();
+                    self.screen_sender
+                        .as_mut()
+                        .expect("No Screensender")
+                        .send(StackCommand::Push(Box::new(InfoScreen::new_winningscreen(
+                            clone,
+                        ))))
+                        .expect("Show Winning Screen");
+                }
+
+                self.change_state_to(&self.last_trade.initial_state.clone());
+            } else {
+                self.change_state_to(&self.last_trade.resulting_state.clone());
             }
         }
     }
     pub(crate) fn get_state(&self) -> State {
         self.state.clone()
     }
-
+    pub(crate) fn get_name(&self) -> String {
+        self.name.clone()
+    }
     pub(crate) fn get_time_percentage(&self) -> f32 {
-        let x = if self.last_trade.time_ticks == 0 {
+        if self.og_time == 0 {
             -1.0
         } else {
-            f32::from(self.time_remaining) / f32::from(self.last_trade.time_ticks)
-        };
-        x
+            f32::from(self.time_remaining) / f32::from(self.og_time)
+        }
     }
 }

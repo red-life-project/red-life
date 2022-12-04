@@ -3,9 +3,10 @@ use crate::backend::constants::{COLORS, HANDBOOK_TEXT};
 use crate::backend::constants::{DESIRED_FPS, MAP_BORDER, RESOURCE_POSITION};
 use crate::backend::rlcolor::RLColor;
 use crate::backend::screen::StackCommand;
-use crate::backend::utils::{get_scale, is_colliding};
+use crate::backend::utils::get_scale;
+use crate::backend::utils::is_colliding;
 use crate::backend::{error::RLError, screen::Screen};
-use crate::game_core::event::{Event, NO_CHANGE};
+use crate::game_core::event::Event;
 use crate::game_core::infoscreen::DeathReason::Both;
 use crate::game_core::infoscreen::InfoScreen;
 use crate::game_core::item::Item;
@@ -13,6 +14,7 @@ use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
 use crate::languages::german::RESOURCE_NAME;
 use crate::machines::machine::Machine;
+use crate::machines::machine::State::Broken;
 use crate::{draw, RLResult};
 use ggez::glam::Vec2;
 use ggez::graphics::{Canvas, Image, TextFragment};
@@ -29,12 +31,15 @@ use tracing::info;
 pub enum GameCommand {
     AddItems(Vec<(Item, i32)>),
     ResourceChange(Resources<i16>),
+    Milestone(),
 }
 
 /// This is the game state. It contains all the data that is needed to run the game.
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct GameState {
     /// Contains the current player position, resources(air, energy, life) and the inventory and their change rates
+    tick_counter: i16,
+
     pub player: Player,
     pub(crate) events: Vec<Event>,
     pub machines: Vec<Machine>,
@@ -65,15 +70,17 @@ impl GameState {
         result.sender = Some(sender);
         result.receiver = Some(receiver);
         result.load_assets(ctx)?;
-        result.create_machine(); //TODO add creating machine on continue
         Ok(result)
     }
     /// Gets called every tick in the update fn to update the internal game logic.
     /// It updates the player resources, checks on the current milestone if the player has reached a new one
     /// and checks if the player has died.
+
     pub fn tick(&mut self, ctx: &mut Context) -> RLResult {
         // Iterate over every resource and add the change rate to the current value
-        self.get_current_milestone(ctx);
+        self.tick_counter += 1;
+
+        //Update Recouces
         self.player.resources = self
             .player
             .resources
@@ -81,40 +88,59 @@ impl GameState {
             .zip(self.player.resources_change.into_iter())
             .map(|(a, b)| a.saturating_add_signed(b))
             .collect::<Resources<_>>();
+
+        // every thing inside will only be checked every 15 tics
+        match self.tick_counter % 15 {
+            0 => {
+                self.get_current_milestone(ctx);
+            }
+            3 => {
+                // Check if the player is dead
+                if let Some(empty_resource) = Resources::get_death_reason(&self.player.resources) {
+                    match empty_resource {
+                        Both => self.player.resources_change.life = -20,
+                        _ => self.player.resources_change.life = -10,
+                    }
+                    if self.player.resources.life == 0 {
+                        let gamestate = GameState::load(true).unwrap_or_default();
+                        gamestate.save(false).unwrap();
+                        let cloned_sender = self.screen_sender.as_mut().unwrap().clone();
+                        self.screen_sender
+                            .as_mut()
+                            .expect("No screen sender")
+                            .send(StackCommand::Push(Box::new(InfoScreen::new_deathscreen(
+                                empty_resource,
+                                cloned_sender,
+                            ))))?;
+                    };
+                }
+            }
+            9 => {
+                // update recources change oder neue items
+                if let Ok(msg) = self.receiver.as_ref().unwrap().try_recv() {
+                    match msg {
+                        GameCommand::ResourceChange(new_rs) => {
+                            self.player.resources_change = self.player.resources_change + new_rs;
+                        }
+                        GameCommand::AddItems(item) => {
+
+                            //TODO: Isuie #174
+                        }
+                        GameCommand::Milestone() => {
+                            //TODO Change how the Milestones work
+                        }
+                    }
+                };
+            }
+
+            14 => {
+                self.tick_counter -= 15;
+            }
+            _ => {}
+        }
         // Check if player is able to regenerate life
         self.player
             .life_regeneration(&self.screen_sender.as_ref().unwrap().clone());
-        // Check if the player is dead
-        if let Some(empty_resource) = Resources::get_death_reason(&self.player.resources) {
-            match empty_resource {
-                Both => self.player.resources_change.life = -20,
-                _ => self.player.resources_change.life = -10,
-            }
-            if self.player.resources.life == 0 {
-                let gamestate = GameState::load(true).unwrap_or_default();
-                gamestate.save(false).unwrap();
-                let cloned_sender = self.screen_sender.as_mut().unwrap().clone();
-                self.screen_sender
-                    .as_mut()
-                    .expect("No screen sender")
-                    .send(StackCommand::Push(Box::new(InfoScreen::new_deathscreen(
-                        empty_resource,
-                        cloned_sender,
-                    ))))?;
-            };
-        }
-        if let Ok(msg) = self.receiver.as_ref().unwrap().try_recv() {
-            match msg {
-                GameCommand::ResourceChange(new_rs) => {
-                    self.player.resources_change = self.player.resources_change + new_rs;
-                }
-                GameCommand::AddItems(item) => {
-
-                    // self.player.add_item()
-                }
-            }
-        };
-
         self.machines.iter_mut().for_each(|a| a.tick(1));
 
         Ok(())
@@ -197,6 +223,13 @@ impl GameState {
             self.assets
                 .insert(name, Image::from_bytes(ctx, bytes.as_slice()).unwrap());
         });
+
+        if self.assets.is_empty() {
+            return Err(RLError::AssetError("Could not find assets!".to_string()));
+        }
+        Ok(())
+    }
+    pub(crate) fn inti_all_machine(&mut self) {
         let machine_assets: Vec<[Image; 3]> = self
             .machines
             .iter()
@@ -222,12 +255,12 @@ impl GameState {
             .iter_mut()
             .zip(machine_assets)
             .for_each(|(m, a)| {
-                m.load_sprites(&a);
+                m.init(
+                    &a,
+                    self.sender.clone().unwrap(),
+                    self.screen_sender.clone().unwrap(),
+                );
             });
-        if self.assets.is_empty() {
-            return Err(RLError::AssetError("Could not find assets!".to_string()));
-        }
-        Ok(())
     }
 
     /// Saves the active game state to a file. The boolean value "milestone" determines whether this is a milestone or an autosave.
@@ -270,7 +303,7 @@ impl GameState {
     pub(crate) fn get_interactable(&mut self) -> Option<&mut Machine> {
         self.machines
             .iter_mut()
-            .find(|machine| machine.is_interactable(self.player.position))
+            .find(|machine| machine.is_intractable(self.player.position))
     }
 
     /// Returns if the player would collide with a border if they moved in the given direction
@@ -312,7 +345,7 @@ impl GameState {
         let running_machine = self
             .machines
             .iter()
-            .filter(|m| m.is_non_broken_machine())
+            .filter(|m| m.get_state() != Broken)
             .map(Machine::get_name)
             .collect::<Vec<String>>();
 
@@ -415,6 +448,7 @@ impl Screen for GameState {
     }
     fn set_sender(&mut self, sender: Sender<StackCommand>) {
         self.screen_sender = Some(sender);
+        self.inti_all_machine();
     }
 }
 
@@ -450,6 +484,7 @@ mod test {
         GameState::default().save(true).unwrap();
         let _gamestate_loaded = GameState::load(true).unwrap();
     }
+
     #[test]
     fn test_delete_saves() {
         GameState::delete_saves().unwrap();
