@@ -88,7 +88,7 @@ impl Machine {
     }
 
     fn new(
-        // this funktion is interinoly not pub
+        // this funktion is supposed to be private
         name: String,
         hit_box: Rect,
         trades: Vec<Trade>,
@@ -106,7 +106,7 @@ impl Machine {
                 w: hit_box.w + (PLAYER_INTERACTION_RADIUS * 2.),
                 h: hit_box.h + (PLAYER_INTERACTION_RADIUS * 2.),
             },
-            state: State::Broken,
+            state: Broken,
             sprite: None,
             trades,
             last_trade: Trade::default(),
@@ -167,10 +167,10 @@ impl Machine {
         }
     }
 
-    pub(crate) fn change_state_to(&mut self, newstate: &State) {
-        if self.state != *newstate {
-            self.check_change(&self.state, newstate);
-            self.state = newstate.clone();
+    pub(crate) fn change_state_to(&mut self, new_state: &State) {
+        if self.state != *new_state {
+            self.check_change(&self.state, new_state);
+            self.state = new_state.clone();
         }
     }
 
@@ -268,7 +268,7 @@ impl Machine {
             self.time_remaining = 0;
 
             if self.last_trade.return_after_timer {
-                if self.last_trade.name == "Notfal_signal_absetzen" {
+                if self.last_trade.name == "Notfall_signal_absetzen" {
                     let clone = self.screen_sender.clone().unwrap();
                     self.screen_sender
                         .as_mut()

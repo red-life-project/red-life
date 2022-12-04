@@ -67,6 +67,7 @@ impl MainMenu {
             screen_sender,
         }
     }
+    //@rewierer ich würde diese funktion später entfernen da ich sie aktuel noch nutzen mag
     fn DEGUG_SKIP(&self, ctx: &mut Context) -> RLResult {
         // self.screen_sender.send(StackCommand::Pop)?;
         self.screen_sender.send(StackCommand::Push(Box::new({
@@ -82,7 +83,7 @@ impl MainMenu {
 impl Screen for MainMenu {
     /// Updates the screen every tick
     fn update(&mut self, ctx: &mut Context) -> RLResult {
-        //@rewierer ich würde diese funktion später entfernen da ich sie aktuel noch nutze mag
+        //@rewierer ich würde diese funktion später entfernen da ich sie aktuel noch nutzen mag
         //self.DEGUG_SKIP(ctx);
 
         let scale = get_scale(ctx);
