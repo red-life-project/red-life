@@ -11,6 +11,7 @@ use crate::backend::constants::SCREEN_RESOLUTION;
 use crate::backend::{error, screen::Screenstack};
 use chrono::Local;
 
+use ggez::conf::FullscreenType;
 use ggez::{event, Context};
 use std::fs::File;
 use std::sync::Mutex;
