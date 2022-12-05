@@ -1,10 +1,8 @@
-use crate::backend::error::RLError;
 use crate::backend::gamestate::GameState;
 use crate::backend::screen::StackCommand;
 use crate::RLResult;
 use ggez::winit::event::VirtualKeyCode;
 use ggez::Context;
-use std::sync::mpsc::Sender;
 use tracing::info;
 
 const MOVEMENT_SPEED: usize = 10;
