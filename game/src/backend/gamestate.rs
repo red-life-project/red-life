@@ -19,13 +19,13 @@ use crate::{draw, RLResult};
 use ggez::glam::Vec2;
 use ggez::graphics::{Canvas, Image, TextFragment};
 use ggez::graphics::{DrawMode, Mesh, Rect};
+use ggez::input::mouse::CursorIcon::Text;
 use ggez::{graphics, Context};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
 use std::fs::read_dir;
 use std::sync::mpsc::{channel, Receiver, Sender};
-use ggez::input::mouse::CursorIcon::Text;
 use tracing::info;
 
 pub enum GameCommand {
@@ -171,11 +171,11 @@ impl GameState {
     }
     /// draws the handbook while pressing the H key
     pub fn draw_handbook(&self, canvas: &mut Canvas, ctx: &mut Context) {
-            let scale = get_scale(ctx);
-            let image = self.assets.get("Handbook.png").unwrap();
-            let text = graphics::Text::new(TextFragment::new(HANDBOOK_TEXT).color(RLColor::BLACK));
-            draw!(canvas, image, Vec2::new(900.0, 500.0), scale);
-            draw!(canvas,&text,Vec2::new(950.0, 550.0),scale);
+        let scale = get_scale(ctx);
+        let image = self.assets.get("Handbook.png").unwrap();
+        let text = graphics::Text::new(TextFragment::new(HANDBOOK_TEXT).color(RLColor::BLACK));
+        draw!(canvas, image, Vec2::new(900.0, 500.0), scale);
+        draw!(canvas, &text, Vec2::new(950.0, 550.0), scale);
     }
     /// Iterates trough the inventory and draws the amount of every item in the inventory.
     fn draw_items(&self, canvas: &mut Canvas, ctx: &mut Context) -> RLResult {
@@ -363,10 +363,7 @@ impl GameState {
                     self.player.match_milestone = 1;
                 }
                 Event::update_events(ctx, self);
-                self.check_on_milestone(vec![
-                    "Oxygen".to_string(),
-                    "Stromgenerator".to_string(),
-                ]);
+                self.check_on_milestone(vec!["Oxygen".to_string(), "Stromgenerator".to_string()]);
             }
             1 => {
                 self.check_on_milestone(vec!["Kommunikationsmodul".to_string()]);

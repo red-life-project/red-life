@@ -27,7 +27,7 @@ impl GameState {
             }
         }
         if ctx.keyboard.is_key_just_pressed(VirtualKeyCode::H) {
-                self.handbook_visible = !self.handbook_visible;
+            self.handbook_visible = !self.handbook_visible;
         }
         let keys = ctx.keyboard.pressed_keys();
         for key in keys.iter() {
