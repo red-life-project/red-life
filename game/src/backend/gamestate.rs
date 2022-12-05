@@ -62,11 +62,18 @@ impl GameState {
             "No Screen Sender found. The game was not initialized properly".to_string(),
         ))
     }
+
+    pub(crate) fn get_receiver(&mut self) -> RLResult<&Receiver<GameCommand>> {
+        self.receiver.as_ref().ok_or(RLError::InitError(
+            "No Receiver found. The game was not initialized properly".to_string(),
+        ))
+    }
+
     /// Creates a new game state at the beginning of the game and after every loading.
     /// It loads all the assets and creates the areas of the machines.
     pub fn new(ctx: &mut Context) -> RLResult<Self> {
         info!("Creating new gamestate");
-        let (sender, receiver) = std::sync::mpsc::channel();
+        let (sender, receiver) = channel();
         let mut result = GameState::default();
         result.sender = Some(sender);
         result.receiver = Some(receiver);
@@ -100,15 +107,11 @@ impl GameState {
                     }
                     if self.player.resources.life == 0 {
                         let gamestate = GameState::load(true).unwrap_or_default();
-                        gamestate.save(false).unwrap();
-                        let cloned_sender = self.screen_sender.as_mut().unwrap().clone();
-                        self.screen_sender
-                            .as_mut()
-                            .expect("No screen sender")
-                            .send(StackCommand::Push(Box::new(InfoScreen::new_deathscreen(
-                                empty_resource,
-                                cloned_sender,
-                            ))))?;
+                        gamestate.save(false)?;
+                        let cloned_sender = self.get_screen_sender()?.clone();
+                        self.get_screen_sender()?.send(StackCommand::Push(Box::new(
+                            InfoScreen::new_deathscreen(empty_resource, cloned_sender),
+                        )))?;
                     };
                 }
             }
