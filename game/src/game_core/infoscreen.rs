@@ -1,6 +1,6 @@
 use crate::backend::gamestate::GameState;
 use crate::backend::screen::{Screen, StackCommand};
-use crate::backend::utils::*;
+use crate::backend::utils::get_scale;
 use crate::languages::german::{
     ADDITIONAL_INFO_STRING, AIR_AND_ENERGY_STRING, AIR_STRING, BUTTON_INFO, DEATH_REASON_STRING,
     ENERGY_STRING, INTRO_TEXT, TUTORIAL_TEXT, WINNING_TEXT,
@@ -117,31 +117,34 @@ impl Screen for InfoScreen {
         if self.background_image.is_none() {
             self.background_image = Some(graphics::Image::from_bytes(
                 ctx,
-                fs::read(format!("assets/{}.png", self.background).as_str())?.as_slice(),
+                fs::read(format!("assets/{}.png", self.background).as_str())
+                    .unwrap()
+                    .as_slice(),
             )?);
         }
         let keys = ctx.keyboard.pressed_keys();
-        // Here we only use the first pressed key, but in the infoscreen this is fine
-        match (self.screentype, keys.iter().next()) {
-            (_, None) => Ok(()),
-            (ScreenType::Intro, Some(key)) => match key {
-                VirtualKeyCode::Space => {
+        if let Some(key) = keys.iter().next() {
+            info!("The player wants to got to the next screen with: {:?}", key);
+            if key == &VirtualKeyCode::Escape {
+                if self.screentype == ScreenType::Intro {
                     self.sender.send(StackCommand::Pop)?;
-                    Ok(self.sender.send(StackCommand::Push(Box::new({
-                        let mut gamestate = GameState::new(ctx).unwrap_or_default();
-                        gamestate.init(ctx)?;
-                        gamestate.create_machine();
-                        gamestate
-                    })))?)
+                } else {
+                    self.sender.send(StackCommand::Push(Box::new(MainMenu::new(
+                        self.sender.clone(),
+                    ))))?;
                 }
-                VirtualKeyCode::Escape => Ok(self.sender.send(StackCommand::Pop)?),
-                _ => Ok(()),
-            },
-            (_, Some(VirtualKeyCode::Escape)) => Ok(self.sender.send(StackCommand::Push(
-                Box::new(MainMenu::new(self.sender.clone())),
-            ))?),
-            _ => Ok(()),
+            }
+            if key == &VirtualKeyCode::Space && self.screentype == ScreenType::Intro {
+                self.sender.send(StackCommand::Pop)?;
+                self.sender.send(StackCommand::Push(Box::new({
+                    let mut gamestate = GameState::new(ctx).unwrap_or_default();
+                    gamestate.load_assets(ctx)?;
+                    gamestate.create_machine();
+                    gamestate
+                })))?;
+            };
         }
+        Ok(())
     }
     /// Draws the info screen with the given background and two texts
     fn draw(&self, ctx: &mut Context) -> RLResult {
