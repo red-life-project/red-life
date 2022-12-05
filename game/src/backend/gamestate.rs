@@ -218,26 +218,30 @@ impl GameState {
         }
         Ok(())
     }
-    pub(crate) fn inti_all_machine(&mut self) {
-        let machine_assets: Vec<[Image; 3]> = self
+    pub(crate) fn init_all_machines(&mut self) {
+        let machine_assets: Vec<Vec<Image>> = self
             .machines
             .iter()
             .map(|m| m.name.clone())
             .map(|name| {
-                [
-                    self.assets
-                        .get(&format!("{name}_Idle.png"))
-                        .unwrap()
-                        .clone(),
-                    self.assets
-                        .get(&format!("{name}_Broken.png"))
-                        .unwrap()
-                        .clone(),
-                    self.assets
-                        .get(&format!("{name}_Running.png"))
-                        .unwrap()
-                        .clone(),
-                ]
+                if self.assets.contains_key(&format!("{name}.png")) {
+                    vec![self.assets.get(&format!("{name}.png")).unwrap().clone()]
+                } else {
+                    vec![
+                        self.assets
+                            .get(&format!("{name}_Idle.png"))
+                            .unwrap()
+                            .clone(),
+                        self.assets
+                            .get(&format!("{name}_Broken.png"))
+                            .unwrap()
+                            .clone(),
+                        self.assets
+                            .get(&format!("{name}_Running.png"))
+                            .unwrap()
+                            .clone(),
+                    ]
+                }
             })
             .collect();
         self.machines
@@ -245,7 +249,7 @@ impl GameState {
             .zip(machine_assets)
             .for_each(|(m, a)| {
                 m.init(
-                    &a,
+                    a.as_slice(),
                     self.sender.clone().unwrap(),
                     self.screen_sender.clone().unwrap(),
                 );
@@ -434,7 +438,7 @@ impl Screen for GameState {
     }
     fn set_sender(&mut self, sender: Sender<StackCommand>) {
         self.screen_sender = Some(sender);
-        self.inti_all_machine();
+        self.init_all_machines();
     }
 }
 

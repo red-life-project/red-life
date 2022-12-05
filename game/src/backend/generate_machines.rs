@@ -33,7 +33,7 @@ impl GameState {
                 x: machine.get_collision_area().x,
                 y: machine.get_collision_area().y,
             };
-            draw!(canvas, &image, pos, scale);
+            draw!(canvas, image, pos, scale);
             // Draws the machine status on top of the machine
             let status = Mesh::new_circle(
                 ctx,

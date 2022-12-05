@@ -244,16 +244,12 @@ impl Machine {
         self.interaction_area
     }
 
-    pub(crate) fn get_graphic(&self) -> Image {
-        match self.state {
-            Broken => self.sprite.as_ref().unwrap().broken.clone(),
-            Idle => self.sprite.as_ref().unwrap().idle.clone(),
-            Running => self.sprite.as_ref().unwrap().running.clone(),
-        }
+    pub(crate) fn get_graphic(&self) -> &Image {
+        self.sprite.as_ref().unwrap().get(self.state.clone())
     }
 
-    pub(crate) fn tick(&mut self, delta_tics: i16) {
-        self.time_remaining -= self.time_change * delta_tics;
+    pub(crate) fn tick(&mut self, delta_ticks: i16) {
+        self.time_remaining -= self.time_change * delta_ticks;
         if self.time_remaining < 0 {
             //timer run out
             self.time_change = 0;
