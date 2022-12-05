@@ -194,7 +194,7 @@ impl Machine {
                 .map(|(item, amount)| format!("{amount} {}\n", item.name))
                 .for_each(|x| missing_items.push_str(&x));
 
-            let popup = Popup::warning(format!("{}\n{missing_items}", TRADE_CONFLICT_POPUP[0]));
+            let popup = Popup::info(format!("{}\n{missing_items}", TRADE_CONFLICT_POPUP[0]));
             info!(
                 "Popup for Trade conflict sent: Missing Items: {}",
                 missing_items
