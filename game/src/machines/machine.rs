@@ -15,7 +15,6 @@ use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
 use std::sync::mpsc::Sender;
 
-
 use ggez::graphics::{Color, Image, Rect};
 use tracing::info;
 
