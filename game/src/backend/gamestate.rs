@@ -2,6 +2,7 @@
 use crate::backend::constants::{COLORS, HANDBOOK_TEXT};
 use crate::backend::constants::{DESIRED_FPS, MAP_BORDER, RESOURCE_POSITION};
 use crate::backend::rlcolor::RLColor;
+use crate::backend::screen::{Popup, StackCommand};
 use crate::backend::utils::get_scale;
 use crate::backend::utils::is_colliding;
 use crate::backend::{error::RLError, screen::Screen};
@@ -26,7 +27,6 @@ use std::fs;
 use std::fs::read_dir;
 use std::sync::mpsc::{channel, Receiver, Sender};
 use tracing::info;
-use crate::backend::screen::{Popup, StackCommand};
 
 pub enum GameCommand {
     AddItems(Vec<(Item, i32)>),
@@ -126,20 +126,18 @@ impl GameState {
                         GameCommand::Milestone() => {
                             self.get_current_milestone(ctx);
                         }
-                        GameCommand::Winning() => {
-                            match self.player.milestone {
-                                0 => {
-                                    let sender = self.get_screen_sender()?;
-                                    let popup = Popup::new(RLColor::GREEN, "Die Nachricht kann nicht gesendet werden solange das System nicht wiederhergestellt ist".to_string(), 5);
-                                    sender.send(StackCommand::Popup(popup)).unwrap()
-                                }
-                                1 => {
-                                    self.player.milestone += 1;
-                                    self.get_current_milestone(ctx)
-                                }
-                                _ => {}
+                        GameCommand::Winning() => match self.player.milestone {
+                            0 => {
+                                let sender = self.get_screen_sender()?;
+                                let popup = Popup::new(RLColor::GREEN, "Die Nachricht kann nicht gesendet werden solange das System nicht wiederhergestellt ist".to_string(), 5);
+                                sender.send(StackCommand::Popup(popup)).unwrap()
                             }
-                        }
+                            1 => {
+                                self.player.milestone += 1;
+                                self.get_current_milestone(ctx)
+                            }
+                            _ => {}
+                        },
                         _ => {}
                     };
                 }
@@ -189,9 +187,36 @@ impl GameState {
     pub fn draw_handbook(&self, canvas: &mut Canvas, ctx: &mut Context) {
         let scale = get_scale(ctx);
         let image = self.assets.get("Handbook.png").unwrap();
-        let text = graphics::Text::new(TextFragment::new(HANDBOOK_TEXT).color(RLColor::BLACK));
-        draw!(canvas, image, Vec2::new(900.0, 500.0), scale);
-        draw!(canvas, &text, Vec2::new(950.0, 550.0), scale);
+        draw!(canvas, image, Vec2::new(700.0, 300.0), scale);
+        let trade_text = self
+            .machines
+            .iter()
+            .map(|machine| {
+                machine
+                    .trades
+                    .iter()
+                    .map(|trade| (trade.name.clone(), trade.cost.clone()))
+            })
+            .flatten()
+            .collect::<Vec<(String, Vec<(Item, i32)>)>>();
+        trade_text
+            .into_iter()
+            .enumerate()
+            .for_each(|(number, trade)| {
+                let mut text = format!("{}: ", trade.0);
+                trade.1.iter().for_each(|item| {
+                    text.push_str(&format!("{}: {}, ", item.0.name, item.1));
+                });
+                let mut graphic_text =
+                    graphics::Text::new(TextFragment::new(text).color(RLColor::BLACK));
+                graphic_text.set_scale(15.0);
+                draw!(
+                    canvas,
+                    &graphic_text,
+                    Vec2::new(800.0, 400.0 + (number * 20) as f32),
+                    scale
+                );
+            });
     }
     /// Iterates trough the inventory and draws the amount of every item in the inventory.
     fn draw_items(&self, canvas: &mut Canvas, ctx: &mut Context) -> RLResult {
@@ -361,9 +386,9 @@ impl GameState {
             .iter()
             .all(|machine| running_machine.contains(&machine.to_string()))
         {
-            return true
+            return true;
         }
-            return false
+        return false;
     }
     /// Decides what happens if a certain milestone is reached
     /// divided into 3 milestones
@@ -378,12 +403,14 @@ impl GameState {
                     self.player.match_milestone = 1;
                 }
                 Event::update_events(ctx, self);
-                if self.check_on_milestone_machines(vec!["Oxygen".to_string(), "Stromgenerator".to_string()]){
+                if self.check_on_milestone_machines(vec![
+                    "Oxygen".to_string(),
+                    "Stromgenerator".to_string(),
+                ]) {
                     self.player.milestone += 1;
                     info!("Player reached milestone {}", self.player.milestone);
                     self.save(true).unwrap();
                 }
-
             }
             2 => {
                 info!("Player won the Game");
@@ -398,7 +425,6 @@ impl GameState {
                         cloned_sender,
                     ))))
                     .expect("Show Winning Screen");
-
             }
             _ => {}
         }
