@@ -90,9 +90,6 @@ impl GameState {
 
         // Everything inside will only be checked every 15 ticks
         match ctx.time.ticks() % 15 {
-            0 => {
-                self.get_current_milestone(ctx);
-            }
             3 => {
                 // Check if the player is dead
                 if let Some(empty_resource) = Resources::get_death_reason(&self.player.resources) {
@@ -126,7 +123,7 @@ impl GameState {
                             //TODO: Issue #174
                         }
                         GameCommand::Milestone() => {
-                            //TODO Change how the Milestones work
+                            self.get_current_milestone(ctx);
                         }
                     }
                 };
@@ -367,7 +364,7 @@ impl GameState {
                 }
                 Event::update_events(ctx, self);
                 self.check_on_milestone(vec![
-                    "Sauerstoffgenerator".to_string(),
+                    "Oxygen".to_string(),
                     "Stromgenerator".to_string(),
                 ]);
             }
