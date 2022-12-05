@@ -29,7 +29,7 @@ use std::sync::mpsc::{channel, Receiver, Sender};
 use tracing::info;
 
 pub enum GameCommand {
-    AddItems(Trade),
+    AddItems(Vec<(Item, i32)>),
     ResourceChange(Resources<i16>),
     Milestone(),
 }
@@ -121,11 +121,10 @@ impl GameState {
                         GameCommand::ResourceChange(new_rs) => {
                             self.player.resources_change = self.player.resources_change + new_rs;
                         }
-                        GameCommand::AddItems(trade) => {
-                            trade
-                                .cost
-                                .iter()
-                                .for_each(|(item, demand)| self.player.add_item(item, -*demand));
+                        GameCommand::AddItems(items) => {
+                            for (item, amount) in &items {
+                                self.player.add_item(item, *amount);
+                            }
                         }
                         GameCommand::Milestone() => {
                             // TODO: Change how the Milestones work
@@ -142,7 +141,7 @@ impl GameState {
         // Check if player is able to regenerate life
         self.player
             .life_regeneration(&self.screen_sender.as_ref().unwrap().clone());
-        self.machines.iter_mut().for_each(|a| a.tick(1));
+        self.machines.iter_mut().for_each(|machine| machine.tick(1));
 
         Ok(())
     }

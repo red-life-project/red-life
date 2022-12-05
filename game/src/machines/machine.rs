@@ -14,6 +14,7 @@ use crate::machines::trade::Trade;
 use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
 use std::sync::mpsc::Sender;
+use fastrand::i32;
 
 use ggez::graphics::{Color, Image, Rect};
 use tracing::info;
@@ -231,14 +232,9 @@ impl Machine {
 
 
         //TODO Replace with sender system // todo move to after trade
+
         if trade.return_after_timer {
             self.change_state_to(&trade.resulting_state);
-            // Send GameCommand to change the player resources after trade has finished
-            self.sender
-                .as_ref()
-                .unwrap()
-                .send(GameCommand::AddItems(trade.clone()))
-                .expect("could not send AddItems");
         }
 
         player.clone()
@@ -266,6 +262,20 @@ impl Machine {
             //timer run out
             self.time_change = 0;
             self.time_remaining = 0;
+
+            let trade = self.get_trade();
+            //Send Add Items GameCommand
+            let items = trade
+                .cost
+                .iter()
+                .map(|(item, demand)| (item.clone(), -*demand))
+                .collect::<Vec<(Item, i32)>>();
+            self.sender
+                .as_ref()
+                .unwrap()
+                .send(GameCommand::AddItems(items))
+                .expect("could not send AddItems");
+
 
             if self.last_trade.return_after_timer {
                 if self.last_trade.name == "Notfall_signal_absetzen" {
