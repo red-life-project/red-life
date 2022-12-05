@@ -76,7 +76,7 @@ impl GameState {
         let mut result = GameState::default();
         result.sender = Some(sender);
         result.receiver = Some(receiver);
-        result.load_assets(ctx)?;
+        result.init(ctx)?;
         Ok(result)
     }
     /// Gets called every tick in the update fn to update the internal game logic.
@@ -202,7 +202,7 @@ impl GameState {
         Ok(())
     }
     /// Loads the assets. Has to be called before drawing the game.
-    pub(crate) fn load_assets(&mut self, ctx: &mut Context) -> RLResult {
+    pub(crate) fn init(&mut self, ctx: &mut Context) -> RLResult {
         info!("Loading assets");
         read_dir("assets")?.for_each(|file| {
             let file = file.unwrap();
@@ -215,6 +215,9 @@ impl GameState {
         if self.assets.is_empty() {
             return Err(RLError::AssetError("Could not find assets!".to_string()));
         }
+        let (sender, receiver) = channel();
+        self.sender = Some(sender);
+        self.receiver = Some(receiver);
         Ok(())
     }
     pub(crate) fn init_all_machines(&mut self) {
@@ -285,9 +288,6 @@ impl GameState {
             fs::read_to_string("./saves/autosave.yaml")
         }?;
         let mut game_state: GameState = serde_yaml::from_str(&save_data)?;
-        let (sender, receiver) = channel();
-        game_state.sender = Some(sender);
-        game_state.receiver = Some(receiver);
 
         Ok(game_state)
     }
