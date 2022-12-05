@@ -295,7 +295,7 @@ impl GameState {
     pub(crate) fn get_interactable(&mut self) -> Option<&mut Machine> {
         self.machines
             .iter_mut()
-            .find(|machine| machine.is_intractable(self.player.position))
+            .find(|machine| machine.is_interactable(self.player.position))
     }
 
     /// Returns if the player would collide with a border if they moved in the given direction
@@ -314,7 +314,7 @@ impl GameState {
     pub(crate) fn collision_detection(&self, next_player_pos: (usize, usize)) -> bool {
         self.machines
             .iter()
-            .map(|area| area.get_collision_area())
+            .map(|area| area.hitbox)
             .any(|area| is_colliding(next_player_pos, &area))
             || Self::border_collision_detection(next_player_pos)
     }
@@ -337,13 +337,13 @@ impl GameState {
         let running_machine = self
             .machines
             .iter()
-            .filter(|m| m.get_state() != Broken)
-            .map(Machine::get_name)
-            .collect::<Vec<String>>();
+            .filter(|m| m.state != Broken)
+            .map(|m| &m.name)
+            .collect::<Vec<&String>>();
 
         if milestone_machines
             .iter()
-            .all(|machine| running_machine.contains(&machine.to_string()))
+            .all(|machine| running_machine.contains(&machine))
         {
             self.player.milestone += 1;
             info!("Player reached milestone {}", self.player.milestone);

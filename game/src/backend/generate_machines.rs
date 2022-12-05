@@ -31,8 +31,8 @@ impl GameState {
         for machine in &self.machines {
             let image = machine.get_graphic();
             let mut pos = Vec2 {
-                x: machine.get_collision_area().x,
-                y: machine.get_collision_area().y,
+                x: machine.hitbox.x,
+                y: machine.hitbox.y,
             };
             draw!(canvas, image, pos, scale);
             // Draws the machine status on top of the machine
@@ -42,7 +42,7 @@ impl GameState {
                 Vec2::new(0., 0.),
                 15.0,
                 0.1,
-                machine.get_state().into(),
+                machine.state.clone().into(),
             )?;
             // Draws the machine timer on top of the machine
             let time = machine.get_time_percentage();

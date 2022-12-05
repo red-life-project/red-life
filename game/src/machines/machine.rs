@@ -50,7 +50,7 @@ pub struct Machine {
     pub name: String,
     pub state: State,
     pub hitbox: Rect,
-    interaction_area: Rect,
+    pub interaction_area: Rect,
     trades: Vec<Trade>,
     last_trade: Trade,
     running_resources: Resources<i16>,
@@ -66,8 +66,8 @@ pub struct Machine {
 }
 
 impl Machine {
-    pub(crate) fn is_intractable(&self, pos: (usize, usize)) -> bool {
-        is_colliding(pos, &self.get_interaction_area())
+    pub(crate) fn is_interactable(&self, pos: (usize, usize)) -> bool {
+        is_colliding(pos, &self.hitbox)
     }
     pub fn new_by_const(
         (name, hit_box, trades, running_resources): (String, Rect, Vec<Trade>, Resources<i16>),
@@ -236,14 +236,6 @@ impl Machine {
         player.clone()
     }
 
-    pub(crate) fn get_collision_area(&self) -> Rect {
-        self.hitbox
-    }
-
-    fn get_interaction_area(&self) -> Rect {
-        self.interaction_area
-    }
-
     pub(crate) fn get_graphic(&self) -> &Image {
         self.sprite.as_ref().unwrap().get(self.state.clone())
     }
@@ -272,12 +264,6 @@ impl Machine {
                 self.change_state_to(&self.last_trade.resulting_state.clone());
             }
         }
-    }
-    pub(crate) fn get_state(&self) -> State {
-        self.state.clone()
-    }
-    pub(crate) fn get_name(&self) -> String {
-        self.name.clone()
     }
     pub(crate) fn get_time_percentage(&self) -> f32 {
         if self.og_time == 0 {
