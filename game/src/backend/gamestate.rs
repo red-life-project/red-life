@@ -2,7 +2,6 @@
 use crate::backend::constants::{COLORS, HANDBOOK_TEXT};
 use crate::backend::constants::{DESIRED_FPS, MAP_BORDER, RESOURCE_POSITION};
 use crate::backend::rlcolor::RLColor;
-use crate::backend::screen::StackCommand;
 use crate::backend::utils::get_scale;
 use crate::backend::utils::is_colliding;
 use crate::backend::{error::RLError, screen::Screen};
@@ -27,11 +26,13 @@ use std::fs;
 use std::fs::read_dir;
 use std::sync::mpsc::{channel, Receiver, Sender};
 use tracing::info;
+use crate::backend::screen::{Popup, StackCommand};
 
 pub enum GameCommand {
     AddItems(Vec<(Item, i32)>),
     ResourceChange(Resources<i16>),
     Milestone(),
+    Winning(),
 }
 
 /// This is the game state. It contains all the data that is needed to run the game.
@@ -125,8 +126,23 @@ impl GameState {
                         GameCommand::Milestone() => {
                             self.get_current_milestone(ctx);
                         }
-                    }
-                };
+                        GameCommand::Winning() => {
+                            match self.player.milestone {
+                                0 => {
+                                    let sender = self.get_screen_sender()?;
+                                    let popup = Popup::new(RLColor::GREEN, "Die Nachricht kann nicht gesendet werden solange das System nicht wiederhergestellt ist".to_string(), 5);
+                                    sender.send(StackCommand::Popup(popup)).unwrap()
+                                }
+                                1 => {
+                                    self.player.milestone += 1;
+                                    self.get_current_milestone(ctx)
+                                }
+                                _ => {}
+                            }
+                        }
+                        _ => {}
+                    };
+                }
             }
             _ => {}
         }
@@ -331,7 +347,7 @@ impl GameState {
     /// contain the vec of machines needed to reach the next milestone.
     /// # Arguments
     /// * `milestone_machines` - A vec of machines needed to reach the next milestone
-    pub fn check_on_milestone(&mut self, milestone_machines: Vec<String>) {
+    pub fn check_on_milestone_machines(&mut self, milestone_machines: Vec<String>) -> bool {
         //let a = self.areas.get(0).unwrap().deref(); erst einfügen, wenn man es auch benutzt
 
         let running_machine = self
@@ -345,10 +361,9 @@ impl GameState {
             .iter()
             .all(|machine| running_machine.contains(&machine.to_string()))
         {
-            self.player.milestone += 1;
-            info!("Player reached milestone {}", self.player.milestone);
-            self.save(true).unwrap();
+            return true
         }
+            return false
     }
     /// Decides what happens if a certain milestone is reached
     /// divided into 3 milestones
@@ -363,12 +378,18 @@ impl GameState {
                     self.player.match_milestone = 1;
                 }
                 Event::update_events(ctx, self);
-                self.check_on_milestone(vec!["Oxygen".to_string(), "Stromgenerator".to_string()]);
-            }
-            1 => {
-                self.check_on_milestone(vec!["Kommunikationsmodul".to_string()]);
+                if self.check_on_milestone_machines(vec!["Oxygen".to_string(), "Stromgenerator".to_string()]){
+                    self.player.milestone += 1;
+                    info!("Player reached milestone {}", self.player.milestone);
+                    self.save(true).unwrap();
+                }
+
             }
             2 => {
+                info!("Player won the Game");
+                self.player.milestone += 1;
+                self.save(true).unwrap();
+                self.save(false).unwrap();
                 let cloned_sender = self.screen_sender.as_mut().unwrap().clone();
                 self.screen_sender
                     .as_mut()
@@ -377,6 +398,7 @@ impl GameState {
                         cloned_sender,
                     ))))
                     .expect("Show Winning Screen");
+
             }
             _ => {}
         }
