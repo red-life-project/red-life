@@ -43,15 +43,12 @@ macro_rules! draw {
     ($canvas: expr, $asset: expr, $position: expr, $scale: expr) => {
         $canvas.draw(
             $asset,
-            ggez::graphics::DrawParam::default()
+            ggez::graphics::DrawParam::new()
                 .dest($position * $scale)
                 .scale($scale),
-        );
+        )
     };
     ($canvas: expr, $drawable: expr, $scale: expr) => {
-        $canvas.draw(
-            $drawable,
-            ggez::graphics::DrawParam::default().scale($scale),
-        );
+        $canvas.draw($drawable, ggez::graphics::DrawParam::new().scale($scale))
     };
 }
