@@ -129,6 +129,8 @@ impl Event {
     pub fn action(&self, restore: bool, gamestate: &mut GameState, sender: &Sender<StackCommand>) {
         const KOMETENEINSCHLAG_NAME: &str = KOMETENEINSCHLAG[0];
         const STROMAUSTFALL_NAME: &str = STROMAUSFALL[0];
+
+        // handle event effects
         match self.name.as_str() {
             KOMETENEINSCHLAG_NAME => {
                 Event::send_popup(&self.popup_message, sender, &self.popup_type, &self.name);
@@ -147,6 +149,7 @@ impl Event {
                     }
                 });
             }
+            // apply direct resource changes if there are any and the event is not handled above
             (_) => {
                 if let Some(resources) = self.resources {
                     if restore {
@@ -177,13 +180,23 @@ impl Event {
                 event.duration -= 20;
             });
 
+            let old_events = gamestate.events.clone();
+            // remove all events which are not active anymore
             gamestate.events.retain(|event| {
                 if event.is_active() {
                     true
                 } else {
-                    //TODO: restore resources
                     info!("Event {} is not active anymore", event.get_name());
                     false
+                }
+            });
+            // restore resources of inactive events
+            old_events.iter().for_each(|event| {
+                if !event.is_active() {
+                    if let Some(resources) = event.resources {
+                        gamestate.player.resources_change =
+                            gamestate.player.resources_change - resources;
+                    }
                 }
             });
         }
@@ -193,6 +206,7 @@ impl Event {
             // might not return an event
             let gen_event =
                 Event::event_generator(&gamestate.screen_sender.as_ref().unwrap().clone());
+            // if event is not none, add it to the gamestates events vector and activate apply its effect
             if let Some(event) = gen_event {
                 event.action(
                     false,
