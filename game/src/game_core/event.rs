@@ -19,35 +19,6 @@ use tracing::info;
 /// for example a popup or a change in the player's resources
 /// events can just fade off or stay as long as the player didnt interact with them
 
-// resources
-//TODO: trigger no_energy() on machine and spawn Loch instead
-pub const DEBUG_CR: Resources<i16> = Resources {
-    oxygen: 10,
-    energy: 10,
-    life: 0,
-};
-pub const STROMAUSFALL_CR: Resources<i16> = Resources {
-    oxygen: 0,
-    energy: 10,
-    life: 0,
-};
-pub const KOMETENEINSCHLAG_CR: Resources<i16> = Resources {
-    oxygen: 10,
-    energy: 0,
-    life: 0,
-};
-pub const SANDSTURM_CR: Resources<i16> = Resources {
-    oxygen: 5,
-    energy: 5,
-    life: 0,
-};
-// for info events
-pub const NO_CHANGE: Resources<i16> = Resources {
-    oxygen: 0,
-    energy: 0,
-    life: 0,
-};
-
 /// Defines an event in the game
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 pub(crate) struct Event {
@@ -58,13 +29,14 @@ pub(crate) struct Event {
     popup_type: String,
     popup_message: String,
 }
+
 impl Event {
     /// create new event
     pub fn new(
         event: [&str; 2],
         popup_message: &str,
         popup_type: &str,
-        resources: Resources<i16>,
+        resources: Option<Resources<i16>>,
         duration: i32,
     ) -> Self {
         // Self::send_popup(popup_message, sender, popup_type, event[0]);
@@ -76,7 +48,7 @@ impl Event {
         Self {
             name: event[0].to_string(),
             info_text: event[1].to_string(),
-            resources: Option::from(resources),
+            resources,
             duration: duration * (DESIRED_FPS as i32),
             popup_type: popup_type.to_string(),
             popup_message: popup_message.to_string(),
@@ -92,40 +64,30 @@ impl Event {
                 KOMETENEINSCHLAG,
                 WARNINGS[0],
                 "warning",
-                KOMETENEINSCHLAG_CR,
+                None,
                 10,
             )),
             11 => Some(Event::new(
                 INFORMATIONSPOPUP_NASA,
                 NASA_INFO[rng.usize(..4)],
                 "nasa",
-                NO_CHANGE,
+                None,
                 10,
             )),
-            22 => Some(Event::new(
-                SANDSTURM,
-                WARNINGS[2],
-                "warning",
-                SANDSTURM_CR,
-                10,
-            )),
-            33 => Some(Event::new(
-                STROMAUSFALL,
-                WARNINGS[1],
-                "warning",
-                STROMAUSFALL_CR,
-                10,
-            )),
+            22 => Some(Event::new(SANDSTURM, WARNINGS[2], "warning", None, 10)),
+            //TODO: add ressource for Sandsturm event
+            33 => Some(Event::new(STROMAUSFALL, WARNINGS[1], "warning", None, 10)),
             44 => Some(Event::new(
                 INFORMATIONSPOPUP_MARS,
                 MARS_INFO[rng.usize(..5)],
                 "mars",
-                NO_CHANGE,
+                None,
                 10,
             )),
             _ => None,
         }
     }
+
     /// Sends a popup of an event to the screen
     /// # Arguments
     /// * `popup_message` - The message which should be displayed in the popup
@@ -152,11 +114,13 @@ impl Event {
             popup_type
         );
     }
+
     /// Check if event is still active
     pub fn is_active(&self) -> bool {
         // check if time since event creation is greater than the duration of the event
         !self.duration <= 0
     }
+
     /// Triggers the event and activates its effect
     /// # Arguments
     /// * `restore` - If true the event will be deactivated and the resources will be restored
@@ -202,7 +166,11 @@ impl Event {
     pub fn get_name(&self) -> String {
         self.name.clone()
     }
+
     /// Deletes due events from the gamestates events vector and adds new events
+    /// # Arguments
+    /// * `gamestate` - The gamestate which is used to access the events vector
+    /// * `context` - The game context which is used to access the current tick
     pub fn update_events(ctx: &Context, gamestate: &mut GameState) {
         if ctx.time.ticks() % 20 == 0 {
             gamestate.events.iter_mut().for_each(|event| {
