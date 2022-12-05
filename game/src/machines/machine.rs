@@ -49,7 +49,7 @@ impl From<State> for Color {
 pub struct Machine {
     pub name: String,
     pub state: State,
-    pub hit_box: Rect,
+    pub hitbox: Rect,
     interaction_area: Rect,
     trades: Vec<Trade>,
     last_trade: Trade,
@@ -99,7 +99,7 @@ impl Machine {
         //let sprite = MachineSprite::new(gs, name.as_str())?;
         Self {
             name,
-            hit_box,
+            hitbox: hit_box,
             interaction_area: Rect {
                 x: hit_box.x - PLAYER_INTERACTION_RADIUS,
                 y: hit_box.y - PLAYER_INTERACTION_RADIUS,
@@ -237,7 +237,7 @@ impl Machine {
     }
 
     pub(crate) fn get_collision_area(&self) -> Rect {
-        self.hit_box
+        self.hitbox
     }
 
     fn get_interaction_area(&self) -> Rect {

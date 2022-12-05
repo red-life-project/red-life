@@ -5,6 +5,7 @@ use crate::machines::machine::Machine;
 
 use crate::backend::constants::gen_all_machines;
 use crate::backend::rlcolor::RLColor;
+use crate::backend::utils::*;
 use crate::{draw, RLResult};
 use ggez::glam::Vec2;
 use ggez::graphics::{Canvas, Mesh, Rect};
@@ -38,7 +39,7 @@ impl GameState {
             let status = Mesh::new_circle(
                 ctx,
                 ggez::graphics::DrawMode::fill(),
-                Vec2::new(0.0, 0.0),
+                Vec2::new(0., 0.),
                 15.0,
                 0.1,
                 machine.get_state().into(),

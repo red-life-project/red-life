@@ -1,6 +1,6 @@
 use crate::backend::gamestate::GameState;
 use crate::backend::screen::{Screen, StackCommand};
-use crate::backend::utils::get_scale;
+use crate::backend::utils::*;
 use crate::languages::german::{
     ADDITIONAL_INFO_STRING, AIR_AND_ENERGY_STRING, AIR_STRING, BUTTON_INFO, DEATH_REASON_STRING,
     ENERGY_STRING, INTRO_TEXT, TUTORIAL_TEXT, WINNING_TEXT,
