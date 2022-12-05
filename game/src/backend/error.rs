@@ -11,6 +11,7 @@ pub enum RLError {
     AssetError(String),
     Deserialization(serde_yaml::Error),
     IO(io::Error),
+    InitError(String),
 }
 
 impl From<GameError> for RLError {

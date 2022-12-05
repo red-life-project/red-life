@@ -15,10 +15,7 @@ impl GameState {
         if ctx.keyboard.is_key_just_pressed(VirtualKeyCode::Escape) {
             info!("Exiting...");
             self.save(false)?;
-            self.screen_sender
-                .as_mut()
-                .unwrap()
-                .send(StackCommand::Pop)?;
+            self.get_screen_sender()?.send(StackCommand::Pop)?;
         }
         if ctx.keyboard.is_key_just_pressed(VirtualKeyCode::E) {
             info!("Interacting with Area: {:?}", self.get_interactable());
