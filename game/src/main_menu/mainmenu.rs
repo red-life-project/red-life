@@ -27,6 +27,7 @@ pub struct MainMenu {
     receiver: Receiver<Message>,
     sender: Sender<Message>,
     screen_sender: Sender<StackCommand>,
+    background_image: Option<graphics::Image>,
 }
 
 impl MainMenu {
@@ -65,6 +66,7 @@ impl MainMenu {
             receiver,
             sender,
             screen_sender,
+            background_image: None,
         }
     }
     //@rewierer ich würde diese funktion später entfernen da ich sie aktuel noch nutzen mag
@@ -90,7 +92,12 @@ impl Screen for MainMenu {
         self.buttons.iter_mut().for_each(|btn| {
             btn.action(ctx, scale);
         });
-
+        if self.background_image.is_none() {
+            self.background_image = Some(graphics::Image::from_bytes(
+                ctx,
+                include_bytes!("../../../assets/mainmenu.png"),
+            )?);
+        }
         if let Ok(msg) = self.receiver.try_recv() {
             match msg {
                 Exit => std::process::exit(0),
@@ -114,10 +121,9 @@ impl Screen for MainMenu {
     fn draw(&self, ctx: &mut Context) -> RLResult {
         let scale = get_scale(ctx);
         let mut canvas = graphics::Canvas::from_frame(ctx, RLColor::DARK_BLUE);
-        let background =
-            graphics::Image::from_bytes(ctx, include_bytes!("../../../assets/mainmenu.png"))?;
-        canvas.draw(&background, graphics::DrawParam::default().scale(scale));
-
+        if let Some(background) = &self.background_image {
+            canvas.draw(background, graphics::DrawParam::default().scale(scale));
+        }
         for btn in &self.buttons {
             btn.draw_button(ctx, &mut canvas)?;
         }
