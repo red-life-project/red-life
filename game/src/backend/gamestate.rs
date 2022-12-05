@@ -3,8 +3,7 @@ use crate::backend::constants::COLORS;
 use crate::backend::constants::{DESIRED_FPS, MAP_BORDER, RESOURCE_POSITION};
 use crate::backend::rlcolor::RLColor;
 use crate::backend::screen::StackCommand;
-use crate::backend::utils::get_scale;
-use crate::backend::utils::is_colliding;
+use crate::backend::utils::*;
 use crate::backend::{error::RLError, screen::Screen};
 use crate::game_core::event::Event;
 use crate::game_core::infoscreen::DeathReason::Both;
@@ -229,11 +228,11 @@ impl GameState {
                 } else {
                     vec![
                         self.assets
-                            .get(&format!("{name}_Idle.png"))
+                            .get(&format!("{name}_Broken.png"))
                             .unwrap()
                             .clone(),
                         self.assets
-                            .get(&format!("{name}_Broken.png"))
+                            .get(&format!("{name}_Idle.png"))
                             .unwrap()
                             .clone(),
                         self.assets
