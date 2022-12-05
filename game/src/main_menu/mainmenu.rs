@@ -74,7 +74,7 @@ impl MainMenu {
         // self.screen_sender.send(StackCommand::Pop)?;
         self.screen_sender.send(StackCommand::Push(Box::new({
             let mut gamestate = GameState::new(ctx).unwrap_or_default();
-            gamestate.init(ctx)?;
+            gamestate.load_assets(ctx)?;
             gamestate.create_machine();
             gamestate
         })))?;
@@ -110,7 +110,7 @@ impl Screen for MainMenu {
                 }
                 Start => self.screen_sender.send(StackCommand::Push(Box::new({
                     let mut gamestate = GameState::load(false).unwrap_or_default();
-                    gamestate.init(ctx)?;
+                    gamestate.load_assets(ctx)?;
                     gamestate
                 })))?,
             }

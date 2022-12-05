@@ -49,8 +49,8 @@ impl From<State> for Color {
 pub struct Machine {
     pub name: String,
     pub state: State,
-    pub hitbox: Rect,
-    pub interaction_area: Rect,
+    pub hit_box: Rect,
+    interaction_area: Rect,
     trades: Vec<Trade>,
     last_trade: Trade,
     running_resources: Resources<i16>,
@@ -66,8 +66,8 @@ pub struct Machine {
 }
 
 impl Machine {
-    pub(crate) fn is_interactable(&self, pos: (usize, usize)) -> bool {
-        is_colliding(pos, &self.hitbox)
+    pub(crate) fn is_intractable(&self, pos: (usize, usize)) -> bool {
+        is_colliding(pos, &self.get_interaction_area())
     }
     pub fn new_by_const(
         (name, hit_box, trades, running_resources): (String, Rect, Vec<Trade>, Resources<i16>),
@@ -99,7 +99,7 @@ impl Machine {
         //let sprite = MachineSprite::new(gs, name.as_str())?;
         Self {
             name,
-            hitbox: hit_box,
+            hit_box,
             interaction_area: Rect {
                 x: hit_box.x - PLAYER_INTERACTION_RADIUS,
                 y: hit_box.y - PLAYER_INTERACTION_RADIUS,
@@ -194,7 +194,11 @@ impl Machine {
                 .map(|(item, amount)| format!("{amount} {}\n", item.name))
                 .for_each(|x| missing_items.push_str(&x));
 
-            let popup = Popup::info(format!("{}\n{missing_items}", TRADE_CONFLICT_POPUP[0]));
+            let popup = Popup::new(
+                RLColor::BLUE,
+                format!("{}\n{missing_items}", TRADE_CONFLICT_POPUP[0]),
+                5,
+            );
             info!(
                 "Popup for Trade conflict sent: Missing Items: {}",
                 missing_items
@@ -236,12 +240,24 @@ impl Machine {
         player.clone()
     }
 
-    pub(crate) fn get_graphic(&self) -> &Image {
-        self.sprite.as_ref().unwrap().get(self.state.clone())
+    pub(crate) fn get_collision_area(&self) -> Rect {
+        self.hit_box
     }
 
-    pub(crate) fn tick(&mut self, delta_ticks: i16) {
-        self.time_remaining -= self.time_change * delta_ticks;
+    fn get_interaction_area(&self) -> Rect {
+        self.interaction_area
+    }
+
+    pub(crate) fn get_graphic(&self) -> Image {
+        match self.state {
+            Broken => self.sprite.as_ref().unwrap().broken.clone(),
+            Idle => self.sprite.as_ref().unwrap().idle.clone(),
+            Running => self.sprite.as_ref().unwrap().running.clone(),
+        }
+    }
+
+    pub(crate) fn tick(&mut self, delta_tics: i16) {
+        self.time_remaining -= self.time_change * delta_tics;
         if self.time_remaining < 0 {
             //timer run out
             self.time_change = 0;
@@ -264,6 +280,12 @@ impl Machine {
                 self.change_state_to(&self.last_trade.resulting_state.clone());
             }
         }
+    }
+    pub(crate) fn get_state(&self) -> State {
+        self.state.clone()
+    }
+    pub(crate) fn get_name(&self) -> String {
+        self.name.clone()
     }
     pub(crate) fn get_time_percentage(&self) -> f32 {
         if self.og_time == 0 {

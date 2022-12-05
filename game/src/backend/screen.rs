@@ -1,5 +1,5 @@
 use crate::backend::rlcolor::RLColor;
-use crate::backend::utils::*;
+use crate::backend::utils::get_scale;
 use crate::error::RLError;
 use crate::main_menu::mainmenu::MainMenu;
 use crate::{draw, RLResult};
@@ -52,11 +52,6 @@ impl Popup {
         info!("New WARNING popup created");
         Self::new(RLColor::RED, text, 10)
     }
-    pub fn info(text: String) -> Self {
-        info!("New INFO popup created");
-        Self::new(RLColor::BLACK, text, 10)
-    }
-
     pub(crate) fn new(color: Color, text: String, duration: u64) -> Self {
         info!("New popup created: text: {}, duration: {}", text, duration);
         Self {
