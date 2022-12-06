@@ -130,10 +130,11 @@ impl Event {
         const KOMETENEINSCHLAG_NAME: &str = KOMETENEINSCHLAG[0];
         const STROMAUSTFALL_NAME: &str = STROMAUSFALL[0];
 
+        Event::send_popup(&self.popup_message, sender, &self.popup_type, &self.name);
+
         // handle event effects
         match self.name.as_str() {
             KOMETENEINSCHLAG_NAME => {
-                Event::send_popup(&self.popup_message, sender, &self.popup_type, &self.name);
                 gamestate.machines.iter_mut().for_each(|machine| {
                     if machine.name == "Loch" {
                         machine.change_state_to(&State::Running);
@@ -141,7 +142,6 @@ impl Event {
                 });
             }
             STROMAUSTFALL_NAME => {
-                Event::send_popup(&self.popup_message, sender, &self.popup_type, &self.name);
                 gamestate.machines.iter_mut().for_each(|machine| {
                     //Question: set broken or idle?
                     if machine.name == "Stromgenerator" {
@@ -175,6 +175,8 @@ impl Event {
     /// * `gamestate` - The gamestate which is used to access the events vector
     /// * `context` - The game context which is used to access the current tick
     pub fn update_events(ctx: &Context, gamestate: &mut GameState) {
+        dbg!("update events");
+        dbg!(ctx.time.ticks());
         if ctx.time.ticks() % 20 == 0 {
             gamestate.events.iter_mut().for_each(|event| {
                 event.duration -= 20;
@@ -202,6 +204,7 @@ impl Event {
         }
         // have a maximum of one active event
         if ctx.time.ticks() % 1000 == 0 {
+            dbg!("chance fors new event");
             // generate new event
             // might not return an event
             let gen_event =
