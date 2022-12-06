@@ -28,7 +28,6 @@ pub(crate) const PLAYER_ICON_SIZE: (usize, usize) = (58, 96);
 /// Contains the interaction radius of the player.
 pub(crate) const PLAYER_INTERACTION_RADIUS: f32 = 50.;
 // pub const MACHINE_POSITIONS: [[i32; 4]; 4] = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
-pub const HANDBOOK_TEXT: &str = "Werker macht was Sauerstoff auch Ich auch";
 
 #[allow(clippy::too_many_lines)]
 pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>); 7] {
@@ -37,8 +36,8 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
         (
             "test".to_string(),
             Rect {
-                x: 284.0,
-                y: 230.0,
+                x: 700.0,
+                y: 500.0,
                 w: 100.0,
                 h: 100.0,
             },
@@ -76,12 +75,12 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
         ),
         //Definition Oxygen Maschine
         (
-            "Oxygen".to_string(),
+            "Sauerstoffgenerator".to_string(),
             Rect {
-                x: 600.0,
-                y: 250.0,
-                w: 100.0,
-                h: 100.0,
+                x: 280.0,
+                y: 230.0,
+                w: 350.0,
+                h: 182.0,
             },
             vec![
                 Trade::new(
@@ -119,10 +118,10 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
         (
             "Stromgenerator".to_string(),
             Rect {
-                x: 284.0,
-                y: 740.0,
-                w: 200.0,
-                h: 200.0,
+                x: 282.0,
+                y: 752.0,
+                w: 194.0,
+                h: 189.0,
             },
             vec![
                 Trade::new(
@@ -158,12 +157,12 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
         ),
         //Definition werkermaschine Maschine
         (
-            "werkermaschine".to_string(),
+            "Werkermaschine".to_string(),
             Rect {
-                x: 600.0,
-                y: 600.0,
-                w: 200.0,
-                h: 100.0,
+                x: 1000.0,
+                y: 780.0,
+                w: 300.0,
+                h: 150.0,
             },
             vec![
                 Trade::new(
@@ -193,10 +192,10 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
         (
             "3d_printer".to_string(),
             Rect {
-                x: 1722.0,
-                y: 840.0,
-                w: 100.0,
-                h: 100.0,
+                x: 930.0,
+                y: 230.0,
+                w: 200.0,
+                h: 148.0,
             },
             vec![
                 Trade::new(
@@ -226,10 +225,10 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
         (
             "Kommunikationsmodul".to_string(),
             Rect {
-                x: 1000.0,
-                y: 230.0,
-                w: 300.0,
-                h: 100.0,
+                x: 1640.0,
+                y: 320.0,
+                w: 175.0,
+                h: 477.0,
             },
             vec![
                 Trade::new(
@@ -259,10 +258,10 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
         (
             "Loch".to_string(),
             Rect {
-                x: 1722.0,
+                x: 680.0,
                 y: 230.0,
-                w: 100.0,
-                h: 100.0,
+                w: 32.0,
+                h: 18.0,
             },
             vec![Trade::new(
                 "repair_Loch".to_string(),

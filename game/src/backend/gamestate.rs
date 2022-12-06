@@ -1,5 +1,5 @@
 //! Contains the game logic, updates the game and draws the current board
-use crate::backend::constants::{COLORS, HANDBOOK_TEXT};
+use crate::backend::constants::{COLORS};
 use crate::backend::constants::{DESIRED_FPS, MAP_BORDER, RESOURCE_POSITION};
 use crate::backend::rlcolor::RLColor;
 use crate::backend::screen::{Popup, StackCommand};
@@ -278,6 +278,7 @@ impl GameState {
             .iter()
             .map(|m| m.name.clone())
             .map(|name| {
+                info!("Loading assets for {}", name);
                 if self.assets.contains_key(&format!("{name}.png")) {
                     vec![self.assets.get(&format!("{name}.png")).unwrap().clone()]
                 } else {
