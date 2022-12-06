@@ -29,8 +29,8 @@ impl Default for Player {
         Self {
             inventory: vec![
                 (Item::new(SUPER_GLUE), 0),
-                (Item::new(BENZIN), 0),
-                (Item::new(GEDRUCKTESTEIL), 0),
+                (Item::new(BENZIN), 3),
+                (Item::new(GEDRUCKTESTEIL), 1),
             ],
             position: (600, 500),
             resources: Resources {

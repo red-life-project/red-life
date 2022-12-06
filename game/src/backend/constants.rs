@@ -45,7 +45,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
             vec![
                 Trade::new(
                     "free_items".to_string(),
-                    0,
+                    10,
                     State::Broken,
                     State::Idle,
                     true,
