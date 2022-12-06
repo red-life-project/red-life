@@ -51,7 +51,7 @@ pub struct Machine {
     pub state: State,
     pub hitbox: Rect,
     pub interaction_area: Rect,
-    trades: Vec<Trade>,
+    pub trades: Vec<Trade>,
     last_trade: Trade,
     running_resources: Resources<i16>,
     og_time: i16,
@@ -88,7 +88,7 @@ impl Machine {
     }
 
     fn new(
-        // this funktion is supposed to be private
+        // this function is supposed to be private
         name: String,
         hit_box: Rect,
         trades: Vec<Trade>,
@@ -135,13 +135,17 @@ impl Machine {
 
     fn check_change(&self, before: &State, after: &State) {
         match (before, after) {
-            (Broken, Idle) | (Idle, Broken) => {}
+            (Broken, Idle) => {
+                let _e = self.sender.as_ref().unwrap().send(GameCommand::Milestone());
+            }
+            (Idle, Broken) => {}
             (Broken | Idle, Running) => {
                 let _e = self
                     .sender
                     .as_ref()
                     .unwrap()
                     .send(GameCommand::ResourceChange(self.running_resources));
+                let _e = self.sender.as_ref().unwrap().send(GameCommand::Milestone());
             }
             (Running, Broken | Idle) => {
                 let _e = self
@@ -258,14 +262,7 @@ impl Machine {
 
             if self.last_trade.return_after_timer {
                 if self.last_trade.name == "Notfall_signal_absetzen" {
-                    let clone = self.screen_sender.clone().unwrap();
-                    self.screen_sender
-                        .as_mut()
-                        .expect("No Screensender")
-                        .send(StackCommand::Push(Box::new(InfoScreen::new_winningscreen(
-                            clone,
-                        ))))
-                        .expect("Show Winning Screen");
+                    let _e = self.sender.as_ref().unwrap().send(GameCommand::Winning());
                 }
 
                 self.change_state_to(&self.last_trade.initial_state.clone());
