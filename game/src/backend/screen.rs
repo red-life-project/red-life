@@ -1,4 +1,4 @@
-//! This file contains the screen system, which is responsible for managing the different screens of the game.
+//! Contains the screen system, which is responsible for managing the different screens of the game.
 use crate::backend::rlcolor::RLColor;
 use crate::backend::utils::*;
 use crate::error::RLError;
@@ -52,18 +52,18 @@ pub struct Popup {
     expiration: Instant,
 }
 impl Popup {
-    /// Creates a new `popup` from the nasa template.
+    /// Creates a new `Popup` from the nasa template.
     /// # Arguments
-    /// * `text` - The text of the popup.
+    /// * `text` - The text of the `Popup`.
     /// # Returns
     /// `Popup` - Returns a new `Popup`.
     pub fn nasa(text: String) -> Self {
         info!("New NASA popup created");
         Self::new(RLColor::LIGHT_BLUE, text, 10)
     }
-    /// Creates a new `popup` from the mars template.
+    /// Creates a new `Popup` from the mars template.
     /// # Arguments
-    /// * `text` - The text of the popup.
+    /// * `text` - The text of the `Popup`.
     /// # Returns
     /// `Popup` - Returns a new `Popup`.
     pub fn mars(text: String) -> Self {
@@ -79,7 +79,7 @@ impl Popup {
         info!("New WARNING popup created");
         Self::new(RLColor::RED, text, 10)
     }
-    /// Creates a new `popup` from the info template.
+    /// Creates a new `Popup` from the info template.
     /// # Arguments
     /// * `text` - The text of the `Popup`.
     /// # Returns
@@ -108,7 +108,7 @@ impl Screenstack {
     /// Draws all `Popups` at the top left of the screen with their given text and color
     /// The popups will be removed after the given duration
     /// # Arguments
-    /// * `ctx` - The ggez context
+    /// * `ctx` - The ggez game context
     /// # Returns
     /// `RLResult` - Returns an `RlResult`.
     fn draw_popups(&mut self, ctx: &mut Context) -> RLResult {
@@ -145,12 +145,13 @@ impl Screenstack {
         canvas.finish(ctx)?;
         Ok(())
     }
-    /// Handles what to do with the given commands (Push, Pop, None)
-    /// # Arguments
-    /// * `command` - The command to handle
+    /// Handles what to do with the given commands.
+    /// Possible commands are:
     /// `Push`: Pushes a new screen on the stack,
     /// `Pop`: Pops the current screen,
     /// `None`: Does nothing
+    /// # Arguments
+    /// * `command` - The command to handle
     fn process_command(&mut self, command: StackCommand) {
         // Match the command given back by the screen
         match command {
@@ -168,7 +169,7 @@ impl Screenstack {
             StackCommand::Popup(popup) => self.popup.push(popup),
         }
     }
-    /// removes the expired popups
+    /// Removes the expired Popups
     fn remove_popups(&mut self) {
         self.popup.retain(|popup| popup.expiration > Instant::now());
     }
@@ -187,7 +188,11 @@ pub enum StackCommand {
 }
 
 impl event::EventHandler<RLError> for Screenstack {
-    /// Redirect the update function to the last screen and handle the returned StackCommand
+    /// Redirect the update function to the last screen and handle the returned `StackCommand`
+    /// # Arguments
+    /// * `ctx` - The ggez game context
+    /// # Returns
+    /// `RLResult` - Returns an `RlResult`
     fn update(&mut self, ctx: &mut Context) -> RLResult {
         self.remove_popups();
         self.screens
@@ -199,7 +204,11 @@ impl event::EventHandler<RLError> for Screenstack {
         }
         Ok(())
     }
-    /// Redirect the draw command to the last screen
+    /// Redirect the draw command to the last screen.
+    /// # Arguments
+    /// * `ctx` - The ggez game context
+    /// # Returns
+    /// `RLResult` - Returns an `RlResult`
     fn draw(&mut self, ctx: &mut Context) -> RLResult {
         self.screens
             .last()
@@ -209,12 +218,19 @@ impl event::EventHandler<RLError> for Screenstack {
         Ok(())
     }
     /// Overrides the quit event so we do nothing instead of quitting the game.
+    /// # Arguments
+    /// * `ctx` - The ggez game context
+    /// # Returns
+    /// `RLResult` - Returns an `RlResult`
     fn quit_event(&mut self, _ctx: &mut Context) -> RLResult<bool> {
         Ok(true)
     }
 }
 
 impl Default for Screenstack {
+    /// Creates a new `Screenstack` with a `MainMenu` screen.
+    /// # Returns
+    /// `Screenstack` - Returns a new `Screenstack`.
     fn default() -> Self {
         info!("Default Screenstack created");
         let (sender, receiver) = channel();
