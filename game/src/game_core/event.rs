@@ -32,6 +32,12 @@ pub(crate) struct Event {
 
 impl Event {
     /// create new event
+    /// # Arguments
+    /// * `event` - name and info text of the event
+    /// * `resources` - resources which are affected by the event
+    /// * `duration` - duration of the event in seconds
+    /// * `popup_type` - type of the popup which is shown when the event starts
+    /// * `popup_message` - message of the popup which is shown when the event starts
     pub fn new(
         event: [&str; 2],
         popup_message: &str,
@@ -65,24 +71,24 @@ impl Event {
                 WARNINGS[0],
                 "warning",
                 None,
-                10,
+                0,
             )),
             11 => Some(Event::new(
                 INFORMATIONSPOPUP_NASA,
                 NASA_INFO[rng.usize(..4)],
                 "nasa",
                 None,
-                10,
+                0,
             )),
             22 => Some(Event::new(SANDSTURM, WARNINGS[2], "warning", None, 10)),
             //TODO: add ressource for Sandsturm event
-            33 => Some(Event::new(STROMAUSFALL, WARNINGS[1], "warning", None, 10)),
+            33 => Some(Event::new(STROMAUSFALL, WARNINGS[1], "warning", None, 0)),
             44 => Some(Event::new(
                 INFORMATIONSPOPUP_MARS,
                 MARS_INFO[rng.usize(..5)],
                 "mars",
                 None,
-                10,
+                0,
             )),
             _ => None,
         }
@@ -136,7 +142,12 @@ impl Event {
                 gamestate.machines.iter_mut().for_each(|machine| {
                     // event not triggered if machine is already running
                     if machine.name == "Loch" && machine.state != State::Running {
-                        Event::send_popup(&self.popup_message, sender, &self.popup_type, &self.name)?;
+                        Event::send_popup(
+                            &self.popup_message,
+                            sender,
+                            &self.popup_type,
+                            &self.name,
+                        )?;
                         machine.change_state_to(&State::Running);
                     }
                 });
@@ -146,7 +157,12 @@ impl Event {
                     // if machine is running it will be stopped
                     // event not triggered if machine is broken or idling
                     if machine.name == "Stromgenerator" && machine.state == State::Running {
-                        Event::send_popup(&self.popup_message, sender, &self.popup_type, &self.name)?;
+                        Event::send_popup(
+                            &self.popup_message,
+                            sender,
+                            &self.popup_type,
+                            &self.name,
+                        )?;
                         machine.change_state_to(&State::Idle);
                     }
                 });
