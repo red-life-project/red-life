@@ -74,7 +74,7 @@ impl Screenstack {
         let scale = get_scale(ctx);
         for (pos, popup) in self.popup.iter().enumerate() {
             let mut text = graphics::Text::new(popup.text.clone());
-            text.set_scale(18.);
+            text.set_scale(25.);
             let dimensions = text.measure(ctx)?;
             let x = dimensions.x;
             let y = dimensions.y;
