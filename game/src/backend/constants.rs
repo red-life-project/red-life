@@ -33,6 +33,9 @@ pub(crate) const PLAYER_INTERACTION_RADIUS: f32 = 50.;
 /// Contains the movement speed of the player (in px).
 pub const MOVEMENT_SPEED: usize = 10;
 
+/// Contains the position of the time.
+pub(crate) const TIME_POSITION: (f32, f32) = (1205., 960.);
+
 #[allow(clippy::too_many_lines)]
 /// Generates all machines with all their name, position, trades and resources.
 /// # Returns

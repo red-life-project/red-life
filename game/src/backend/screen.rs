@@ -34,7 +34,7 @@ pub trait Screen: Debug {
     fn set_sender(&mut self, sender: Sender<StackCommand>);
 }
 
-/// A Screenstack contains multiple screens, popups and has a receiver and sender. The first screen is drawn to the screen and
+/// A Screenstack contains multiple `Screen`s and `Popup`s, the last one of which is drawn to the screen and
 /// updated.
 pub struct Screenstack {
     screens: Vec<Box<dyn Screen>>,
@@ -116,7 +116,7 @@ impl Screenstack {
         let scale = get_scale(ctx);
         for (pos, popup) in self.popup.iter().enumerate() {
             let mut text = graphics::Text::new(popup.text.clone());
-            text.set_scale(18.);
+            text.set_scale(25.);
             let dimensions = text.measure(ctx)?;
             let x = dimensions.x;
             let y = dimensions.y;
@@ -169,7 +169,7 @@ impl Screenstack {
             StackCommand::Popup(popup) => self.popup.push(popup),
         }
     }
-    /// Removes the expired Popups
+    /// Removes the expired `Popup`s
     fn remove_popups(&mut self) {
         self.popup.retain(|popup| popup.expiration > Instant::now());
     }
