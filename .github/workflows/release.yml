@@ -15,6 +15,19 @@ jobs:
         target: [x86_64-pc-windows-gnu, x86_64-unknown-linux-musl]
     steps:
       - uses: actions/checkout@master
+
+      - name: Install alsa
+        if: ${{ runner.os == 'Linux' }}
+        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev
+
+      - name: Install udev
+        if: ${{ runner.os == 'Linux' }}
+        run: sudo apt-get update; sudo apt-get install --no-install-recommends libudev-dev
+
+      - name: Use Rust Cache
+        if: ${{ runner.os == 'Linux' }}
+        uses: Swatinem/rust-cache@v2.0.1
+
       - name: Compile and release
         uses: rust-build/rust-build.action@v1.4.0
         env:
