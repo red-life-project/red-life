@@ -7,6 +7,7 @@ use crate::languages::german::{
 };
 use crate::languages::german::{MARS_INFO, NASA_INFO, WARNINGS};
 use crate::machines::machine::State;
+use crate::RLResult;
 use ggez::graphics::Color;
 use ggez::Context;
 use serde::{Deserialize, Serialize};
@@ -97,20 +98,21 @@ impl Event {
         sender: &Sender<StackCommand>,
         popup_type: &str,
         event_name: &str,
-    ) {
+    ) -> RLResult {
         let popup = match popup_type {
             "warning" => Popup::warning(popup_message.to_string()),
             "nasa" => Popup::nasa(popup_message.to_string()),
             "mars" => Popup::mars(popup_message.to_string()),
             _ => Popup::new(Color::RED, "Error".to_string(), 10),
         };
-        sender.send(StackCommand::Popup(popup)).unwrap();
+        sender.send(StackCommand::Popup(popup))?;
         info!(
             "Event Popup sent: name: {}, Popup-Message: {}, Popup-Type: {}",
             event_name,
             popup_message.to_string(),
             popup_type
         );
+        Ok(())
     }
 
     /// Check if event is still active
@@ -123,15 +125,15 @@ impl Event {
     /// # Arguments
     /// * `restore` - If true the event will be deactivated and the resources will be restored
     /// * `gamestate` - The gamestate which is used to access the player and the machines
-    /// * `sender` - The sender which is used to send the popup to the screen
-    pub fn action(&self, restore: bool, gamestate: &mut GameState, sender: &Sender<StackCommand>) {
+    pub fn action(&self, restore: bool, gamestate: &mut GameState) -> RLResult {
         const KOMETENEINSCHLAG_NAME: &str = KOMETENEINSCHLAG[0];
         const STROMAUSTFALL_NAME: &str = STROMAUSFALL[0];
+        let sender = gamestate.get_screen_sender()?;
 
         // handle event effects
         match self.name.as_str() {
             KOMETENEINSCHLAG_NAME => {
-                Event::send_popup(&self.popup_message, sender, &self.popup_type, &self.name);
+                Event::send_popup(&self.popup_message, sender, &self.popup_type, &self.name)?;
                 gamestate.machines.iter_mut().for_each(|machine| {
                     if machine.name == "Loch" {
                         machine.change_state_to(&State::Running);
@@ -139,7 +141,7 @@ impl Event {
                 });
             }
             STROMAUSTFALL_NAME => {
-                Event::send_popup(&self.popup_message, sender, &self.popup_type, &self.name);
+                Event::send_popup(&self.popup_message, sender, &self.popup_type, &self.name)?;
                 gamestate.machines.iter_mut().for_each(|machine| {
                     //Question: set broken or idle?
                     if machine.name == "Stromgenerator" {
@@ -161,6 +163,7 @@ impl Event {
             }
         }
         info!("Event triggered (restore: {}): {}", restore, self.name);
+        Ok(())
     }
 
     /// Returns the name of the event
@@ -172,7 +175,7 @@ impl Event {
     /// # Arguments
     /// * `gamestate` - The gamestate which is used to access the events vector
     /// * `context` - The game context which is used to access the current tick
-    pub fn update_events(ctx: &Context, gamestate: &mut GameState) {
+    pub fn update_events(ctx: &Context, gamestate: &mut GameState) -> RLResult {
         if ctx.time.ticks() % 20 == 0 {
             gamestate.events.iter_mut().for_each(|event| {
                 event.duration -= 20;
@@ -189,14 +192,14 @@ impl Event {
                 }
             });
             // restore resources of inactive events
-            old_events.iter().for_each(|event| {
+            for event in old_events.iter() {
                 if !event.is_active() {
                     if let Some(resources) = event.resources {
                         gamestate.player.resources_change =
                             gamestate.player.resources_change - resources;
                     }
                 }
-            });
+            }
         }
         // have a maximum of one active event
         if ctx.time.ticks() % 1000 == 0 {
@@ -206,13 +209,10 @@ impl Event {
                 Event::event_generator(&gamestate.screen_sender.as_ref().unwrap().clone());
             // if event is not none, add it to the gamestates events vector and activate apply its effect
             if let Some(event) = gen_event {
-                event.action(
-                    false,
-                    gamestate,
-                    &gamestate.screen_sender.as_ref().unwrap().clone(),
-                );
+                event.action(false, gamestate)?;
                 gamestate.events.push(event);
             }
         }
+        Ok(())
     }
 }

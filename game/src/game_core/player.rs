@@ -5,6 +5,7 @@ use crate::game_core::item::Item;
 use crate::game_core::resources::Resources;
 use crate::languages::german::GAME_INFO;
 use crate::languages::german::{BENZIN, GEDRUCKTESTEIL, SUPER_GLUE};
+use crate::RLResult;
 use serde::{Deserialize, Serialize};
 use std::sync::mpsc::Sender;
 use tracing::info;
@@ -53,7 +54,7 @@ impl Default for Player {
 
 impl Player {
     /// Checks whether the player has taken damage in the past few seconds and if not so start the regeneration
-    pub(crate) fn life_regeneration(&mut self, sender: &Sender<StackCommand>) {
+    pub(crate) fn life_regeneration(&mut self, sender: &Sender<StackCommand>) -> RLResult {
         match (
             self.resources_change.life,
             self.last_damage,
@@ -77,13 +78,14 @@ impl Player {
                 self.last_damage = 0;
                 let popup = Popup::new(RLColor::GREEN, GAME_INFO[0].to_string(), 5);
                 info!("Player startet healing");
-                sender.send(StackCommand::Popup(popup)).unwrap();
+                sender.send(StackCommand::Popup(popup))?;
             }
             // If player takes damage, increase last damage point
             (change_life, _, _) if change_life < 0 => self.last_damage = 0,
             // Else, increase last damage point
             _ => self.last_damage += 1,
         }
+        Ok(())
     }
     pub fn add_item(&mut self, item: &Item, n: i32) {
         self.inventory.iter_mut().for_each(|(i, amount)| {
@@ -123,7 +125,9 @@ mod test {
         player.resources.life = u16::MAX;
         player.resources_change.life = 5;
         player.last_damage = 1000;
-        player.life_regeneration(&gamestate.get_screen_sender().unwrap().clone());
+        player
+            .life_regeneration(&gamestate.get_screen_sender().unwrap().clone())
+            .unwrap();
         assert_eq!(player.resources_change.life, 0);
         assert_eq!(player.last_damage, 0);
     }
@@ -135,7 +139,9 @@ mod test {
         player.resources.life = 1000;
         player.resources_change.life = 5;
         player.last_damage = 1000;
-        player.life_regeneration(&gamestate.get_screen_sender().unwrap().clone());
+        player
+            .life_regeneration(&gamestate.get_screen_sender().unwrap().clone())
+            .unwrap();
         assert_eq!(player.last_damage, 0);
     }
 
@@ -146,7 +152,9 @@ mod test {
         player.resources.life = 1000;
         player.resources_change.life = 0;
         player.last_damage = 900;
-        player.life_regeneration(&gamestate.get_screen_sender().unwrap().clone());
+        player
+            .life_regeneration(&gamestate.get_screen_sender().unwrap().clone())
+            .unwrap();
         assert_eq!(player.resources_change.life, 5);
         assert_eq!(player.last_damage, 0);
     }
@@ -158,7 +166,9 @@ mod test {
         player.resources.life = 20000;
         player.last_damage = 400;
         player.resources_change.life = 0;
-        player.life_regeneration(&gamestate.get_screen_sender().unwrap().clone());
+        player
+            .life_regeneration(&gamestate.get_screen_sender().unwrap().clone())
+            .unwrap();
         assert_eq!(player.resources_change.life, 0);
         assert_eq!(player.last_damage, 401);
     }
@@ -176,7 +186,9 @@ mod test {
             },
             ..Player::default()
         };
-        player.life_regeneration(&gamestate.get_screen_sender().unwrap().clone());
+        player
+            .life_regeneration(&gamestate.get_screen_sender().unwrap().clone())
+            .unwrap();
         assert_eq!(player.resources_change.life, -1);
         assert_eq!(player.last_damage, 0);
     }
