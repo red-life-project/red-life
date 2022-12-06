@@ -22,7 +22,6 @@ impl GameState {
             self.get_screen_sender()?.send(StackCommand::Pop)?;
         }
         if ctx.keyboard.is_key_just_pressed(VirtualKeyCode::E) {
-            println!("{:?}", self.player.position);
             info!("Interacting with Area: {:?}", self.get_interactable());
             let player_ref = &mut self.player.clone();
             if let Some(interactable) = self.get_interactable() {
