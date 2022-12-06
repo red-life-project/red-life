@@ -56,7 +56,7 @@ impl Event {
     }
 
     /// if no Event is active it either chooses a random event of the Event enum or nothing every 60 seconds
-    pub fn event_generator(sender: &Sender<StackCommand>) -> Option<Event> {
+    pub fn event_generator() -> Option<Event> {
         let rng = fastrand::Rng::new();
         let event = rng.usize(..50);
         match event {
@@ -130,27 +130,30 @@ impl Event {
         const KOMETENEINSCHLAG_NAME: &str = KOMETENEINSCHLAG[0];
         const STROMAUSTFALL_NAME: &str = STROMAUSFALL[0];
 
-        Event::send_popup(&self.popup_message, sender, &self.popup_type, &self.name);
-
         // handle event effects
         match self.name.as_str() {
             KOMETENEINSCHLAG_NAME => {
                 gamestate.machines.iter_mut().for_each(|machine| {
-                    if machine.name == "Loch" {
+                    // event not triggered if machine is already running
+                    if machine.name == "Loch" && machine.state != State::Running {
+                        Event::send_popup(&self.popup_message, sender, &self.popup_type, &self.name)?;
                         machine.change_state_to(&State::Running);
                     }
                 });
             }
             STROMAUSTFALL_NAME => {
                 gamestate.machines.iter_mut().for_each(|machine| {
-                    //Question: set broken or idle?
-                    if machine.name == "Stromgenerator" {
-                        machine.change_state_to(&State::Broken);
+                    // if machine is running it will be stopped
+                    // event not triggered if machine is broken or idling
+                    if machine.name == "Stromgenerator" && machine.state == State::Running {
+                        Event::send_popup(&self.popup_message, sender, &self.popup_type, &self.name)?;
+                        machine.change_state_to(&State::Idle);
                     }
                 });
             }
             // apply direct resource changes if there are any and the event is not handled above
             (_) => {
+                Event::send_popup(&self.popup_message, sender, &self.popup_type, &self.name)?;
                 if let Some(resources) = self.resources {
                     if restore {
                         gamestate.player.resources_change =
@@ -207,8 +210,7 @@ impl Event {
             dbg!("chance fors new event");
             // generate new event
             // might not return an event
-            let gen_event =
-                Event::event_generator(&gamestate.screen_sender.as_ref().unwrap().clone());
+            let gen_event = Event::event_generator();
             // if event is not none, add it to the gamestates events vector and activate apply its effect
             if let Some(event) = gen_event {
                 event.action(
