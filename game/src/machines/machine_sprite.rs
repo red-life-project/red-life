@@ -1,16 +1,18 @@
-use crate::machines::machine::State;
 use ggez::graphics::Image;
 
 #[derive(Debug, Clone)]
-pub struct MachineSprite(Vec<Image>);
-impl From<&[Image]> for MachineSprite {
-    fn from(value: &[Image]) -> Self {
-        Self(value.to_vec())
-    }
+pub struct MachineSprite {
+    pub idle: Image,
+    pub broken: Image,
+    pub running: Image,
 }
 
-impl MachineSprite {
-    pub fn get(&self, state: State) -> &Image {
-        &self.0.get(state as usize).unwrap_or(&self.0[0])
+impl From<&[Image]> for MachineSprite {
+    fn from(value: &[Image]) -> Self {
+        Self {
+            idle: value[0].clone(),
+            broken: value[1].clone(),
+            running: value[2].clone(),
+        }
     }
 }
