@@ -45,7 +45,6 @@ impl Event {
         resources: Option<Resources<i16>>,
         duration: i32,
     ) -> Self {
-        // Self::send_popup(popup_message, sender, popup_type, event[0]);
         info!(
             "New event created: {}, info text: {}",
             event[0].to_string(),
