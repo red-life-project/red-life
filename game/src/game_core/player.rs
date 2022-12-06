@@ -4,7 +4,7 @@ use crate::game_core::item::Item;
 use crate::game_core::resources::Resources;
 use crate::languages::german::GAME_INFO;
 use crate::languages::german::{BENZIN, GEDRUCKTESTEIL, SUPER_GLUE};
-
+use crate::backend::constants::DESIRED_FPS;
 use serde::{Deserialize, Serialize};
 use std::sync::mpsc::Sender;
 use tracing::info;
@@ -72,7 +72,7 @@ impl Player {
                 self.last_damage = 0;
             }
             // If player does not take damage and 5 seconds have passed, start healing
-            (0, last_damage, _) if last_damage >= 600 => {
+            (0, last_damage, _) if last_damage >= 8 * DESIRED_FPS => {
                 self.resources_change.life += 5;
                 self.last_damage = 0;
                 let popup = Popup::new(RLColor::GREEN, GAME_INFO[0].to_string(), 5);
