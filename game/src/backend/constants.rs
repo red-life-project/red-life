@@ -1,6 +1,7 @@
 //! Contains all constants that are necessary for the game to played.
 use crate::backend::rlcolor::RLColor;
 use crate::backend::utils::gen_inventory;
+use crate::game_core::resources;
 use crate::game_core::resources::Resources;
 use crate::machines::machine::State;
 use crate::machines::trade::Trade;
@@ -35,6 +36,12 @@ pub const MOVEMENT_SPEED: usize = 10;
 
 /// Contains the position of the time.
 pub(crate) const TIME_POSITION: (f32, f32) = (1205., 960.);
+
+pub(crate) const SANDSTURM_CR: Resources<i16> = Resources {
+    oxygen: 0,
+    energy: 5,
+    life: 0,
+};
 
 #[allow(clippy::too_many_lines)]
 /// Generates all machines with all their name, position, trades and resources.
