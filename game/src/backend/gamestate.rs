@@ -124,9 +124,10 @@ impl GameState {
                         GameCommand::ResourceChange(new_rs) => {
                             self.player.resources_change = self.player.resources_change + new_rs;
                         }
-                        GameCommand::AddItems(item) => {
-
-                            //TODO: Issue #174
+                        GameCommand::AddItems(items) => {
+                            for (item, amount) in &items {
+                                self.player.add_item(item, *amount);
+                            }
                         }
                         GameCommand::Milestone() => {
                             self.get_current_milestone(ctx);
@@ -152,7 +153,7 @@ impl GameState {
         // Regenerate life if applicable
         self.player
             .life_regeneration(&self.screen_sender.as_ref().unwrap().clone());
-        self.machines.iter_mut().for_each(|a| a.tick(1));
+        self.machines.iter_mut().for_each(|machine| machine.tick(1));
 
         Ok(())
     }

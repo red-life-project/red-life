@@ -213,12 +213,25 @@ impl Machine {
 
         // the player has enough items for the trade so we will execute on it
         info!("Executing trade:{} ", trade.name);
+
+        // Remove the cost of the trade from the players inventory by sending the demand to the AddItem GameCommand
+        let items_cost = trade
+            .cost
+            .iter()
+            .filter(|(_, demand)| *demand >= 0)
+            .map(|(item, demand)| (item.clone(), -*demand))
+            .collect::<Vec<(Item, i32)>>();
+        self.sender
+            .as_ref()
+            .unwrap()
+            .send(GameCommand::AddItems(items_cost))
+            .expect("could not send AddItems");
+
         if trade.time_ticks == 0 {
             // this trade has no timer
             self.time_change = 0;
         } else {
             //this trade has a timer
-
             if self.time_remaining == 0 {
                 //if no timer is running set timer up
                 self.last_trade = trade.clone();
@@ -229,10 +242,6 @@ impl Machine {
             self.time_change = 1;
         }
 
-        trade
-            .cost
-            .iter()
-            .for_each(|(item, demand)| player.add_item(item, -*demand)); //TODO Replace with sender system // todo move to after trade
         if trade.return_after_timer {
             self.change_state_to(&trade.resulting_state);
         }
@@ -260,6 +269,19 @@ impl Machine {
             } else {
                 self.change_state_to(&self.last_trade.resulting_state.clone());
             }
+            // After Trade ended, send the GameCommand AddItems to add the earning Items to the players inventory
+            let trade = self.last_trade.clone();
+            let items = trade
+                .cost
+                .iter()
+                .filter(|(_, demand)| *demand < 0)
+                .map(|(item, demand)| (item.clone(), -*demand))
+                .collect::<Vec<(Item, i32)>>();
+            self.sender
+                .as_ref()
+                .unwrap()
+                .send(GameCommand::AddItems(items))
+                .expect("could not send AddItems");
         }
     }
     pub(crate) fn get_time_percentage(&self) -> f32 {
