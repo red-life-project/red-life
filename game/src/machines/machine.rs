@@ -14,6 +14,7 @@ use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
 use std::sync::mpsc::Sender;
 
+use crate::RLResult;
 use ggez::graphics::{Color, Image, Rect};
 use tracing::info;
 
@@ -252,7 +253,7 @@ impl Machine {
         self.sprite.as_ref().unwrap().get(self.state.clone())
     }
 
-    pub(crate) fn tick(&mut self, delta_ticks: i16) {
+    pub(crate) fn tick(&mut self, delta_ticks: i16) -> RLResult {
         self.time_remaining -= self.time_change * delta_ticks;
         if self.time_remaining < 0 {
             //timer run out
@@ -279,9 +280,9 @@ impl Machine {
             self.sender
                 .as_ref()
                 .unwrap()
-                .send(GameCommand::AddItems(items))
-                .expect("could not send AddItems");
+                .send(GameCommand::AddItems(items))?;
         }
+        Ok(())
     }
     pub(crate) fn get_time_percentage(&self) -> f32 {
         if self.og_time == 0 {

@@ -151,8 +151,10 @@ impl GameState {
         }
         // Regenerate life if applicable
         self.player
-            .life_regeneration(&self.screen_sender.as_ref().unwrap().clone());
-        self.machines.iter_mut().for_each(|machine| machine.tick(1));
+            .life_regeneration(&self.screen_sender.as_ref().unwrap().clone())?;
+        for machine in &mut self.machines {
+            machine.tick(1)?;
+        }
 
         Ok(())
     }
