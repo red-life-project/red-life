@@ -39,15 +39,17 @@ jobs:
 
       - name: Zip Release
         if : ${{ runner.os == 'Windows' }}
-        uses: montudor/action-zip@v1
+        uses: vimtor/action-zip@v1
         with:
-          args: zip -qq -r red-life.zip assets target/release/game.exit
+          files: assets target/release/game.exe
+          dest: game_windows.zip
 
       - name: Zip Release Linux
         if : ${{ runner.os == 'Linux' }}
-        uses: montudor/action-zip@v1
+        uses: vimtor/action-zip@v1
         with:
-          args: zip -qq -r red-life.zip assets target/release/game
+          files: assets target/release/game
+          dest: game_linux.zip
 
       - name: Release Linux
         uses: softprops/action-gh-release@v1
