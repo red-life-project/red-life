@@ -136,7 +136,7 @@ impl Event {
                 Event::send_popup(&self.popup_message, sender, &self.popup_type, &self.name);
                 gamestate.machines.iter_mut().for_each(|machine| {
                     if machine.name == "Loch" {
-                        machine.change_state_to(&State::Idle);
+                        machine.change_state_to(&State::Running);
                     }
                 });
             }
