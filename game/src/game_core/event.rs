@@ -164,14 +164,14 @@ impl Event {
         // have a maximum of three active events
         if ctx.time.ticks() % 5000 == 0 && gamestate.events.len() < 3 {
             // generate new event
-            // might nots return an event
+            // might not return an event
             let gen_event =
                 Event::event_generator(&gamestate.screen_sender.as_ref().unwrap().clone());
             // only push events that change the change_rate of the player (at least one field is not 0)
             // ignore info events (INFORMATIONSPOPUP_NASA, INFORMATIONSPOPUP_MARS) (all their fields are 0)
             if let Some(event) = gen_event {
                 if event.resources != NO_CHANGE {
-                    // if the event_generator returned an event, substrack the resources<i16> struct from the players resources<i16>
+                    // if the event_generator returned an event, subtract the Resources<i16> from the players Resources<u16>
                     gamestate.player.resources_change =
                         gamestate.player.resources_change - event.resources;
                     // push the event to the events vector

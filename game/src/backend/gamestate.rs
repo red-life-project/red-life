@@ -252,7 +252,6 @@ impl GameState {
             let file = file.unwrap();
             let bytes = fs::read(file.path()).unwrap();
             let name = file.file_name().into_string().unwrap();
-            let name = file.file_name().into_string().unwrap();
             self.assets
                 .insert(name, Image::from_bytes(ctx, bytes.as_slice()).unwrap());
         });
