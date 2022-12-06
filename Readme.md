@@ -1,5 +1,5 @@
 # Red Life
-[![CI](https://github.com/red-life-project/red-life/actions/workflows/rust.yml/badge.svg)](https://github.com/red-life-project/red-life/actions/workflows/rust.yml)
+[![CI](https://github.com/red-life-project/red-life/actions/workflows/ci.yml/badge.svg)](https://github.com/red-life-project/red-life/actions/workflows/rust.yml)
 
 Red Life is a small game about an astronaut who is trying to survive in the hostile environment of Mars.
 

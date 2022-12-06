@@ -1,4 +1,4 @@
-# .github/workflows/release.yml
+name: Release
 
 on:
   release:
@@ -6,18 +6,56 @@ on:
 
 jobs:
   release:
-    name: release ${{ matrix.target }}
-    runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
       matrix:
-        target: [x86_64-pc-windows-gnu, x86_64-unknown-linux-musl]
+        os: [ windows-2019, ubuntu-latest ]
+        toolchain: [ nightly ]
+    runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@master
-      - name: Compile and release
-        uses: rust-build/rust-build.action@v1.4.0
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Get Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.toolchain }}
+          override: true
+
+      - name: Install alsa
+        if: ${{ runner.os == 'Linux' }}
+        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev
+
+      - name: Install udev
+        if: ${{ runner.os == 'Linux' }}
+        run: sudo apt-get update; sudo apt-get install --no-install-recommends libudev-dev
+
+      - name: Use Rust Cache
+        if: ${{ runner.os == 'Linux' }}
+        uses: Swatinem/rust-cache@v2.0.1
+
+      - name: Run build --release
+        run: cargo build --release
+
+      - name: Zip Release
+        if : ${{ runner.os == 'Windows' }}
+        uses: vimtor/action-zip@v1
+        with:
+          files: assets target/release/game.exe
+          dest: game_windows.zip
+
+      - name: Zip Release Linux
+        if : ${{ runner.os == 'Linux' }}
+        uses: vimtor/action-zip@v1
+        with:
+          files: assets target/release/game
+          dest: game_linux.zip
+
+      - name: Upload Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            game_windows.zip
+            game_linux.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          RUSTTARGET: ${{ matrix.target }}
-          EXTRA_FILES: "README.md LICENSE"

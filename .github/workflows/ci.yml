@@ -10,7 +10,6 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-
   build:
     strategy:
       matrix:
@@ -43,14 +42,14 @@ jobs:
 
       - name: Run cargo check --all-targets w/ -D warnings
         run: cargo check --all-targets
-        # We should add this later: env:
-          #RUSTFLAGS: "-D warnings"
+        env:
+          RUSTFLAGS: "-D warnings"
 
       - name: Run cargo test w/ -D warnings
         if: ${{ runner.os == 'Linux' }}
         run: cargo test -- --test-threads=1
-        #env:
-          #RUSTFLAGS: "-D warnings"
+        env:
+          RUSTFLAGS: "-D warnings"
       - name: Run cargo doc
         if: ${{ runner.os == 'Linux' }}
         run: cargo doc --no-deps --document-private-items --all-features
@@ -97,5 +96,5 @@ jobs:
       - name: Install udev
         run: sudo apt-get update; sudo apt-get install --no-install-recommends libudev-dev
 
-      - name: Run cargo clippy --package game --all-targets -- -D warnings
+      - name: Run cargo clippy --package game --all-targets
         run: cargo clippy --package game --all-targets #-- -D warnings
