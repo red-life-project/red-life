@@ -67,7 +67,7 @@ pub struct Machine {
 
 impl Machine {
     pub(crate) fn is_interactable(&self, pos: (usize, usize)) -> bool {
-        is_colliding(pos, &self.hitbox)
+        is_colliding(pos, &self.interaction_area)
     }
     pub fn new_by_const(
         (name, hit_box, trades, running_resources): (String, Rect, Vec<Trade>, Resources<i16>),
