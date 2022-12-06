@@ -410,7 +410,6 @@ impl GameState {
                     self.events = Vec::new();
                     self.player.match_milestone = 1;
                 }
-                Event::update_events(ctx, self);
                 if self.check_on_milestone_machines(vec![
                     "Oxygen".to_string(),
                     "Stromgenerator".to_string(),
@@ -460,6 +459,7 @@ impl Screen for GameState {
         if ctx.time.check_update_time(DESIRED_FPS) {
             self.tick(ctx)?;
             self.move_player(ctx)?;
+            Event::update_events(ctx, self);
         }
         Ok(())
     }
