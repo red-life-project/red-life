@@ -297,6 +297,7 @@ impl GameState {
             .iter()
             .map(|m| m.name.clone())
             .map(|name| {
+                info!("Loading assets for {}", name);
                 if self.assets.contains_key(&format!("{name}.png")) {
                     vec![self.assets.get(&format!("{name}.png")).unwrap().clone()]
                 } else {
