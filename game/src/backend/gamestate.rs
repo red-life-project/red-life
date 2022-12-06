@@ -324,8 +324,6 @@ impl GameState {
     /// # Arguments
     /// * `milestone_machines` - A vec of machines needed to reach the next milestone
     pub fn check_on_milestone(&mut self, milestone_machines: Vec<String>) {
-        //let a = self.areas.get(0).unwrap().deref(); erst einfügen, wenn man es auch benutzt
-
         let running_machine = self
             .machines
             .iter()
