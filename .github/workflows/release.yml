@@ -1,4 +1,5 @@
 # .github/workflows/release.yml
+name: Release
 
 on:
   release:
@@ -18,8 +19,8 @@ jobs:
         uses: rust-build/rust-build.action@v1.4.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SRC_DIR: "/github/workspace/game/"
+          SRC_DIR: "game"
           MINIFY: true
         with:
           RUSTTARGET: ${{ matrix.target }}
-          EXTRA_FILES: "README.md LICENSE"
+          EXTRA_FILES: "Readme.md"
