@@ -359,7 +359,7 @@ impl GameState {
             || next_player_pos.0 <= MAP_BORDER[2] // Left border
             || next_player_pos.1 <= MAP_BORDER[3] // Top border
     }
-    /// Returns a boolean indicating whether the player would collide with a machine or border if they moved in the given directSion
+    /// Returns a boolean indicating whether the player would collide with a machine or border if they moved in the given direction
     ///
     /// # Arguments
     /// * `next_player_pos` - A tuple containing the next position of the player
