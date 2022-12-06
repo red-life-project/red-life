@@ -51,22 +51,12 @@ jobs:
           files: assets target/release/game
           dest: game_linux.zip
 
-      - name: Release Linux
+      - name: Upload Release
         uses: softprops/action-gh-release@v1
         if: ${{ runner.os == 'Linux' }}
         with:
           files: |
-            target/release/game
-            assets
+            game_windows.zip
+            game_linux.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Release Windows
-        uses: softprops/action-gh-release@v1
-        if: ${{ runner.os == 'Windows' }}
-        with:
-          files: |
-            target/release/game.exe
-            assets
-        env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
