@@ -1,4 +1,4 @@
-use crate::backend::utils::get_scale;
+use crate::backend::utils::*;
 use crate::main_menu::mainmenu::Message;
 use crate::{draw, RLResult};
 use ggez::glam::f32::Vec2;
