@@ -150,6 +150,7 @@ impl Screenstack {
     /// `Push`: Pushes a new screen on the stack,
     /// `Pop`: Pops the current screen,
     /// `None`: Does nothing
+    /// `Popup`: Adds a new popup to the stack
     /// # Arguments
     /// * `command` - The command to handle
     fn process_command(&mut self, command: StackCommand) {
