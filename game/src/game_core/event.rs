@@ -1,9 +1,7 @@
 use crate::backend::constants::DESIRED_FPS;
 use crate::backend::gamestate::GameState;
 use crate::backend::screen::{Popup, StackCommand};
-use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
-use crate::languages;
 use crate::languages::german::{
     INFORMATIONSPOPUP_MARS, INFORMATIONSPOPUP_NASA, KOMETENEINSCHLAG, SANDSTURM, STROMAUSFALL,
 };
@@ -150,7 +148,7 @@ impl Event {
                 });
             }
             // apply direct resource changes if there are any and the event is not handled above
-            (_) => {
+            _ => {
                 if let Some(resources) = self.resources {
                     if restore {
                         gamestate.player.resources_change =

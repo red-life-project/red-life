@@ -118,47 +118,47 @@ mod test {
     }
     #[test]
     fn test_case_one_life_regeneration() {
-        let (gamestate, _) = setup_gamestate();
+        let (mut gamestate, _) = setup_gamestate();
         let mut player = Player::default();
         player.resources.life = u16::MAX;
         player.resources_change.life = 5;
         player.last_damage = 1000;
-        player.life_regeneration(&gamestate.screen_sender.as_ref().unwrap().clone());
+        player.life_regeneration(&gamestate.get_screen_sender().unwrap().clone());
         assert_eq!(player.resources_change.life, 0);
         assert_eq!(player.last_damage, 0);
     }
 
     #[test]
     fn test_case_two_life_regeneration() {
-        let (gamestate, _) = setup_gamestate();
+        let (mut gamestate, _) = setup_gamestate();
         let mut player = Player::default();
         player.resources.life = 1000;
         player.resources_change.life = 5;
         player.last_damage = 1000;
-        player.life_regeneration(&gamestate.screen_sender.as_ref().unwrap().clone());
+        player.life_regeneration(&gamestate.get_screen_sender().unwrap().clone());
         assert_eq!(player.last_damage, 0);
     }
 
     #[test]
     fn test_case_three_life_regeneration() {
-        let (gamestate, _receiver) = setup_gamestate();
+        let (mut gamestate, _receiver) = setup_gamestate();
         let mut player = Player::default();
         player.resources.life = 1000;
         player.resources_change.life = 0;
         player.last_damage = 900;
-        player.life_regeneration(&gamestate.screen_sender.as_ref().unwrap().clone());
+        player.life_regeneration(&gamestate.get_screen_sender().unwrap().clone());
         assert_eq!(player.resources_change.life, 5);
         assert_eq!(player.last_damage, 0);
     }
 
     #[test]
     fn test_case_four_life_regeneration() {
-        let (gamestate, _) = setup_gamestate();
+        let (mut gamestate, _) = setup_gamestate();
         let mut player = Player::default();
         player.resources.life = 20000;
         player.last_damage = 400;
         player.resources_change.life = 0;
-        player.life_regeneration(&gamestate.screen_sender.as_ref().unwrap().clone());
+        player.life_regeneration(&gamestate.get_screen_sender().unwrap().clone());
         assert_eq!(player.resources_change.life, 0);
         assert_eq!(player.last_damage, 401);
     }
@@ -176,7 +176,7 @@ mod test {
             },
             ..Player::default()
         };
-        player.life_regeneration(&gamestate.screen_sender.as_ref().unwrap().clone());
+        player.life_regeneration(&gamestate.get_screen_sender().unwrap().clone());
         assert_eq!(player.resources_change.life, -1);
         assert_eq!(player.last_damage, 0);
     }

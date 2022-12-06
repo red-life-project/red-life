@@ -19,7 +19,6 @@ use crate::{draw, RLResult};
 use ggez::glam::Vec2;
 use ggez::graphics::{Canvas, Image, TextFragment};
 use ggez::graphics::{DrawMode, Mesh, Rect};
-use ggez::input::mouse::CursorIcon::Text;
 use ggez::{graphics, Context};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;

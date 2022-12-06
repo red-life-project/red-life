@@ -3,7 +3,6 @@ use crate::backend::gamestate::GameCommand;
 use crate::backend::rlcolor::RLColor;
 use crate::backend::screen::{Popup, StackCommand};
 use crate::backend::utils::is_colliding;
-use crate::game_core::infoscreen::InfoScreen;
 use crate::game_core::item::Item;
 use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
