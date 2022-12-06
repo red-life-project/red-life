@@ -24,7 +24,7 @@ pub trait Screen: Debug {
     fn set_sender(&mut self, sender: Sender<StackCommand>);
 }
 
-/// A Screenstack contains multiple screens, the first one of which is drawn to the screen and
+/// A Screenstack contains multiple `Screen`s, the last one of which is drawn to the screen and
 /// updated.
 pub struct Screenstack {
     screens: Vec<Box<dyn Screen>>,
@@ -128,7 +128,7 @@ impl Screenstack {
             StackCommand::Popup(popup) => self.popup.push(popup),
         }
     }
-    /// removes the expired popups
+    /// Removes the expired popups
     fn remove_popups(&mut self) {
         self.popup.retain(|popup| popup.expiration > Instant::now());
     }
