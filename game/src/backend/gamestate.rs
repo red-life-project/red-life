@@ -115,6 +115,8 @@ impl GameState {
                             InfoScreen::new_deathscreen(empty_resource, cloned_sender),
                         )))?;
                     };
+                } else if self.player.resources_change.life < 0 {
+                    self.player.resources_change.life = 0;
                 }
             }
             9 => {
