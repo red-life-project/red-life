@@ -33,7 +33,9 @@ pub struct MainMenu {
 impl MainMenu {
     /// Create new `MainMenu`
     /// # Arguments
-    /// * `sender` - The sender of the `MainMenu` used to send messages to the `ScreenStack`.
+    /// * `screen_sender` - The sender of the `MainMenu` used to send messages to the `ScreenStack`.
+    /// # Returns
+    /// `MainMenu` - Returns a new `MainMenu`.
     pub(crate) fn new(screen_sender: Sender<StackCommand>) -> MainMenu {
         let (sender, receiver) = channel();
 
@@ -90,6 +92,8 @@ impl Screen for MainMenu {
     /// Updates the screen every tick
     /// # Arguments
     /// * `ctx` - The ggez context
+    /// # Returns
+    /// `RLResult` - Returns an `RLResult`.
     fn update(&mut self, ctx: &mut Context) -> RLResult {
         //@rewierer ich würde diese funktion später entfernen da ich sie aktuel noch nutzen mag
         //self.DEGUG_SKIP(ctx);
@@ -126,6 +130,8 @@ impl Screen for MainMenu {
     /// Draws the main menu and all its buttons.
     /// # Arguments
     /// * `ctx` - The ggez context
+    /// # Returns
+    /// `RLResult` - Returns an `RLResult`.
     fn draw(&self, ctx: &mut Context) -> RLResult {
         let scale = get_scale(ctx);
         let mut canvas = graphics::Canvas::from_frame(ctx, RLColor::DARK_BLUE);
