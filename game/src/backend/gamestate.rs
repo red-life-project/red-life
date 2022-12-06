@@ -3,8 +3,7 @@ use crate::backend::constants::COLORS;
 use crate::backend::constants::{DESIRED_FPS, MAP_BORDER, RESOURCE_POSITION};
 use crate::backend::rlcolor::RLColor;
 use crate::backend::screen::StackCommand;
-use crate::backend::utils::get_scale;
-use crate::backend::utils::is_colliding;
+use crate::backend::utils::*;
 use crate::backend::{error::RLError, screen::Screen};
 use crate::game_core::event::Event;
 use crate::game_core::infoscreen::DeathReason::Both;
@@ -62,21 +61,30 @@ impl GameState {
             "No Screen Sender found. The game was not initialized properly".to_string(),
         ))
     }
+
+    pub(crate) fn get_receiver(&mut self) -> RLResult<&Receiver<GameCommand>> {
+        self.receiver.as_ref().ok_or(RLError::InitError(
+            "No Receiver found. The game was not initialized properly".to_string(),
+        ))
+    }
+
     /// Creates a new game state at the beginning of the game and after every loading.
     /// It loads all the assets and creates the areas of the machines.
     pub fn new(ctx: &mut Context) -> RLResult<Self> {
         info!("Creating new gamestate");
-        let (sender, receiver) = std::sync::mpsc::channel();
+        let (sender, receiver) = channel();
         let mut result = GameState::default();
         result.sender = Some(sender);
         result.receiver = Some(receiver);
-        result.load_assets(ctx)?;
+        result.init(ctx)?;
         Ok(result)
     }
     /// Gets called every tick in the update fn to update the internal game logic.
     /// It updates the player resources, checks on the current milestone if the player has reached a new one
     /// and checks if the player has died.
     pub fn tick(&mut self, ctx: &mut Context) -> RLResult {
+        // TODO: Remove this if fixed
+        assert!(self.receiver.is_some(), "No receiver found");
         // Update Resources
         self.player.resources = self
             .player
@@ -100,21 +108,17 @@ impl GameState {
                     }
                     if self.player.resources.life == 0 {
                         let gamestate = GameState::load(true).unwrap_or_default();
-                        gamestate.save(false).unwrap();
-                        let cloned_sender = self.screen_sender.as_mut().unwrap().clone();
-                        self.screen_sender
-                            .as_mut()
-                            .expect("No screen sender")
-                            .send(StackCommand::Push(Box::new(InfoScreen::new_deathscreen(
-                                empty_resource,
-                                cloned_sender,
-                            ))))?;
+                        gamestate.save(false)?;
+                        let cloned_sender = self.get_screen_sender()?.clone();
+                        self.get_screen_sender()?.send(StackCommand::Push(Box::new(
+                            InfoScreen::new_deathscreen(empty_resource, cloned_sender),
+                        )))?;
                     };
                 }
             }
             9 => {
                 // process received GameCommands
-                if let Ok(msg) = self.receiver.as_ref().unwrap().try_recv() {
+                if let Ok(msg) = self.get_receiver()?.try_recv() {
                     match msg {
                         GameCommand::ResourceChange(new_rs) => {
                             self.player.resources_change = self.player.resources_change + new_rs;
@@ -199,7 +203,7 @@ impl GameState {
         Ok(())
     }
     /// Loads the assets. Has to be called before drawing the game.
-    pub(crate) fn load_assets(&mut self, ctx: &mut Context) -> RLResult {
+    pub(crate) fn init(&mut self, ctx: &mut Context) -> RLResult {
         info!("Loading assets");
         read_dir("assets")?.for_each(|file| {
             let file = file.unwrap();
@@ -212,28 +216,35 @@ impl GameState {
         if self.assets.is_empty() {
             return Err(RLError::AssetError("Could not find assets!".to_string()));
         }
+        let (sender, receiver) = channel();
+        self.sender = Some(sender);
+        self.receiver = Some(receiver);
         Ok(())
     }
-    pub(crate) fn inti_all_machine(&mut self) {
-        let machine_assets: Vec<[Image; 3]> = self
+    pub(crate) fn init_all_machines(&mut self) {
+        let machine_assets: Vec<Vec<Image>> = self
             .machines
             .iter()
             .map(|m| m.name.clone())
             .map(|name| {
-                [
-                    self.assets
-                        .get(&format!("{name}_Idle.png"))
-                        .unwrap()
-                        .clone(),
-                    self.assets
-                        .get(&format!("{name}_Broken.png"))
-                        .unwrap()
-                        .clone(),
-                    self.assets
-                        .get(&format!("{name}_Running.png"))
-                        .unwrap()
-                        .clone(),
-                ]
+                if self.assets.contains_key(&format!("{name}.png")) {
+                    vec![self.assets.get(&format!("{name}.png")).unwrap().clone()]
+                } else {
+                    vec![
+                        self.assets
+                            .get(&format!("{name}_Broken.png"))
+                            .unwrap()
+                            .clone(),
+                        self.assets
+                            .get(&format!("{name}_Idle.png"))
+                            .unwrap()
+                            .clone(),
+                        self.assets
+                            .get(&format!("{name}_Running.png"))
+                            .unwrap()
+                            .clone(),
+                    ]
+                }
             })
             .collect();
         self.machines
@@ -241,7 +252,7 @@ impl GameState {
             .zip(machine_assets)
             .for_each(|(m, a)| {
                 m.init(
-                    &a,
+                    a.as_slice(),
                     self.sender.clone().unwrap(),
                     self.screen_sender.clone().unwrap(),
                 );
@@ -278,9 +289,6 @@ impl GameState {
             fs::read_to_string("./saves/autosave.yaml")
         }?;
         let mut game_state: GameState = serde_yaml::from_str(&save_data)?;
-        let (sender, receiver) = channel();
-        game_state.sender = Some(sender);
-        game_state.receiver = Some(receiver);
 
         Ok(game_state)
     }
@@ -288,7 +296,7 @@ impl GameState {
     pub(crate) fn get_interactable(&mut self) -> Option<&mut Machine> {
         self.machines
             .iter_mut()
-            .find(|machine| machine.is_intractable(self.player.position))
+            .find(|machine| machine.is_interactable(self.player.position))
     }
 
     /// Returns if the player would collide with a border if they moved in the given direction
@@ -307,7 +315,7 @@ impl GameState {
     pub(crate) fn collision_detection(&self, next_player_pos: (usize, usize)) -> bool {
         self.machines
             .iter()
-            .map(|area| area.get_collision_area())
+            .map(|area| area.hitbox)
             .any(|area| is_colliding(next_player_pos, &area))
             || Self::border_collision_detection(next_player_pos)
     }
@@ -330,13 +338,13 @@ impl GameState {
         let running_machine = self
             .machines
             .iter()
-            .filter(|m| m.get_state() != Broken)
-            .map(Machine::get_name)
-            .collect::<Vec<String>>();
+            .filter(|m| m.state != Broken)
+            .map(|m| &m.name)
+            .collect::<Vec<&String>>();
 
         if milestone_machines
             .iter()
-            .all(|machine| running_machine.contains(&machine.to_string()))
+            .all(|machine| running_machine.contains(&machine))
         {
             self.player.milestone += 1;
             info!("Player reached milestone {}", self.player.milestone);
@@ -430,7 +438,7 @@ impl Screen for GameState {
     }
     fn set_sender(&mut self, sender: Sender<StackCommand>) {
         self.screen_sender = Some(sender);
-        self.inti_all_machine();
+        self.init_all_machines();
     }
 }
 
