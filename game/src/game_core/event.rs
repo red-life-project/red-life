@@ -1,4 +1,4 @@
-use crate::backend::constants::DESIRED_FPS;
+use crate::backend::constants::{DESIRED_FPS, SANDSTURM_CR};
 use crate::backend::gamestate::GameState;
 use crate::backend::screen::{Popup, StackCommand};
 use crate::game_core::player::Player;
@@ -79,8 +79,13 @@ impl Event {
                 None,
                 0,
             )),
-            22 => Some(Event::new(SANDSTURM, WARNINGS[2], "warning", None, 10)),
-            //TODO: add ressource for Sandsturm event
+            22 => Some(Event::new(
+                SANDSTURM,
+                WARNINGS[2],
+                "warning",
+                Some(SANDSTURM_CR),
+                10,
+            )),
             33 => Some(Event::new(STROMAUSFALL, WARNINGS[1], "warning", None, 0)),
             44 => Some(Event::new(
                 INFORMATIONSPOPUP_MARS,
