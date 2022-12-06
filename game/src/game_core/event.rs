@@ -1,4 +1,4 @@
-use crate::backend::constants::DESIRED_FPS;
+use crate::backend::constants::{DESIRED_FPS, SANDSTURM_CR};
 use crate::backend::gamestate::GameState;
 use crate::backend::screen::{Popup, StackCommand};
 use crate::game_core::player::Player;
@@ -32,6 +32,12 @@ pub(crate) struct Event {
 
 impl Event {
     /// create new event
+    /// # Arguments
+    /// * `event` - name and info text of the event
+    /// * `resources` - resources which are affected by the event
+    /// * `duration` - duration of the event in seconds
+    /// * `popup_type` - type of the popup which is shown when the event starts
+    /// * `popup_message` - message of the popup which is shown when the event starts
     pub fn new(
         event: [&str; 2],
         popup_message: &str,
@@ -39,7 +45,6 @@ impl Event {
         resources: Option<Resources<i16>>,
         duration: i32,
     ) -> Self {
-        // Self::send_popup(popup_message, sender, popup_type, event[0]);
         info!(
             "New event created: {}, info text: {}",
             event[0].to_string(),
@@ -56,7 +61,7 @@ impl Event {
     }
 
     /// if no Event is active it either chooses a random event of the Event enum or nothing every 60 seconds
-    pub fn event_generator(sender: &Sender<StackCommand>) -> Option<Event> {
+    pub fn event_generator() -> Option<Event> {
         let rng = fastrand::Rng::new();
         let event = rng.usize(..50);
         match event {
@@ -65,24 +70,29 @@ impl Event {
                 WARNINGS[0],
                 "warning",
                 None,
-                10,
+                0,
             )),
             11 => Some(Event::new(
                 INFORMATIONSPOPUP_NASA,
                 NASA_INFO[rng.usize(..4)],
                 "nasa",
                 None,
+                0,
+            )),
+            22 => Some(Event::new(
+                SANDSTURM,
+                WARNINGS[2],
+                "warning",
+                Some(SANDSTURM_CR),
                 10,
             )),
-            22 => Some(Event::new(SANDSTURM, WARNINGS[2], "warning", None, 10)),
-            //TODO: add ressource for Sandsturm event
-            33 => Some(Event::new(STROMAUSFALL, WARNINGS[1], "warning", None, 10)),
+            33 => Some(Event::new(STROMAUSFALL, WARNINGS[1], "warning", None, 0)),
             44 => Some(Event::new(
                 INFORMATIONSPOPUP_MARS,
                 MARS_INFO[rng.usize(..5)],
                 "mars",
                 None,
-                10,
+                0,
             )),
             _ => None,
         }
@@ -133,24 +143,37 @@ impl Event {
         // handle event effects
         match self.name.as_str() {
             KOMETENEINSCHLAG_NAME => {
-                Event::send_popup(&self.popup_message, sender, &self.popup_type, &self.name);
                 gamestate.machines.iter_mut().for_each(|machine| {
-                    if machine.name == "Loch" {
+                    // event not triggered if machine is already running
+                    if machine.name == "Loch" && machine.state != State::Running {
+                        Event::send_popup(
+                            &self.popup_message,
+                            sender,
+                            &self.popup_type,
+                            &self.name,
+                        );
                         machine.change_state_to(&State::Running);
                     }
                 });
             }
             STROMAUSTFALL_NAME => {
-                Event::send_popup(&self.popup_message, sender, &self.popup_type, &self.name);
                 gamestate.machines.iter_mut().for_each(|machine| {
-                    //Question: set broken or idle?
-                    if machine.name == "Stromgenerator" {
-                        machine.change_state_to(&State::Broken);
+                    // if machine is running it will be stopped
+                    // event not triggered if machine is broken or idling
+                    if machine.name == "Stromgenerator" && machine.state == State::Running {
+                        Event::send_popup(
+                            &self.popup_message,
+                            sender,
+                            &self.popup_type,
+                            &self.name,
+                        );
+                        machine.change_state_to(&State::Idle);
                     }
                 });
             }
             // apply direct resource changes if there are any and the event is not handled above
             (_) => {
+                Event::send_popup(&self.popup_message, sender, &self.popup_type, &self.name);
                 if let Some(resources) = self.resources {
                     if restore {
                         gamestate.player.resources_change =
@@ -201,11 +224,10 @@ impl Event {
             });
         }
         // have a maximum of one active event
-        if ctx.time.ticks() % 1000 == 0 {
+        if ctx.time.ticks() % 100 == 0 {
             // generate new event
             // might not return an event
-            let gen_event =
-                Event::event_generator(&gamestate.screen_sender.as_ref().unwrap().clone());
+            let gen_event = Event::event_generator();
             // if event is not none, add it to the gamestates events vector and activate apply its effect
             if let Some(event) = gen_event {
                 event.action(
