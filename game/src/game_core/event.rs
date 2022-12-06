@@ -221,7 +221,6 @@ impl Event {
         }
         // have a maximum of one active event
         if ctx.time.ticks() % 100 == 0 {
-            dbg!("chance fors new event");
             // generate new event
             // might not return an event
             let gen_event = Event::event_generator();
