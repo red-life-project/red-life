@@ -87,8 +87,6 @@ impl GameState {
     /// It updates the player resources, checks on the current milestone if the player has reached a new one
     /// and checks if the player has died.
     pub fn tick(&mut self, ctx: &mut Context) -> RLResult {
-        // TODO: Remove this if fixed
-        assert!(self.receiver.is_some(), "No receiver found");
         // Update Resources
         self.player.resources = self
             .player
