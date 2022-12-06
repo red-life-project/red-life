@@ -242,8 +242,6 @@ impl Machine {
             self.time_change = 1;
         }
 
-        //TODO Replace with sender system // todo move to after trade
-
         if trade.return_after_timer {
             self.change_state_to(&trade.resulting_state);
         }
