@@ -1,6 +1,7 @@
 //! Contains the game logic, updates the game and draws the current board
-use crate::backend::constants::{COLORS, HANDBOOK_TEXT};
-use crate::backend::constants::{DESIRED_FPS, MAP_BORDER, RESOURCE_POSITION};
+use crate::backend::constants::{
+    COLORS, DESIRED_FPS, MAP_BORDER, RESOURCE_POSITION, TIME_POSITION,
+};
 use crate::backend::rlcolor::RLColor;
 use crate::backend::screen::{Popup, StackCommand};
 use crate::backend::utils::get_scale;
@@ -12,7 +13,7 @@ use crate::game_core::infoscreen::InfoScreen;
 use crate::game_core::item::Item;
 use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
-use crate::languages::german::RESOURCE_NAME;
+use crate::languages::german::{RESOURCE_NAME, TIME_NAME};
 use crate::machines::machine::Machine;
 use crate::machines::machine::State::Broken;
 use crate::{draw, RLResult};
@@ -87,8 +88,6 @@ impl GameState {
     /// It updates the player resources, checks on the current milestone if the player has reached a new one
     /// and checks if the player has died.
     pub fn tick(&mut self, ctx: &mut Context) -> RLResult {
-        // TODO: Remove this if fixed
-        assert!(self.receiver.is_some(), "No receiver found");
         // Update Resources
         self.player.resources = self
             .player
@@ -97,7 +96,7 @@ impl GameState {
             .zip(self.player.resources_change.into_iter())
             .map(|(a, b)| a.saturating_add_signed(b))
             .collect::<Resources<_>>();
-
+        self.player.time += 1;
         // Everything inside will only be checked every 15 ticks
         match ctx.time.ticks() % 15 {
             3 => {
@@ -115,6 +114,8 @@ impl GameState {
                             InfoScreen::new_deathscreen(empty_resource, cloned_sender),
                         )))?;
                     };
+                } else if self.player.resources_change.life < 0 {
+                    self.player.resources_change.life = 0;
                 }
             }
             9 => {
@@ -124,9 +125,10 @@ impl GameState {
                         GameCommand::ResourceChange(new_rs) => {
                             self.player.resources_change = self.player.resources_change + new_rs;
                         }
-                        GameCommand::AddItems(item) => {
-
-                            //TODO: Issue #174
+                        GameCommand::AddItems(items) => {
+                            for (item, amount) in &items {
+                                self.player.add_item(item, *amount);
+                            }
                         }
                         GameCommand::Milestone() => {
                             self.get_current_milestone(ctx);
@@ -152,7 +154,7 @@ impl GameState {
         // Regenerate life if applicable
         self.player
             .life_regeneration(&self.screen_sender.as_ref().unwrap().clone());
-        self.machines.iter_mut().for_each(|a| a.tick(1));
+        self.machines.iter_mut().for_each(|machine| machine.tick(1));
 
         Ok(())
     }
@@ -249,6 +251,26 @@ impl GameState {
             })
             .for_each(drop);
         Ok(())
+    }
+
+    /// A function which draws the current time on the screen
+    pub(crate) fn draw_time(&self, canvas: &mut Canvas, scale: Vec2, ctx: &mut Context) {
+        let time = self.player.time / DESIRED_FPS;
+        let time_text = format!(
+            "{}: {}s {}m {}s",
+            TIME_NAME[0],
+            time / 3600,
+            time / 60,
+            time % 60
+        );
+        let mut text = graphics::Text::new(TextFragment::new(time_text).color(RLColor::BLACK));
+        text.set_scale(18.0);
+        draw!(
+            canvas,
+            &text,
+            Vec2::new(TIME_POSITION.0, TIME_POSITION.1),
+            scale
+        );
     }
     /// Loads the assets. Has to be called before drawing the game.
     pub(crate) fn init(&mut self, ctx: &mut Context) -> RLResult {
@@ -487,7 +509,7 @@ impl Screen for GameState {
             let fps = graphics::Text::new(format!("FPS: {}", ctx.time.fps()));
             draw!(canvas, &fps, Vec2::new(0.0, 0.0), scale);
         }
-
+        self.draw_time(&mut canvas, scale, ctx);
         canvas.finish(ctx)?;
         Ok(())
     }

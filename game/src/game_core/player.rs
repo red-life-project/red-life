@@ -1,10 +1,10 @@
+use crate::backend::constants::DESIRED_FPS;
 use crate::backend::rlcolor::RLColor;
 use crate::backend::screen::{Popup, StackCommand};
 use crate::game_core::item::Item;
 use crate::game_core::resources::Resources;
 use crate::languages::german::GAME_INFO;
 use crate::languages::german::{BENZIN, GEDRUCKTESTEIL, SUPER_GLUE};
-
 use serde::{Deserialize, Serialize};
 use std::sync::mpsc::Sender;
 use tracing::info;
@@ -22,6 +22,7 @@ pub struct Player {
     pub milestone: usize,
     pub(crate) last_damage: u32,
     pub(crate) match_milestone: i8,
+    pub(crate) time: u32,
 }
 impl Default for Player {
     fn default() -> Self {
@@ -29,8 +30,8 @@ impl Default for Player {
         Self {
             inventory: vec![
                 (Item::new(SUPER_GLUE), 0),
-                (Item::new(BENZIN), 0),
-                (Item::new(GEDRUCKTESTEIL), 0),
+                (Item::new(BENZIN), 3),
+                (Item::new(GEDRUCKTESTEIL), 1),
             ],
             position: (600, 500),
             resources: Resources {
@@ -47,6 +48,7 @@ impl Default for Player {
             milestone: 0,
             last_damage: 0,
             match_milestone: 0,
+            time: 0,
         }
     }
 }
@@ -72,7 +74,7 @@ impl Player {
                 self.last_damage = 0;
             }
             // If player does not take damage and 5 seconds have passed, start healing
-            (0, last_damage, _) if last_damage >= 600 => {
+            (0, last_damage, _) if last_damage >= 8 * DESIRED_FPS => {
                 self.resources_change.life += 5;
                 self.last_damage = 0;
                 let popup = Popup::new(RLColor::GREEN, GAME_INFO[0].to_string(), 5);
