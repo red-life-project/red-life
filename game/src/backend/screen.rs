@@ -1,3 +1,4 @@
+//! This file contains the screen system, which is responsible for managing the different screens of the game.
 use crate::backend::rlcolor::RLColor;
 use crate::backend::utils::*;
 use crate::error::RLError;
@@ -15,16 +16,25 @@ use tracing::info;
 /// Screens are used to facilitate drawing menus, the game etc. to the screen. They can also send
 /// back command to the `ScreenStack` to change the current screen.
 pub trait Screen: Debug {
-    /// Used for updating the screen. Returns a `StackCommand` used to either push a new screen or pop
-    /// the current one.
+    /// Used for updating the screen.
+    /// # Arguments
+    /// * `ctx` - The ggez context
+    /// # Returns
+    /// `RLResult` - Returns an `RlResult`.
     fn update(&mut self, ctx: &mut Context) -> RLResult;
-    /// Used for drawing the last screen in the game.
+    /// Used for drawing the screen.
+    /// # Arguments
+    /// * `ctx` - The ggez context
+    /// # Returns
+    /// `RLResult` - Returns an `RlResult`.
     fn draw(&self, ctx: &mut Context) -> RLResult;
-    /// Set sender of the screen
+    /// Set the sender of the screen.
+    /// # Arguments
+    /// * `sender` - The sender of the screen.
     fn set_sender(&mut self, sender: Sender<StackCommand>);
 }
 
-/// A Screenstack contains multiple screens, the first one of which is drawn to the screen and
+/// A Screenstack contains multiple screens, popups and has a receiver and sender. The first screen is drawn to the screen and
 /// updated.
 pub struct Screenstack {
     screens: Vec<Box<dyn Screen>>,
@@ -32,7 +42,9 @@ pub struct Screenstack {
     receiver: Receiver<StackCommand>,
     sender: Sender<StackCommand>,
 }
+
 /// Popups are used to display information sent by the game on screen (toplevel)
+/// A Popup is made up of a color, a text and a expiration.
 #[derive(Debug, PartialEq, Clone)]
 pub struct Popup {
     color: Color,
@@ -40,23 +52,49 @@ pub struct Popup {
     expiration: Instant,
 }
 impl Popup {
+    /// Creates a new `popup` from the nasa template.
+    /// # Arguments
+    /// * `text` - The text of the popup.
+    /// # Returns
+    /// `Popup` - Returns a new `Popup`.
     pub fn nasa(text: String) -> Self {
         info!("New NASA popup created");
         Self::new(RLColor::LIGHT_BLUE, text, 10)
     }
+    /// Creates a new `popup` from the mars template.
+    /// # Arguments
+    /// * `text` - The text of the popup.
+    /// # Returns
+    /// `Popup` - Returns a new `Popup`.
     pub fn mars(text: String) -> Self {
         info!("New MARS popup created");
         Self::new(RLColor::DARK_RED, text, 10)
     }
+    /// Creates a new `popup` from the warning template.
+    /// # Arguments
+    /// * `text` - The text of the popup.
+    /// # Returns
+    /// `Popup` - Returns a new `Popup`.
     pub fn warning(text: String) -> Self {
         info!("New WARNING popup created");
         Self::new(RLColor::RED, text, 10)
     }
+    /// Creates a new `popup` from the info template.
+    /// # Arguments
+    /// * `text` - The text of the `Popup`.
+    /// # Returns
+    /// `Popup` - Returns a new `Popup`.
     pub fn info(text: String) -> Self {
         info!("New INFO popup created");
         Self::new(RLColor::BLACK, text, 10)
     }
-
+    /// Creates a new `Popup` from a color, text and a duration.
+    /// # Arguments
+    /// * `color` - The color of the `Popup`.
+    /// * `text` - The text of the `Popup`.
+    /// * `duration` - The duration of the `Popup`.
+    /// # Returns
+    /// `Popup` - Returns a new `Popup`.
     pub(crate) fn new(color: Color, text: String, duration: u64) -> Self {
         info!("New popup created: text: {}, duration: {}", text, duration);
         Self {
@@ -67,8 +105,12 @@ impl Popup {
     }
 }
 impl Screenstack {
-    /// Draws a new popup at the top left of the screen with the given text and color
-    /// The popup will be removed after the given duration
+    /// Draws all `Popups` at the top left of the screen with their given text and color
+    /// The popups will be removed after the given duration
+    /// # Arguments
+    /// * `ctx` - The ggez context
+    /// # Returns
+    /// `RLResult` - Returns an `RlResult`.
     fn draw_popups(&mut self, ctx: &mut Context) -> RLResult {
         let mut canvas = graphics::Canvas::from_frame(ctx, None);
         let scale = get_scale(ctx);
@@ -104,13 +146,11 @@ impl Screenstack {
         Ok(())
     }
     /// Handles what to do with the given commands (Push, Pop, None)
-    ///
     /// # Arguments
     /// * `command` - The command to handle
-    ///
-    /// Push: Pushes a new screen on the stack,
-    /// Pop: Pops the current screen,
-    /// None: Does nothing
+    /// `Push`: Pushes a new screen on the stack,
+    /// `Pop`: Pops the current screen,
+    /// `None`: Does nothing
     fn process_command(&mut self, command: StackCommand) {
         // Match the command given back by the screen
         match command {
@@ -133,8 +173,11 @@ impl Screenstack {
         self.popup.retain(|popup| popup.expiration > Instant::now());
     }
 }
+
 /// The `StackCommand` is necessary in order to send commands back to the `Screenstack`
-/// from the `Screen`. We can for example tell the screenstack to push the `Gamestate` screen onto the
+/// from the `Screen`.
+/// # Examples
+/// We can tell the `Screenstack` to push the `Gamestate` screen onto the
 /// `Screenstack`
 pub enum StackCommand {
     None,

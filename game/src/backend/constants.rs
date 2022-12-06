@@ -30,6 +30,9 @@ pub(crate) const PLAYER_INTERACTION_RADIUS: f32 = 50.;
 // pub const MACHINE_POSITIONS: [[i32; 4]; 4] = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
 pub const HANDBOOK_TEXT: &str = "Werker macht was Sauerstoff auch Ich auch";
 
+/// Contains the movement speed of the player.
+pub const MOVEMENT_SPEED: usize = 10;
+
 #[allow(clippy::too_many_lines)]
 pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>); 7] {
     [
