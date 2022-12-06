@@ -147,7 +147,7 @@ impl Event {
                             sender,
                             &self.popup_type,
                             &self.name,
-                        )?;
+                        );
                         machine.change_state_to(&State::Running);
                     }
                 });
@@ -162,14 +162,14 @@ impl Event {
                             sender,
                             &self.popup_type,
                             &self.name,
-                        )?;
+                        );
                         machine.change_state_to(&State::Idle);
                     }
                 });
             }
             // apply direct resource changes if there are any and the event is not handled above
             (_) => {
-                Event::send_popup(&self.popup_message, sender, &self.popup_type, &self.name)?;
+                Event::send_popup(&self.popup_message, sender, &self.popup_type, &self.name);
                 if let Some(resources) = self.resources {
                     if restore {
                         gamestate.player.resources_change =
@@ -194,8 +194,6 @@ impl Event {
     /// * `gamestate` - The gamestate which is used to access the events vector
     /// * `context` - The game context which is used to access the current tick
     pub fn update_events(ctx: &Context, gamestate: &mut GameState) {
-        dbg!("update events");
-        dbg!(ctx.time.ticks());
         if ctx.time.ticks() % 20 == 0 {
             gamestate.events.iter_mut().for_each(|event| {
                 event.duration -= 20;
@@ -222,7 +220,7 @@ impl Event {
             });
         }
         // have a maximum of one active event
-        if ctx.time.ticks() % 1000 == 0 {
+        if ctx.time.ticks() % 100 == 0 {
             dbg!("chance fors new event");
             // generate new event
             // might not return an event
