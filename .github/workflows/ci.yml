@@ -51,6 +51,12 @@ jobs:
         run: cargo test -- --test-threads=1
         #env:
           #RUSTFLAGS: "-D warnings"
+      - name: Run cargo doc
+        if: ${{ runner.os == 'Linux' }}
+        run: cargo doc --no-deps --document-private-items --all-features
+
+      - name: Run build --release
+        run: cargo build --release
 
   rustfmt:
     runs-on: ubuntu-20.04

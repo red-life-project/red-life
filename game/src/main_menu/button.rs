@@ -1,4 +1,4 @@
-use crate::backend::utils::get_scale;
+use crate::backend::utils::*;
 use crate::main_menu::mainmenu::Message;
 use crate::{draw, RLResult};
 use ggez::glam::f32::Vec2;
@@ -47,7 +47,10 @@ impl Button {
         info!("User clicked: mouse position: {:?}", ctx.mouse.position());
         if self.in_area(ctx.mouse.position(), scale) {
             self.current_color = self.hover_color;
-            if ctx.mouse.button_pressed(ggez::event::MouseButton::Left) {
+            if ctx
+                .mouse
+                .button_just_pressed(ggez::event::MouseButton::Left)
+            {
                 self.click();
             }
         } else {
@@ -65,7 +68,7 @@ impl Button {
 
     // payload of button
     fn click(&mut self) {
-        dbg!(format!("Pressed {:?}", self.message));
+        info!("Button clicked: message: {:?}", self.message);
         self.sender.send(self.message).unwrap();
     }
 

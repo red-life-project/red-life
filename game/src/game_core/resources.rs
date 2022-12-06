@@ -1,4 +1,4 @@
-use crate::game_core::deathscreen::DeathReason;
+use crate::game_core::infoscreen::DeathReason;
 use serde::{Deserialize, Serialize};
 use std::cmp::PartialOrd;
 use std::ops;
@@ -22,6 +22,7 @@ impl FromIterator<u16> for Resources<u16> {
         }
     }
 }
+
 impl<T: PartialOrd> IntoIterator for Resources<T> {
     type Item = T;
     type IntoIter = std::array::IntoIter<T, 3>;
@@ -52,11 +53,14 @@ impl<T: ops::Sub<Output = T> + PartialOrd> ops::Sub<Resources<T>> for Resources<
         }
     }
 }
+
 impl Resources<u16> {
-    // This function returns the value that reached zero first
-    // If no value reached zero, it returns None
+    /// This function returns the value that reached zero first
+    /// If no value reached zero, it returns None
     pub fn get_death_reason(&self) -> Option<DeathReason> {
-        if self.oxygen == 0 {
+        if self.oxygen == 0 && self.energy == 0 {
+            Some(DeathReason::Both)
+        } else if self.oxygen == 0 {
             Some(DeathReason::Oxygen)
         } else if self.energy == 0 {
             Some(DeathReason::Energy)
@@ -65,6 +69,7 @@ impl Resources<u16> {
         }
     }
 }
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -122,6 +127,6 @@ mod test {
         assert_eq!(ait.next().unwrap(), 3);
         assert_eq!(ait.next().unwrap(), 2);
         assert_eq!(ait.next().unwrap(), 1);
-        assert_eq!(Some(ait.next()), Some(None))
+        assert_eq!(Some(ait.next()), Some(None));
     }
 }

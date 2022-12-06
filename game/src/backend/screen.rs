@@ -1,5 +1,5 @@
 use crate::backend::rlcolor::RLColor;
-use crate::backend::utils::get_scale;
+use crate::backend::utils::*;
 use crate::error::RLError;
 use crate::main_menu::mainmenu::MainMenu;
 use crate::{draw, RLResult};
@@ -12,9 +12,10 @@ use std::sync::mpsc::{channel, Receiver, Sender};
 use std::time::Instant;
 use tracing::info;
 
-/// A screen is every drawable object in the game, so the main menu is a screen too
+/// Screens are used to facilitate drawing menus, the game etc. to the screen. They can also send
+/// back command to the `ScreenStack` to change the current screen.
 pub trait Screen: Debug {
-    /// Used for updating the screen. Returns a StackCommand used to either push a new screen or pop
+    /// Used for updating the screen. Returns a `StackCommand` used to either push a new screen or pop
     /// the current one.
     fn update(&mut self, ctx: &mut Context) -> RLResult;
     /// Used for drawing the last screen in the game.
@@ -23,14 +24,15 @@ pub trait Screen: Debug {
     fn set_sender(&mut self, sender: Sender<StackCommand>);
 }
 
-/// A Screenstack contains multiple screens, the first one of which is the current screen
+/// A Screenstack contains multiple screens, the first one of which is drawn to the screen and
+/// updated.
 pub struct Screenstack {
     screens: Vec<Box<dyn Screen>>,
     popup: Vec<Popup>,
     receiver: Receiver<StackCommand>,
     sender: Sender<StackCommand>,
 }
-/// Popups are used to display ingame information/notification on screen (toplevel)
+/// Popups are used to display information sent by the game on screen (toplevel)
 #[derive(Debug, PartialEq, Clone)]
 pub struct Popup {
     color: Color,
@@ -44,12 +46,17 @@ impl Popup {
     }
     pub fn mars(text: String) -> Self {
         info!("New MARS popup created");
-        Self::new(RLColor::LIGHT_GREY, text, 10)
+        Self::new(RLColor::DARK_RED, text, 10)
     }
     pub fn warning(text: String) -> Self {
         info!("New WARNING popup created");
         Self::new(RLColor::RED, text, 10)
     }
+    pub fn info(text: String) -> Self {
+        info!("New INFO popup created");
+        Self::new(RLColor::BLACK, text, 10)
+    }
+
     pub(crate) fn new(color: Color, text: String, duration: u64) -> Self {
         info!("New popup created: text: {}, duration: {}", text, duration);
         Self {
@@ -60,10 +67,12 @@ impl Popup {
     }
 }
 impl Screenstack {
+    /// Draws a new popup at the top left of the screen with the given text and color
+    /// The popup will be removed after the given duration
     fn draw_popups(&mut self, ctx: &mut Context) -> RLResult {
         let mut canvas = graphics::Canvas::from_frame(ctx, None);
+        let scale = get_scale(ctx);
         for (pos, popup) in self.popup.iter().enumerate() {
-            let scale = get_scale(ctx);
             let mut text = graphics::Text::new(popup.text.clone());
             text.set_scale(18.);
             let dimensions = text.measure(ctx)?;
@@ -72,28 +81,36 @@ impl Screenstack {
             let rect = graphics::Mesh::new_rectangle(
                 ctx,
                 graphics::DrawMode::fill(),
-                graphics::Rect::new(0., 0., x + 2., y + 2.),
+                graphics::Rect::new(0., 0., x + 4., y + 4.),
                 RLColor::LIGHT_GREY,
             )?;
             let outer = graphics::Mesh::new_rectangle(
                 ctx,
                 graphics::DrawMode::stroke(3.),
-                graphics::Rect::new(0., 0., x + 3., y + 3.),
+                graphics::Rect::new(0., 0., x + 4., y + 4.),
                 RLColor::BLACK,
             )?;
-            draw!(canvas, &rect, vec2(0., pos as f32 * 100.), scale);
-            draw!(canvas, &outer, vec2(0., pos as f32 * 100.), scale);
+            draw!(canvas, &rect, vec2(0., pos as f32 * (y + 4.)), scale);
+            draw!(canvas, &outer, vec2(0., pos as f32 * (y + 4.)), scale);
             canvas.draw(
                 &text,
                 graphics::DrawParam::default()
                     .scale(scale)
-                    .dest([0., pos as f32 * 100. * scale.y])
+                    .dest([0., pos as f32 * (y + 4.) * scale.y])
                     .color(popup.color),
             );
         }
         canvas.finish(ctx)?;
         Ok(())
     }
+    /// Handles what to do with the given commands (Push, Pop, None)
+    ///
+    /// # Arguments
+    /// * `command` - The command to handle
+    ///
+    /// Push: Pushes a new screen on the stack,
+    /// Pop: Pops the current screen,
+    /// None: Does nothing
     fn process_command(&mut self, command: StackCommand) {
         // Match the command given back by the screen
         match command {
@@ -111,6 +128,7 @@ impl Screenstack {
             StackCommand::Popup(popup) => self.popup.push(popup),
         }
     }
+    /// removes the expired popups
     fn remove_popups(&mut self) {
         self.popup.retain(|popup| popup.expiration > Instant::now());
     }
@@ -126,7 +144,7 @@ pub enum StackCommand {
 }
 
 impl event::EventHandler<RLError> for Screenstack {
-    // Redirect the update function to the last screen and handle the returned StackCommand
+    /// Redirect the update function to the last screen and handle the returned StackCommand
     fn update(&mut self, ctx: &mut Context) -> RLResult {
         self.remove_popups();
         self.screens
@@ -147,9 +165,8 @@ impl event::EventHandler<RLError> for Screenstack {
         self.draw_popups(ctx)?;
         Ok(())
     }
-    /// Override the quit event so we don't actually quit the game.
-    fn quit_event(&mut self, ctx: &mut Context) -> RLResult<bool> {
-        self.screens.last_mut().unwrap().update(ctx)?;
+    /// Overrides the quit event so we do nothing instead of quitting the game.
+    fn quit_event(&mut self, _ctx: &mut Context) -> RLResult<bool> {
         Ok(true)
     }
 }

@@ -1,92 +1,167 @@
-use crate::backend::area::Area;
+//! Contains the game logic, updates the game and draws the current board
+use crate::backend::constants::{COLORS, HANDBOOK_TEXT};
+use crate::backend::constants::{DESIRED_FPS, MAP_BORDER, RESOURCE_POSITION};
 use crate::backend::rlcolor::RLColor;
-use crate::backend::screen::StackCommand;
-use crate::backend::utils::{get_scale, is_colliding};
+use crate::backend::screen::{Popup, StackCommand};
+use crate::backend::utils::get_scale;
+use crate::backend::utils::*;
 use crate::backend::{error::RLError, screen::Screen};
-use crate::game_core::deathscreen::DeathScreen;
 use crate::game_core::event::Event;
+use crate::game_core::infoscreen::DeathReason::Both;
+use crate::game_core::infoscreen::InfoScreen;
+use crate::game_core::item::Item;
 use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
-use crate::machines::machine::Maschine;
+use crate::languages::german::RESOURCE_NAME;
+use crate::machines::machine::Machine;
 use crate::machines::machine::State::Broken;
 use crate::{draw, RLResult};
 use ggez::glam::Vec2;
-use ggez::graphics::{Canvas, Color, Image};
+use ggez::graphics::{Canvas, Image, TextFragment};
 use ggez::graphics::{DrawMode, Mesh, Rect};
+use ggez::input::mouse::CursorIcon::Text;
 use ggez::{graphics, Context};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
 use std::fs::read_dir;
-use std::sync::mpsc::Sender;
+use std::sync::mpsc::{channel, Receiver, Sender};
 use tracing::info;
 
-const RESOURCE_POSITION: [f32; 3] = [316.0, 639.0, 1373.0];
-const RESOURCE_NAME: [&str; 3] = ["Luft", "Energie", "Leben"];
-const COLORS: [Color; 3] = [RLColor::BLUE, RLColor::GOLD, RLColor::DARK_RED];
+pub enum GameCommand {
+    AddItems(Vec<(Item, i32)>),
+    ResourceChange(Resources<i16>),
+    Milestone(),
+    Winning(),
+}
+
 /// This is the game state. It contains all the data that is needed to run the game.
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct GameState {
     /// Contains the current player position, resources(air, energy, life) and the inventory and their change rates
     pub player: Player,
-    pub machines: Vec<Maschine>,
-    events: Option<Event>,
+    pub(crate) events: Vec<Event>,
+    pub machines: Vec<Machine>,
     #[serde(skip)]
     assets: HashMap<String, Image>,
     #[serde(skip)]
-    areas: Vec<Box<dyn Area>>,
-    #[serde(skip)]
     pub(crate) screen_sender: Option<Sender<StackCommand>>,
+    #[serde(skip)]
+    pub(crate) receiver: Option<Receiver<GameCommand>>,
+    #[serde(skip)]
+    pub(crate) sender: Option<Sender<GameCommand>>,
+    pub handbook_visible: bool,
 }
 
 impl PartialEq for GameState {
     fn eq(&self, other: &Self) -> bool {
-        self.player == other.player
-            && self.player.milestone == other.player.milestone
-            && self.machines == other.machines
+        self.player == other.player && self.player.milestone == other.player.milestone
     }
 }
 
 impl GameState {
+    pub(crate) fn get_screen_sender(&mut self) -> RLResult<&mut Sender<StackCommand>> {
+        self.screen_sender.as_mut().ok_or(RLError::InitError(
+            "No Screen Sender found. The game was not initialized properly".to_string(),
+        ))
+    }
+
+    pub(crate) fn get_receiver(&mut self) -> RLResult<&Receiver<GameCommand>> {
+        self.receiver.as_ref().ok_or(RLError::InitError(
+            "No Receiver found. The game was not initialized properly".to_string(),
+        ))
+    }
+
+    /// Creates a new game state at the beginning of the game and after every loading.
+    /// It loads all the assets and creates the areas of the machines.
     pub fn new(ctx: &mut Context) -> RLResult<Self> {
         info!("Creating new gamestate");
+        let (sender, receiver) = channel();
         let mut result = GameState::default();
-        result.load_assets(ctx)?;
+        result.sender = Some(sender);
+        result.receiver = Some(receiver);
+        result.init(ctx)?;
         Ok(result)
     }
-    pub fn tick(&mut self) -> RLResult {
-        // Iterate over every resource and add the change rate to the current value
-        self.get_current_milestone();
-        self.player.resources = Resources::from_iter(
-            self.player
-                .resources
-                .into_iter()
-                .zip(self.player.resources_change.into_iter())
-                .map(|(a, b)| a.saturating_add_signed(b)),
-        );
-        // Check if player is able to regenerate life
-        self.player
-            .life_regeneration(self.screen_sender.as_ref().unwrap().clone());
-        // Check if the player is dead
-        if let Some(empty_resource) = Resources::get_death_reason(&self.player.resources) {
-            self.player.resources_change.life = -10;
-            if self.player.resources.life == 0 {
-                let gamestate = GameState::load(true).unwrap_or_default();
-                gamestate.save(false).unwrap();
-                let cloned_sender = self.screen_sender.as_mut().unwrap().clone();
-                self.screen_sender
-                    .as_mut()
-                    .expect("No screen sender")
-                    .send(StackCommand::Push(Box::new(DeathScreen::new(
-                        empty_resource,
-                        cloned_sender,
-                    ))))?;
-            };
+    /// Gets called every tick in the update fn to update the internal game logic.
+    /// It updates the player resources, checks on the current milestone if the player has reached a new one
+    /// and checks if the player has died.
+    pub fn tick(&mut self, ctx: &mut Context) -> RLResult {
+        // TODO: Remove this if fixed
+        assert!(self.receiver.is_some(), "No receiver found");
+        // Update Resources
+        self.player.resources = self
+            .player
+            .resources
+            .into_iter()
+            .zip(self.player.resources_change.into_iter())
+            .map(|(a, b)| a.saturating_add_signed(b))
+            .collect::<Resources<_>>();
+
+        // Everything inside will only be checked every 15 ticks
+        match ctx.time.ticks() % 15 {
+            3 => {
+                // Check if the player is dead
+                if let Some(empty_resource) = Resources::get_death_reason(&self.player.resources) {
+                    match empty_resource {
+                        Both => self.player.resources_change.life = -20,
+                        _ => self.player.resources_change.life = -10,
+                    }
+                    if self.player.resources.life == 0 {
+                        let gamestate = GameState::load(true).unwrap_or_default();
+                        gamestate.save(false)?;
+                        let cloned_sender = self.get_screen_sender()?.clone();
+                        self.get_screen_sender()?.send(StackCommand::Push(Box::new(
+                            InfoScreen::new_deathscreen(empty_resource, cloned_sender),
+                        )))?;
+                    };
+                } else if self.player.resources_change.life < 0 {
+                    self.player.resources_change.life = 0;
+                }
+            }
+            9 => {
+                // process received GameCommands
+                if let Ok(msg) = self.get_receiver()?.try_recv() {
+                    match msg {
+                        GameCommand::ResourceChange(new_rs) => {
+                            self.player.resources_change = self.player.resources_change + new_rs;
+                        }
+                        GameCommand::AddItems(items) => {
+                            for (item, amount) in &items {
+                                self.player.add_item(item, *amount);
+                            }
+                        }
+                        GameCommand::Milestone() => {
+                            self.get_current_milestone(ctx);
+                        }
+                        GameCommand::Winning() => match self.player.milestone {
+                            0 => {
+                                let sender = self.get_screen_sender()?;
+                                let popup = Popup::new(RLColor::GREEN, "Die Nachricht kann nicht gesendet werden solange das System nicht wiederhergestellt ist".to_string(), 5);
+                                sender.send(StackCommand::Popup(popup)).unwrap()
+                            }
+                            1 => {
+                                self.player.milestone += 1;
+                                self.get_current_milestone(ctx)
+                            }
+                            _ => {}
+                        },
+                        _ => {}
+                    };
+                }
+            }
+            _ => {}
         }
+        // Regenerate life if applicable
+        self.player
+            .life_regeneration(&self.screen_sender.as_ref().unwrap().clone());
+        self.machines.iter_mut().for_each(|machine| machine.tick(1));
+
         Ok(())
     }
 
-    /// Paints the current resource level of air, energy and life as a bar on the screen.
+    /// Paints the current resource level of air, energy and life as a bar on the screen and
+    /// draws the amount of every resource in the inventory.
     fn draw_resources(&self, canvas: &mut Canvas, scale: Vec2, ctx: &mut Context) -> RLResult {
         self.player
             .resources
@@ -116,6 +191,42 @@ impl GameState {
             .for_each(drop);
         Ok(())
     }
+    /// draws the handbook while pressing the H key
+    pub fn draw_handbook(&self, canvas: &mut Canvas, ctx: &mut Context) {
+        let scale = get_scale(ctx);
+        let image = self.assets.get("Handbook.png").unwrap();
+        draw!(canvas, image, Vec2::new(700.0, 300.0), scale);
+        let trade_text = self
+            .machines
+            .iter()
+            .map(|machine| {
+                machine
+                    .trades
+                    .iter()
+                    .map(|trade| (trade.name.clone(), trade.cost.clone()))
+            })
+            .flatten()
+            .collect::<Vec<(String, Vec<(Item, i32)>)>>();
+        trade_text
+            .into_iter()
+            .enumerate()
+            .for_each(|(number, trade)| {
+                let mut text = format!("{}: ", trade.0);
+                trade.1.iter().for_each(|item| {
+                    text.push_str(&format!("{}: {}, ", item.0.name, item.1));
+                });
+                let mut graphic_text =
+                    graphics::Text::new(TextFragment::new(text).color(RLColor::BLACK));
+                graphic_text.set_scale(15.0);
+                draw!(
+                    canvas,
+                    &graphic_text,
+                    Vec2::new(800.0, 400.0 + (number * 20) as f32),
+                    scale
+                );
+            });
+    }
+    /// Iterates trough the inventory and draws the amount of every item in the inventory.
     fn draw_items(&self, canvas: &mut Canvas, ctx: &mut Context) -> RLResult {
         self.player
             .inventory
@@ -143,7 +254,7 @@ impl GameState {
         Ok(())
     }
     /// Loads the assets. Has to be called before drawing the game.
-    pub(crate) fn load_assets(&mut self, ctx: &mut Context) -> RLResult {
+    pub(crate) fn init(&mut self, ctx: &mut Context) -> RLResult {
         info!("Loading assets");
         read_dir("assets")?.for_each(|file| {
             let file = file.unwrap();
@@ -152,14 +263,57 @@ impl GameState {
             self.assets
                 .insert(name, Image::from_bytes(ctx, bytes.as_slice()).unwrap());
         });
+
         if self.assets.is_empty() {
             return Err(RLError::AssetError("Could not find assets!".to_string()));
         }
+        let (sender, receiver) = channel();
+        self.sender = Some(sender);
+        self.receiver = Some(receiver);
         Ok(())
+    }
+    pub(crate) fn init_all_machines(&mut self) {
+        let machine_assets: Vec<Vec<Image>> = self
+            .machines
+            .iter()
+            .map(|m| m.name.clone())
+            .map(|name| {
+                if self.assets.contains_key(&format!("{name}.png")) {
+                    vec![self.assets.get(&format!("{name}.png")).unwrap().clone()]
+                } else {
+                    vec![
+                        self.assets
+                            .get(&format!("{name}_Broken.png"))
+                            .unwrap()
+                            .clone(),
+                        self.assets
+                            .get(&format!("{name}_Idle.png"))
+                            .unwrap()
+                            .clone(),
+                        self.assets
+                            .get(&format!("{name}_Running.png"))
+                            .unwrap()
+                            .clone(),
+                    ]
+                }
+            })
+            .collect();
+        self.machines
+            .iter_mut()
+            .zip(machine_assets)
+            .for_each(|(m, a)| {
+                m.init(
+                    a.as_slice(),
+                    self.sender.clone().unwrap(),
+                    self.screen_sender.clone().unwrap(),
+                );
+            });
     }
 
     /// Saves the active game state to a file. The boolean value "milestone" determines whether this is a milestone or an autosave.
     /// If the file already exists, it will be overwritten.
+    /// # Arguments
+    /// * `milestone` - Boolean value that determines whether this is a milestone save or an autosave.
     pub(crate) fn save(&self, milestone: bool) -> RLResult {
         let save_data = serde_yaml::to_string(self)?;
         // Create the folder if it doesn't exist
@@ -175,6 +329,8 @@ impl GameState {
     }
     /// Loads a game state from a file. The boolean value "milestone" determines whether this is a milestone or an autosave.
     /// If the file doesn't exist, it will return a default game state.
+    /// # Arguments
+    /// * `milestone` - Whether to load the milestone or the autosave
     pub fn load(milestone: bool) -> RLResult<GameState> {
         let save_data = if milestone {
             info!("Loading milestone...");
@@ -183,73 +339,102 @@ impl GameState {
             info!("Loading autosave...");
             fs::read_to_string("./saves/autosave.yaml")
         }?;
-        let game_state: GameState = serde_yaml::from_str(&save_data)?;
+        let mut game_state: GameState = serde_yaml::from_str(&save_data)?;
+
         Ok(game_state)
     }
-
-    pub(crate) fn get_interactable(&self) -> Option<&Box<dyn Area>> {
-        self.areas
-            .iter()
-            .find(|area| area.is_interactable(self.player.position))
+    /// Returns the area the player needs to stand in to interact with a machine
+    pub(crate) fn get_interactable(&mut self) -> Option<&mut Machine> {
+        self.machines
+            .iter_mut()
+            .find(|machine| machine.is_interactable(self.player.position))
     }
 
     /// Returns if the player would collide with a border if they moved in the given direction
+    /// # Arguments
+    /// * `next_player_pos` - The direction the player wants to move
     fn border_collision_detection(next_player_pos: (usize, usize)) -> bool {
-        next_player_pos.0 >= 1750 // Right border
-            || next_player_pos.1 >= 850 // Bottom border
-            || next_player_pos.0 <= 255 // Left border
-            || next_player_pos.1 <= 220 // Top border
+        next_player_pos.0 >= MAP_BORDER[0] // Right border
+            || next_player_pos.1 >= MAP_BORDER[1] // Bottom border
+            || next_player_pos.0 <= MAP_BORDER[2] // Left border
+            || next_player_pos.1 <= MAP_BORDER[3] // Top border
     }
     /// Returns a boolean indicating whether the player would collide with a machine or border if they moved in the given direction
     ///
     /// # Arguments
     /// * `next_player_pos` - A tuple containing the next position of the player
     pub(crate) fn collision_detection(&self, next_player_pos: (usize, usize)) -> bool {
-        self.areas
+        self.machines
             .iter()
-            .map(|area| area.get_collision_area())
+            .map(|area| area.hitbox)
             .any(|area| is_colliding(next_player_pos, &area))
             || Self::border_collision_detection(next_player_pos)
     }
     /// Returns the asset if it exists
-    fn get_asset(&self, name: &str) -> RLResult<&Image> {
+    /// # Arguments
+    /// * `name` - The name of the asset
+    pub fn get_asset(&self, name: &str) -> RLResult<&Image> {
         self.assets.get(name).ok_or(RLError::AssetError(format!(
             "Could not find asset with name {}",
             name
         )))
     }
-    pub fn check_on_milestone(&mut self, milestone_machines: Vec<String>) {
+    /// Checks if the milestone is reached which means the vec of repaired machines
+    /// contain the vec of machines needed to reach the next milestone.
+    /// # Arguments
+    /// * `milestone_machines` - A vec of machines needed to reach the next milestone
+    pub fn check_on_milestone_machines(&mut self, milestone_machines: Vec<String>) -> bool {
+        //let a = self.areas.get(0).unwrap().deref(); erst einfügen, wenn man es auch benutzt
+
         let running_machine = self
             .machines
             .iter()
-            .filter(|machine| machine.state != Broken)
-            .map(|m| m.name.clone())
-            .collect::<Vec<String>>();
+            .filter(|m| m.state != Broken)
+            .map(|m| &m.name)
+            .collect::<Vec<&String>>();
+
         if milestone_machines
             .iter()
-            .all(|machine| running_machine.contains(&machine.to_string()))
+            .all(|machine| running_machine.contains(&machine))
         {
-            self.player.milestone += 1;
-            info!("Player reached milestone {}", self.player.milestone);
-            self.save(true).unwrap();
+            return true;
         }
+        return false;
     }
-    fn get_current_milestone(&mut self) {
+    /// Decides what happens if a certain milestone is reached
+    /// divided into 3 milestones
+    fn get_current_milestone(&mut self, ctx: &mut Context) {
         match self.player.milestone {
-            1 => {
+            0 => {
                 if self.player.match_milestone == 0 {
                     self.player.resources_change.oxygen = -1;
                     self.player.resources_change.energy = -1;
                     self.player.last_damage = 0;
+                    self.events = Vec::new();
                     self.player.match_milestone = 1;
                 }
-                self.check_on_milestone(vec![
-                    "Sauerstoffgenerator".to_string(),
+                if self.check_on_milestone_machines(vec![
+                    "Oxygen".to_string(),
                     "Stromgenerator".to_string(),
-                ]);
+                ]) {
+                    self.player.milestone += 1;
+                    info!("Player reached milestone {}", self.player.milestone);
+                    self.save(true).unwrap();
+                }
             }
             2 => {
-                self.check_on_milestone(vec!["Kommunikationsmodul".to_string()]);
+                info!("Player won the Game");
+                self.player.milestone += 1;
+                self.save(true).unwrap();
+                self.save(false).unwrap();
+                let cloned_sender = self.screen_sender.as_mut().unwrap().clone();
+                self.screen_sender
+                    .as_mut()
+                    .expect("No Screensender")
+                    .send(StackCommand::Push(Box::new(InfoScreen::new_winningscreen(
+                        cloned_sender,
+                    ))))
+                    .expect("Show Winning Screen");
             }
             _ => {}
         }
@@ -272,12 +457,12 @@ impl GameState {
 }
 
 impl Screen for GameState {
-    /// Updates the game and handles input. Returns StackCommand::Pop when Escape is pressed.
+    /// Updates the game and handles input. Returns `StackCommand::Pop` when Escape is pressed.
     fn update(&mut self, ctx: &mut Context) -> RLResult {
-        const DESIRED_FPS: u32 = 60;
         if ctx.time.check_update_time(DESIRED_FPS) {
-            self.tick()?;
+            self.tick(ctx)?;
             self.move_player(ctx)?;
+            Event::update_events(ctx, self);
         }
         Ok(())
     }
@@ -295,17 +480,23 @@ impl Screen for GameState {
             scale
         );
         self.draw_resources(&mut canvas, scale, ctx)?;
+        self.draw_machines(&mut canvas, scale, ctx)?;
         self.draw_items(&mut canvas, ctx)?;
+        if self.handbook_visible {
+            self.draw_handbook(&mut canvas, ctx);
+        }
         #[cfg(debug_assertions)]
         {
             let fps = graphics::Text::new(format!("FPS: {}", ctx.time.fps()));
             draw!(canvas, &fps, Vec2::new(0.0, 0.0), scale);
         }
+
         canvas.finish(ctx)?;
         Ok(())
     }
     fn set_sender(&mut self, sender: Sender<StackCommand>) {
         self.screen_sender = Some(sender);
+        self.init_all_machines();
     }
 }
 
@@ -341,6 +532,7 @@ mod test {
         GameState::default().save(true).unwrap();
         let _gamestate_loaded = GameState::load(true).unwrap();
     }
+
     #[test]
     fn test_delete_saves() {
         GameState::delete_saves().unwrap();
