@@ -1,7 +1,5 @@
 //! miscellaneous utilities used by the backend
 use crate::backend::constants::{PLAYER_ICON_SIZE, SCREEN_RESOLUTION};
-use crate::game_core::item::Item;
-use crate::languages::german::{BENZIN, GEDRUCKTESTEIL, SUPER_GLUE};
 use ggez::glam::Vec2;
 use ggez::graphics::{Color, Rect};
 use ggez::Context;
@@ -18,22 +16,16 @@ pub fn get_scale(ctx: &Context) -> Vec2 {
     Vec2::new(width / SCREEN_RESOLUTION.0, height / SCREEN_RESOLUTION.1)
 }
 
-/// Returns if the player would collide with a machine if they moved in the given direction
+/// Returns if the player collides with an area
+/// # Arguments
+/// * `player_pos` - The position of the player
+/// * `direction` - The direction the player wants to move
 #[inline(always)]
 pub fn is_colliding(player_pos: (usize, usize), area: &Rect) -> bool {
     area.x < player_pos.0 as f32 + PLAYER_ICON_SIZE.0 as f32
         && area.x + area.w > player_pos.0 as f32
         && area.y < player_pos.1 as f32 + PLAYER_ICON_SIZE.1 as f32
         && area.y + area.h > player_pos.1 as f32
-}
-///Returns a Inventory with set sizen for all items
-#[inline(always)]
-pub fn gen_inventory(super_glue: i32, benzin: i32, gedrucktesteil: i32) -> Vec<(Item, i32)> {
-    vec![
-        (Item::new(SUPER_GLUE), super_glue),
-        (Item::new(BENZIN), benzin),
-        (Item::new(GEDRUCKTESTEIL), gedrucktesteil),
-    ]
 }
 
 /// This macro is used for simplifying drawing with scaling.
@@ -50,7 +42,13 @@ macro_rules! draw {
         $canvas.draw($asset, get_draw_params($position, $scale, $color))
     };
 }
-
+/// Used in the draw macro to get the draw parameters
+/// # Arguments
+/// * `position` - The optional position of the asset
+/// * `scale` - The scale of the asset
+/// * `color` - The optional color of the asset
+/// # Returns
+/// The draw parameters
 pub fn get_draw_params(
     position: Option<Vec2>,
     scale: Vec2,
