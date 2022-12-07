@@ -10,6 +10,9 @@ pub struct Item {
     pub img: String,
 }
 impl Item {
+    /// Create new `Item`
+    /// # Arguments
+    /// * `item` - 3 long String-Array, which defines the name, info text and image path for the created item
     pub(crate) fn new(item: [&str; 3]) -> Self {
         info!(
             "New Item created: name: {}, info_text: {}, img path: {}",
