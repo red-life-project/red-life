@@ -92,3 +92,13 @@ pub const INFORMATIONSPOPUP_MARS: [&str; 2] = [
 pub const TRADE_CONFLICT_POPUP: [&str; 1] = ["Es fehlen folgende Items, um den Trade auszuführen:"];
 /// Constants for the time_name.
 pub const TIME_NAME: [&str; 1] = ["Zeit"];
+/// Contains all machine names as a vec of strings.
+pub(crate) const MACHINE_NAMES: [&str; 7] = [
+    "Test",
+    "Sauerstoffgenerator",
+    "Stromgenerator",
+    "Werkermaschine",
+    "3D-Drucker",
+    "Kommunikationsmodul",
+    "Loch",
+];
