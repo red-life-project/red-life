@@ -25,7 +25,7 @@ pub enum Message {
 pub struct MainMenu {
     buttons: Vec<Button>,
     receiver: Receiver<Message>,
-    sender: Sender<Message>,
+    _sender: Sender<Message>,
     screen_sender: Sender<StackCommand>,
     background_image: Option<graphics::Image>,
 }
@@ -69,21 +69,10 @@ impl MainMenu {
         Self {
             buttons: vec![start_button, new_game_button, exit_button],
             receiver,
-            sender,
+            _sender: sender,
             screen_sender,
             background_image: None,
         }
-    }
-    //@rewierer ich würde diese funktion später entfernen da ich sie aktuel noch nutzen mag
-    fn DEGUG_SKIP(&self, ctx: &mut Context) -> RLResult {
-        // self.screen_sender.send(StackCommand::Pop)?;
-        self.screen_sender.send(StackCommand::Push(Box::new({
-            let mut gamestate = GameState::new(ctx).unwrap_or_default();
-            gamestate.init(ctx)?;
-            gamestate.create_machine();
-            gamestate
-        })))?;
-        Ok(())
     }
 }
 

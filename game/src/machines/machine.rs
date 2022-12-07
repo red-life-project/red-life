@@ -118,13 +118,6 @@ impl Machine {
             screen_sender: None,
         }
     }
-    pub fn no_energy(&mut self) {
-        if self.running_resources.energy < 0 {
-            // if the is no energy and the machine needs some we stop it
-            self.change_state_to(&Idle);
-            self.time_change = 0;
-        }
-    }
     fn get_trade(&self) -> Trade {
         // returns the first possible trade
         if let Some(t) = self.trades.iter().find(|t| t.initial_state == self.state) {

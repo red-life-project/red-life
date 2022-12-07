@@ -130,7 +130,7 @@ impl GameState {
                             }
                         }
                         GameCommand::Milestone() => {
-                            self.get_current_milestone(ctx);
+                            self.get_current_milestone();
                         }
                         GameCommand::Winning() => match self.player.milestone {
                             0 => {
@@ -140,7 +140,7 @@ impl GameState {
                             }
                             1 => {
                                 self.player.milestone += 1;
-                                self.get_current_milestone(ctx)
+                                self.get_current_milestone()
                             }
                             _ => {}
                         },
@@ -254,7 +254,7 @@ impl GameState {
     }
 
     /// A function which draws the current time on the screen
-    pub(crate) fn draw_time(&self, canvas: &mut Canvas, scale: Vec2, ctx: &mut Context) {
+    pub(crate) fn draw_time(&self, canvas: &mut Canvas, scale: Vec2) {
         let time = self.player.time / DESIRED_FPS;
         let time_text = format!(
             "{}: {}h {}m {}s",
@@ -423,7 +423,7 @@ impl GameState {
     }
     /// Decides what happens if a certain milestone is reached
     /// divided into 3 milestones
-    fn get_current_milestone(&mut self, ctx: &mut Context) {
+    fn get_current_milestone(&mut self) {
         match self.player.milestone {
             0 => {
                 if self.player.match_milestone == 0 {
@@ -482,7 +482,7 @@ impl Screen for GameState {
         if ctx.time.check_update_time(DESIRED_FPS) {
             self.tick(ctx)?;
             self.move_player(ctx)?;
-            Event::update_events(ctx, self);
+            Event::update_events(ctx, self)?;
         }
         Ok(())
     }
@@ -510,7 +510,7 @@ impl Screen for GameState {
             let fps = graphics::Text::new(format!("FPS: {}", ctx.time.fps()));
             draw!(canvas, &fps, Vec2::new(0.0, 0.0), scale);
         }
-        self.draw_time(&mut canvas, scale, ctx);
+        self.draw_time(&mut canvas, scale);
         canvas.finish(ctx)?;
         Ok(())
     }
