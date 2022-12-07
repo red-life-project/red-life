@@ -368,7 +368,7 @@ impl GameState {
             });
     }
 
-    /// Saves the active game state to a file. The boolean value "milestone" determines whether this is a milestone or an autosave.
+    /// Saves the active gamestate to a file. The boolean value "milestone" determines whether this is a milestone or an autosave.
     /// If the file already exists, it will be overwritten.
     /// # Arguments
     /// * `milestone` - Boolean value that determines whether this is a milestone save or an autosave.
