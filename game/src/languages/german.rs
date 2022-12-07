@@ -102,6 +102,6 @@ pub(crate) const MACHINE_NAMES: [&str; 8] = [
     "Werkermaschine",
     "3D-Drucker",
     "Kommunikationsmodul",
-    "Loch1",
-    "Loch2",
+    "Loch",
+    "Loch",
 ];
