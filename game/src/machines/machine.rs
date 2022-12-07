@@ -188,9 +188,8 @@ impl Machine {
             // If one item is not available in enough quantity
             let mut missing_items = String::new();
             dif.iter()
-                .map(|(item, amount)| format!("{amount} {}\n", item.name))
+                .map(|(item, amount)| format!("*{} {}\n", amount * -1, item.name))
                 .for_each(|x| missing_items.push_str(&x));
-
             let popup = Popup::info(format!("{}\n{missing_items}", TRADE_CONFLICT_POPUP[0]));
             info!(
                 "Popup for Trade conflict sent: Missing Items: {}",
