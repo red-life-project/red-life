@@ -94,7 +94,7 @@ pub const TRADE_CONFLICT_POPUP: [&str; 1] = ["Es fehlen folgende Items, um den T
 pub const TIME_NAME: [&str; 1] = ["Zeit"];
 /// Contains all machine names as a vec of strings.
 pub(crate) const MACHINE_NAMES: [&str; 7] = [
-    "Test",
+    "test",
     "Sauerstoffgenerator",
     "Stromgenerator",
     "Werkermaschine",

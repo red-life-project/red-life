@@ -1,10 +1,11 @@
-use crate::backend::gamestate::GameState;
+use crate::backend::gamestate::{GameCommand, GameState};
 use crate::backend::screen::{Screen, StackCommand};
 use crate::backend::utils::*;
 use crate::languages::german::{
     ADDITIONAL_INFO_STRING, AIR_AND_ENERGY_STRING, AIR_STRING, BUTTON_INFO, DEATH_REASON_STRING,
     ENERGY_STRING, INTRO_TEXT, TUTORIAL_TEXT, WINNING_TEXT,
 };
+
 use crate::main_menu::mainmenu::MainMenu;
 use crate::{draw, RLResult};
 use ggez::glam::Vec2;
@@ -123,23 +124,28 @@ impl Screen for InfoScreen {
         let keys = ctx.keyboard.pressed_keys();
         // Here we only use the first pressed key, but in the infoscreen this is fine
         match (self.screentype, keys.iter().next()) {
-            (_, None) => Ok(()),
-            (ScreenType::Intro, Some(key)) => match key {
-                VirtualKeyCode::Space => {
-                    self.sender.send(StackCommand::Pop)?;
-                    Ok(self.sender.send(StackCommand::Push(Box::new({
-                        let mut gamestate = GameState::new(ctx).unwrap_or_default();
-                        gamestate.init(ctx)?;
-                        gamestate.create_machine();
-                        gamestate
-                    })))?)
-                }
-                VirtualKeyCode::Escape => Ok(self.sender.send(StackCommand::Pop)?),
-                _ => Ok(()),
-            },
-            (_, Some(VirtualKeyCode::Escape)) => Ok(self.sender.send(StackCommand::Push(
-                Box::new(MainMenu::new(self.sender.clone())),
-            ))?),
+            (ScreenType::Intro, Some(&VirtualKeyCode::Space)) => {
+                self.sender.send(StackCommand::Pop)?;
+                self.sender.send(StackCommand::Push(Box::new({
+                    let mut gamestate = GameState::new(ctx)?;
+                    gamestate.init(ctx)?;
+                    gamestate.create_machine();
+                    gamestate
+                        .sender
+                        .as_mut()
+                        .unwrap()
+                        .send(GameCommand::Milestone)?;
+                    gamestate
+                })))?;
+                Ok(())
+            }
+            (ScreenType::Death | ScreenType::Winning, Some(&VirtualKeyCode::Escape)) => {
+                self.sender.send(StackCommand::Pop)?;
+                self.sender.send(StackCommand::Push(Box::new(MainMenu::new(
+                    self.sender.clone(),
+                ))))?;
+                Ok(())
+            }
             _ => Ok(()),
         }
     }
