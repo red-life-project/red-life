@@ -45,14 +45,16 @@ jobs:
         if : ${{ runner.os == 'Windows' }}
         uses: vimtor/action-zip@v1
         with:
-          files: assets/ target/release/game.exe
+          files: assets target/release/game.exe
+          recursive: true
           dest: game_windows.zip
 
       - name: Zip Release Linux
         if : ${{ runner.os == 'Linux' }}
         uses: vimtor/action-zip@v1
         with:
-          files: assets/ target/release/game
+          files: assets target/release/game
+          recursive: true
           dest: game_linux.zip
 
       - name: Upload Release
