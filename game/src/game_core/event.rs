@@ -138,7 +138,7 @@ impl Event {
     pub fn action(&self, restore: bool, gamestate: &mut GameState) -> RLResult {
         const KOMETENEINSCHLAG_NAME: &str = KOMETENEINSCHLAG[0];
         const STROMAUSTFALL_NAME: &str = STROMAUSFALL[0];
-        let sender = gamestate.get_screen_sender()?;
+        let sender = gamestate.get_screen_sender()?.clone();
 
         // handle event effects
         match self.name.as_str() {
@@ -148,7 +148,7 @@ impl Event {
                     if machine.name == "Loch" && machine.state != State::Running {
                         Event::send_popup(
                             &self.popup_message,
-                            sender,
+                            &sender,
                             &self.popup_type,
                             &self.name,
                         );
@@ -163,7 +163,7 @@ impl Event {
                     if machine.name == "Stromgenerator" && machine.state == State::Running {
                         Event::send_popup(
                             &self.popup_message,
-                            sender,
+                            &sender,
                             &self.popup_type,
                             &self.name,
                         );
@@ -173,7 +173,7 @@ impl Event {
             }
             // apply direct resource changes if there are any and the event is not handled above
             _ => {
-                Event::send_popup(&self.popup_message, sender, &self.popup_type, &self.name);
+                Event::send_popup(&self.popup_message, &sender, &self.popup_type, &self.name)?;
                 if let Some(resources) = self.resources {
                     if restore {
                         gamestate.player.resources_change =
