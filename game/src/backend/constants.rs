@@ -128,7 +128,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                 ),
             ],
             Resources {
-                oxygen: 20,
+                oxygen: 25,
                 energy: -30,
                 life: 0,
             },
@@ -145,7 +145,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
             vec![
                 Trade::new(
                     "fueling_Stromgenerator".to_string(),
-                    1000,
+                    700,
                     State::Broken,
                     State::Running,
                     true,
@@ -170,7 +170,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
             ],
             Resources {
                 oxygen: -5,
-                energy: 50,
+                energy: 200,
                 life: 0,
             },
         ),
@@ -316,7 +316,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
             Resources {
                 oxygen: -20,
                 energy: -5,
-                life: -2,
+                life: 0,
             },
         ),
     ]
