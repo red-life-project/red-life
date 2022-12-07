@@ -20,7 +20,6 @@ use crate::{draw, RLResult};
 use ggez::glam::Vec2;
 use ggez::graphics::{Canvas, Image, TextFragment};
 use ggez::graphics::{DrawMode, Mesh, Rect};
-use ggez::input::mouse::CursorIcon::Text;
 use ggez::{graphics, Context};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -131,7 +130,7 @@ impl GameState {
                             }
                         }
                         GameCommand::Milestone() => {
-                            self.get_current_milestone(ctx);
+                            self.get_current_milestone();
                         }
                         GameCommand::Winning() => match self.player.milestone {
                             0 => {
@@ -141,11 +140,10 @@ impl GameState {
                             }
                             1 => {
                                 self.player.milestone += 1;
-                                self.get_current_milestone(ctx)
+                                self.get_current_milestone()
                             }
                             _ => {}
                         },
-                        _ => {}
                     };
                 }
             }
@@ -153,8 +151,10 @@ impl GameState {
         }
         // Regenerate life if applicable
         self.player
-            .life_regeneration(&self.screen_sender.as_ref().unwrap().clone());
-        self.machines.iter_mut().for_each(|machine| machine.tick(1));
+            .life_regeneration(&self.screen_sender.as_ref().unwrap().clone())?;
+        for machine in &mut self.machines {
+            machine.tick(1)?;
+        }
 
         Ok(())
     }
@@ -254,7 +254,7 @@ impl GameState {
     }
 
     /// A function which draws the current time on the screen
-    pub(crate) fn draw_time(&self, canvas: &mut Canvas, scale: Vec2, ctx: &mut Context) {
+    pub(crate) fn draw_time(&self, canvas: &mut Canvas, scale: Vec2) {
         let time = self.player.time / DESIRED_FPS;
         let time_text = format!(
             "{}: {}h {}m {}s",
@@ -359,7 +359,7 @@ impl GameState {
             info!("Loading autosave...");
             fs::read_to_string("./saves/autosave.yaml")
         }?;
-        let mut game_state: GameState = serde_yaml::from_str(&save_data)?;
+        let game_state: GameState = serde_yaml::from_str(&save_data)?;
 
         Ok(game_state)
     }
@@ -423,7 +423,7 @@ impl GameState {
     }
     /// Decides what happens if a certain milestone is reached
     /// divided into 3 milestones
-    fn get_current_milestone(&mut self, ctx: &mut Context) {
+    fn get_current_milestone(&mut self) {
         match self.player.milestone {
             0 => {
                 if self.player.match_milestone == 0 {
@@ -482,7 +482,7 @@ impl Screen for GameState {
         if ctx.time.check_update_time(DESIRED_FPS) {
             self.tick(ctx)?;
             self.move_player(ctx)?;
-            Event::update_events(ctx, self);
+            Event::update_events(ctx, self)?;
         }
         Ok(())
     }
@@ -510,7 +510,7 @@ impl Screen for GameState {
             let fps = graphics::Text::new(format!("FPS: {}", ctx.time.fps()));
             draw!(canvas, &fps, Vec2::new(0.0, 0.0), scale);
         }
-        self.draw_time(&mut canvas, scale, ctx);
+        self.draw_time(&mut canvas, scale);
         canvas.finish(ctx)?;
         Ok(())
     }

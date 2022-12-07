@@ -1,7 +1,6 @@
 //! Contains all constants that are necessary for the game to played.
 use crate::backend::rlcolor::RLColor;
 use crate::backend::utils::gen_inventory;
-use crate::game_core::resources;
 use crate::game_core::resources::Resources;
 use crate::machines::machine::State;
 use crate::machines::trade::Trade;

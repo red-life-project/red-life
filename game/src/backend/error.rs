@@ -1,3 +1,4 @@
+use crate::backend::gamestate::GameCommand;
 use crate::backend::screen::StackCommand;
 use ggez::GameError;
 use std::io;
@@ -35,12 +36,24 @@ impl From<io::Error> for RLError {
     }
 }
 
-impl From<SendError<StackCommand>> for RLError {
-    fn from(value: SendError<StackCommand>) -> Self {
-        error!("Could not send StackCommand: {}", value);
-        RLError::IO(io::Error::new(
-            io::ErrorKind::Other,
-            format!("Could not send StackCommand: {value}"),
-        ))
+fn create_io_error(message: &str, value: impl std::fmt::Display) -> RLError {
+    error!("{}: {}", message, value);
+    RLError::IO(io::Error::new(
+        io::ErrorKind::Other,
+        format!("{}: {}", message, value),
+    ))
+}
+/// Macro for converting a SendError to an RLError
+#[macro_export]
+macro_rules! convert_senderror {
+    ($($command:ty),*) => {
+        $(
+            impl From<SendError<$command>> for RLError {
+                fn from(value: SendError<$command>) -> Self {
+                    create_io_error(stringify!($command), value)
+                }
+            }
+        )*
     }
 }
+convert_senderror!(GameCommand, StackCommand);
