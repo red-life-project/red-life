@@ -112,8 +112,13 @@ impl InfoScreen {
         }
     }
 }
-
+/// Implement the `Screen` trait for `InfoScreen`
 impl Screen for InfoScreen {
+    /// Updates the screen every tick, checks if esc or space is pressed
+    /// # Arguments
+    /// * `ctx` - The ggez context
+    /// # Returns
+    /// `RLResult` - Returns an `RLResult`.
     fn update(&mut self, ctx: &mut Context) -> RLResult {
         if self.background_image.is_none() {
             self.background_image = Some(graphics::Image::from_bytes(
@@ -150,6 +155,10 @@ impl Screen for InfoScreen {
         }
     }
     /// Draws the info screen with the given background and two texts
+    /// # Arguments
+    /// * `ctx` - The ggez context
+    /// # Returns
+    /// `RLResult` - Returns an `RLResult`.
     fn draw(&self, ctx: &mut Context) -> RLResult {
         let scale = get_scale(ctx);
         let mut canvas = graphics::Canvas::from_frame(ctx, graphics::Color::RED);
@@ -160,7 +169,7 @@ impl Screen for InfoScreen {
         if self.screentype == ScreenType::Intro {
             draw!(canvas, &self.main_message, Vec2::new(300., 300.), scale);
         } else {
-            draw!(canvas, &self.main_message, Vec2::new(372., 500.), scale);
+            draw!(canvas, &self.main_message, Vec2::new(220., 500.), scale);
         }
 
         draw!(canvas, &self.additional_text, Vec2::new(646., 740.), scale);

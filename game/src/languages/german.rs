@@ -48,10 +48,10 @@ pub const NASA_INFO: [&str; 5] = [
 pub const GAME_INFO: [&str; 1] = ["Lebensregeneration gestartet"];
 
 /// Constants for all strings used in deathscreen
-pub const AIR_STRING: &str = "Luft";
-pub const ENERGY_STRING: &str = "Energie";
-pub const AIR_AND_ENERGY_STRING: &str = "Luft und Energie";
-pub const DEATH_REASON_STRING: &str = "Dein Todesgrund: ";
+pub const AIR_STRING: &str = "zu wenig Luft";
+pub const ENERGY_STRING: &str = "Kälte";
+pub const AIR_AND_ENERGY_STRING: &str = "Kälte und zu wenig Luft";
+pub const DEATH_REASON_STRING: &str = "Du bist gestorben an";
 pub const ADDITIONAL_INFO_STRING: &str = "Bitte drücke ESC!";
 
 /// Constant for all strings used in IntroScreen
@@ -92,13 +92,16 @@ pub const INFORMATIONSPOPUP_MARS: [&str; 2] = [
 pub const TRADE_CONFLICT_POPUP: [&str; 1] = ["Es fehlen folgende Items, um den Trade auszuführen:"];
 /// Constants for the time_name.
 pub const TIME_NAME: [&str; 1] = ["Zeit"];
+/// Constants for the text of the button in the main menu
+pub const BUTTON_TEXT: [&str; 3] = ["Fortsetzen", "Neues Spiel", "Beenden"];
 /// Contains all machine names as a vec of strings.
-pub(crate) const MACHINE_NAMES: [&str; 7] = [
+pub(crate) const MACHINE_NAMES: [&str; 8] = [
     "test",
     "Sauerstoffgenerator",
     "Stromgenerator",
     "Werkermaschine",
     "3D-Drucker",
     "Kommunikationsmodul",
+    "Loch",
     "Loch",
 ];
