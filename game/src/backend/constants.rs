@@ -2,6 +2,7 @@
 use crate::backend::rlcolor::RLColor;
 use crate::backend::utils::gen_inventory;
 use crate::game_core::resources::Resources;
+use crate::languages::german::MACHINE_NAMES;
 use crate::machines::machine::State;
 use crate::machines::trade::Trade;
 use ggez::graphics::{Color, Rect};
@@ -41,7 +42,6 @@ pub(crate) const SANDSTURM_CR: Resources<i16> = Resources {
     energy: 5,
     life: 0,
 };
-
 #[allow(clippy::too_many_lines)]
 /// Generates all machines with all their name, position, trades and resources.
 /// # Returns
@@ -53,7 +53,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
     [
         // Test machine, only for testing purpose -- should be deleted in final game
         (
-            "test".to_string(),
+            MACHINE_NAMES[0].to_string(),
             Rect {
                 x: 700.0,
                 y: 500.0,
@@ -94,7 +94,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
         ),
         // Oxygen machine
         (
-            "Sauerstoffgenerator".to_string(),
+            MACHINE_NAMES[1].to_string(),
             Rect {
                 x: 280.0,
                 y: 230.0,
@@ -135,7 +135,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
         ),
         // Electricity machine
         (
-            "Stromgenerator".to_string(),
+            MACHINE_NAMES[2].to_string(),
             Rect {
                 x: 282.0,
                 y: 752.0,
@@ -176,7 +176,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
         ),
         // worker machine
         (
-            "Werkermaschine".to_string(),
+            MACHINE_NAMES[3].to_string(),
             Rect {
                 x: 1000.0,
                 y: 780.0,
@@ -209,7 +209,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
         ),
         // 3d_printer machine
         (
-            "3d_printer".to_string(),
+            MACHINE_NAMES[4].to_string(),
             Rect {
                 x: 930.0,
                 y: 230.0,
@@ -242,7 +242,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
         ),
         // Communication module
         (
-            "Kommunikationsmodul".to_string(),
+            MACHINE_NAMES[5].to_string(),
             Rect {
                 x: 1640.0,
                 y: 320.0,
@@ -275,7 +275,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
         ),
         // first hole
         (
-            "Loch".to_string(),
+            MACHINE_NAMES[6].to_string(),
             Rect {
                 x: 680.0,
                 y: 230.0,
