@@ -17,12 +17,7 @@ impl GameState {
         info!("Generating all Machines");
         let all = gen_all_machines();
         for m in &all {
-            //code can panic @cargo bene fix
             let new_ms = Machine::new_by_const(m.clone());
-            //      self.inti_machine(&mut new_ms);
-            /*          if new_ms.name == *"Loch" {
-               new_ms.change_state_to(&Running);
-            }*/
             self.machines.push(new_ms);
         }
     }
@@ -35,21 +30,22 @@ impl GameState {
                 y: machine.hitbox.y,
             };
             draw!(canvas, image, pos, scale);
-            // Draws the machine status on top of the machine
-            let status = Mesh::new_circle(
-                ctx,
-                ggez::graphics::DrawMode::fill(),
-                Vec2::new(0., 0.),
-                15.0,
-                0.1,
-                machine.state.clone().into(),
-            )?;
+            if !machine.name.contains("Loch") {
+                // Draws the machine status on top of the machine
+                let status = Mesh::new_circle(
+                    ctx,
+                    ggez::graphics::DrawMode::fill(),
+                    Vec2::new(0., 0.),
+                    15.0,
+                    0.1,
+                    machine.state.clone().into(),
+                )?;
+                pos.x += 20.;
+                pos.y += 20.;
+                draw!(canvas, &status, pos, scale);
+            };
             // Draws the machine timer on top of the machine
             let time = machine.get_time_percentage();
-
-            pos.x += 20.;
-            pos.y += 20.;
-            draw!(canvas, &status, pos, scale);
             if time > 0. {
                 // Bar for machine Timer
                 pos.x += 40.;
