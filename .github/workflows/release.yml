@@ -37,18 +37,22 @@ jobs:
       - name: Run build --release
         run: cargo build --release
 
+      - name: Strip Release
+        if : ${{ runner.os == 'Linux' }}
+        run: strip target/release/game
+
       - name: Zip Release
         if : ${{ runner.os == 'Windows' }}
         uses: vimtor/action-zip@v1
         with:
-          files: assets target/release/game.exe
+          files: assets/ target/release/game.exe
           dest: game_windows.zip
 
       - name: Zip Release Linux
         if : ${{ runner.os == 'Linux' }}
         uses: vimtor/action-zip@v1
         with:
-          files: assets target/release/game
+          files: assets/ target/release/game
           dest: game_linux.zip
 
       - name: Upload Release
