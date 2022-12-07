@@ -8,7 +8,7 @@ use crate::backend::utils::get_scale;
 use crate::backend::utils::*;
 use crate::backend::{error::RLError, screen::Screen};
 use crate::game_core::event::Event;
-use crate::game_core::infoscreen::DeathReason::Both;
+use crate::game_core::infoscreen::DeathReason::{Energy, Oxygen};
 use crate::game_core::infoscreen::InfoScreen;
 use crate::game_core::item::Item;
 use crate::game_core::player::Player;
@@ -118,10 +118,18 @@ impl GameState {
             3 => {
                 // Check if the player is dead
                 if let Some(empty_resource) = Resources::get_death_reason(&self.player.resources) {
-                    match empty_resource {
-                        Both => self.player.resources_change.life = -20,
-                        _ => self.player.resources_change.life = -10,
+
+                    if empty_resource == Energy
+                    {
+                        self.machines
+                            .iter_mut().for_each(|machine|machine.no_energy());
+                        self.player.resources_change.life = -10;
                     }
+                    if empty_resource == Oxygen
+                    {
+                        self.player.resources_change.life = -20;
+                    }
+
                     if self.player.resources.life == 0 {
                         let gamestate = GameState::load(true).unwrap_or_default();
                         gamestate.save(false)?;

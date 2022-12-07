@@ -176,8 +176,12 @@ impl Machine {
     }
 
     pub(crate) fn interact(&mut self, player: &mut Player) -> Player {
+
         let trade = self.get_trade();
         if trade.name == *"no_Trade" {
+            return player.clone();
+        }
+        if player.resources.energy == 0 && self.running_resources.energy < 0 && self.name != "Loch" {
             return player.clone();
         }
 
@@ -285,6 +289,15 @@ impl Machine {
             -1.0
         } else {
             f32::from(self.time_remaining) / f32::from(self.og_time)
+        }
+    }
+    pub fn no_energy(&mut self) {
+        if self.running_resources.energy < 0 && self.name != "Loch"{
+            // if the is no energy and the machine needs some we stop it
+            if self.state == Running {
+                self.change_state_to(&Idle);
+                self.time_change = 0;
+            }
         }
     }
 }
