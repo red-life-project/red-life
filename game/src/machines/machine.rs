@@ -85,7 +85,11 @@ impl Machine {
         self.sprite = Some(images.into());
         self.sender = Some(sender);
         self.screen_sender = Some(screen_sender);
+        if self.name == "Loch" {
+            self.change_state_to(&Running);
+        }
     }
+
 
     fn new(
         // this function is supposed to be private

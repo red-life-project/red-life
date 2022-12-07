@@ -201,7 +201,7 @@ impl Event {
             });
         }
         // have a maximum of one active event
-        if ctx.time.ticks() % 1000 == 0 {
+        if ctx.time.ticks() % 10 == 0 {
             // generate new event
             // might not return an event
             let gen_event =
