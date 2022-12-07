@@ -62,7 +62,7 @@ impl Event {
     /// if no Event is active it either chooses a random event of the Event enum or nothing every 60 seconds
     pub fn event_generator() -> Option<Event> {
         let rng = fastrand::Rng::new();
-        let event = rng.usize(..50);
+        let event = rng.usize(..10);
         match event {
             0 => Some(Event::new(
                 KOMETENEINSCHLAG,
@@ -71,22 +71,22 @@ impl Event {
                 None,
                 0,
             )),
-            11 => Some(Event::new(
+            1 => Some(Event::new(
                 INFORMATIONSPOPUP_NASA,
                 NASA_INFO[rng.usize(..4)],
                 "nasa",
                 None,
                 0,
             )),
-            22 => Some(Event::new(
+            2 => Some(Event::new(
                 SANDSTURM,
                 WARNINGS[2],
                 "warning",
                 Some(SANDSTURM_CR),
                 10,
             )),
-            33 => Some(Event::new(STROMAUSFALL, WARNINGS[1], "warning", None, 0)),
-            44 => Some(Event::new(
+            3 => Some(Event::new(STROMAUSFALL, WARNINGS[1], "warning", None, 0)),
+            4 => Some(Event::new(
                 INFORMATIONSPOPUP_MARS,
                 MARS_INFO[rng.usize(..5)],
                 "mars",
@@ -227,7 +227,7 @@ impl Event {
             }
         }
         // have a maximum of one active event
-        if ctx.time.ticks() % 100 == 0 {
+        if ctx.time.ticks() % 200 == 0 {
             // generate new event
             // might not return an event
             let gen_event = Event::event_generator();

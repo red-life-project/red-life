@@ -85,8 +85,6 @@ impl Screen for MainMenu {
     /// # Returns
     /// `RLResult` - Returns an `RLResult`.
     fn update(&mut self, ctx: &mut Context) -> RLResult {
-        //@rewierer ich würde diese funktion später entfernen da ich sie aktuel noch nutzen mag
-        //self.DEGUG_SKIP(ctx);
 
         let scale = get_scale(ctx);
         self.buttons.iter_mut().for_each(|btn| {
