@@ -31,8 +31,8 @@ use tracing::info;
 pub enum GameCommand {
     AddItems(Vec<(Item, i32)>),
     ResourceChange(Resources<i16>),
-    Milestone(),
-    Winning(),
+    Milestone,
+    Winning,
 }
 
 /// This is the game state. It contains all the data that is needed to run the game.
@@ -146,10 +146,10 @@ impl GameState {
                                 self.player.add_item(item, *amount);
                             }
                         }
-                        GameCommand::Milestone() => {
-                            self.get_current_milestone();
+                        GameCommand::Milestone => {
+                            self.get_current_milestone()?;
                         }
-                        GameCommand::Winning() => match self.player.milestone {
+                        GameCommand::Winning => match self.player.milestone {
                             0 => {
                                 let sender = self.get_screen_sender()?;
                                 let popup = Popup::new(RLColor::GREEN, "Die Nachricht kann nicht gesendet werden solange das System nicht wiederhergestellt ist".to_string(), 5);
@@ -157,7 +157,7 @@ impl GameState {
                             }
                             1 => {
                                 self.player.milestone += 1;
-                                self.get_current_milestone()
+                                self.get_current_milestone()?;
                             }
                             _ => {}
                         },
@@ -465,27 +465,30 @@ impl GameState {
         {
             return true;
         }
-        return false;
+        false
+    }
+    fn increase_milestone(&mut self) -> RLResult {
+        self.player.milestone += 1;
+        info!("Player reached milestone {}", self.player.milestone);
+        self.save(true)?;
+        Ok(())
     }
     /// Decides what happens if a certain milestone is reached
     /// divided into 3 milestones
-    fn get_current_milestone(&mut self) {
+    fn get_current_milestone(&mut self) -> RLResult {
         match self.player.milestone {
             0 => {
-                if self.player.match_milestone == 0 {
-                    self.player.resources_change.oxygen = -1;
-                    self.player.resources_change.energy = -1;
-                    self.player.last_damage = 0;
-                    self.events = Vec::new();
-                    self.player.match_milestone = 1;
-                }
+                self.player.resources_change.oxygen = -1;
+                self.player.resources_change.energy = -1;
+                self.player.last_damage = 0;
+                self.increase_milestone()?;
+            }
+            1 => {
                 if self.check_on_milestone_machines(vec![
                     MACHINE_NAMES[1].to_string(),
                     MACHINE_NAMES[2].to_string(),
                 ]) {
-                    self.player.milestone += 1;
-                    info!("Player reached milestone {}", self.player.milestone);
-                    self.save(true).unwrap();
+                    self.increase_milestone()?;
                 }
             }
             2 => {
@@ -502,6 +505,7 @@ impl GameState {
             }
             _ => {}
         }
+        Ok(())
     }
     /// Deletes all files in the directory saves, returns Ok if saves directory does not exist
     pub(crate) fn delete_saves() -> RLResult {
