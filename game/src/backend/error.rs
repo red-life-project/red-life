@@ -5,13 +5,19 @@ use std::io;
 use std::sync::mpsc::SendError;
 use tracing::error;
 
+/// All Red Life errors
 #[warn(clippy::enum_variant_names)]
 #[derive(Debug)]
 pub enum RLError {
+    /// All Errors caused by Drawing
     Ui(GameError),
+    /// Errors caused by loading the assets
     AssetError(String),
+    /// Errors caused by loading the Gamestate from a file
     Deserialization(serde_yaml::Error),
+    /// FileSystem and other errors
     IO(io::Error),
+    /// Errors where senders/receivers were not intialized properly
     InitError(String),
 }
 
@@ -35,12 +41,12 @@ impl From<io::Error> for RLError {
         RLError::IO(e)
     }
 }
-
+/// Creates an Io Error
 fn create_io_error(message: &str, value: impl std::fmt::Display) -> RLError {
     error!("{}: {}", message, value);
     RLError::IO(io::Error::new(
         io::ErrorKind::Other,
-        format!("{}: {}", message, value),
+        format!("{message}: {value}"),
     ))
 }
 /// Macro for converting a SendError to an RLError
