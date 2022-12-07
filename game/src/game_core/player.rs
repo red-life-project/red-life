@@ -23,6 +23,7 @@ pub struct Player {
     pub milestone: usize,
     pub(crate) last_damage: u32,
     pub(crate) match_milestone: i8,
+    pub(crate) time: u32,
 }
 impl Default for Player {
     fn default() -> Self {
@@ -48,6 +49,7 @@ impl Default for Player {
             milestone: 0,
             last_damage: 0,
             match_milestone: 0,
+            time: 0,
         }
     }
 }

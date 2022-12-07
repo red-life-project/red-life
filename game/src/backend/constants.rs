@@ -1,6 +1,7 @@
-//! This file contains constants that are necessary for the game.
+//! Contains all constants that are necessary for the game to played.
 use crate::backend::rlcolor::RLColor;
 use crate::backend::utils::gen_inventory;
+use crate::game_core::resources;
 use crate::game_core::resources::Resources;
 use crate::machines::machine::State;
 use crate::machines::trade::Trade;
@@ -8,12 +9,14 @@ use ggez::graphics::{Color, Rect};
 use std::string::ToString;
 
 /// Contains the screen resolution of the game.
+/// The game is designed to be played in 1920x1080.
+/// The game will be scaled to the screen resolution of the user.
 pub const SCREEN_RESOLUTION: (f32, f32) = (1920., 1080.);
 
 /// Contains the desired FPS of the game-loop.
 pub(crate) const DESIRED_FPS: u32 = 60;
 
-/// Contains the map border( x-right, y-bottom, x-left, y-top)
+/// Contains the coordinates map border( x-right, y-bottom, x-left, y-top)
 pub const MAP_BORDER: [usize; 4] = [1780, 860, 270, 220];
 
 /// Contains the position of the resource bars.
@@ -22,23 +25,39 @@ pub(crate) const RESOURCE_POSITION: [f32; 3] = [316.0, 639.0, 1373.0];
 /// Contains the color used for the resource bars.
 pub(crate) const COLORS: [Color; 3] = [RLColor::BLUE, RLColor::GOLD, RLColor::DARK_RED];
 
-/// Contains the size of the player icon to scale the collision area.
+/// Contains the size of the player icon (in px) to scale the collision area.
 pub(crate) const PLAYER_ICON_SIZE: (usize, usize) = (58, 96);
 
-/// Contains the interaction radius of the player.
+/// Contains the interaction radius of the player (in px).
 pub(crate) const PLAYER_INTERACTION_RADIUS: f32 = 50.;
-// pub const MACHINE_POSITIONS: [[i32; 4]; 4] = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
-pub const HANDBOOK_TEXT: &str = "Werker macht was Sauerstoff auch Ich auch";
+
+/// Contains the movement speed of the player (in px).
+pub const MOVEMENT_SPEED: usize = 10;
+
+/// Contains the position of the time.
+pub(crate) const TIME_POSITION: (f32, f32) = (1205., 960.);
+
+pub(crate) const SANDSTURM_CR: Resources<i16> = Resources {
+    oxygen: 0,
+    energy: 5,
+    life: 0,
+};
 
 #[allow(clippy::too_many_lines)]
+/// Generates all machines with all their name, position, trades and resources.
+/// # Returns
+/// `String` - The name of the machine.
+/// `Rect` - Returns the collision area of the machine.
+/// `Vec<Trade>` - Returns the trades of the machine.
+/// `Vec<Resources>` - Returns the resources of the machine.
 pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>); 7] {
     [
-        //Die Test maschine wird zu testen des spieles genutzt. Sie gibt einem free items
+        // Test machine, only for testing purpose -- should be deleted in final game
         (
             "test".to_string(),
             Rect {
-                x: 284.0,
-                y: 230.0,
+                x: 700.0,
+                y: 500.0,
                 w: 100.0,
                 h: 100.0,
             },
@@ -74,14 +93,14 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                 life: -4,
             },
         ),
-        //Definition Oxygen Maschine
+        // Oxygen machine
         (
-            "Oxygen".to_string(),
+            "Sauerstoffgenerator".to_string(),
             Rect {
-                x: 600.0,
-                y: 250.0,
-                w: 100.0,
-                h: 100.0,
+                x: 280.0,
+                y: 230.0,
+                w: 350.0,
+                h: 182.0,
             },
             vec![
                 Trade::new(
@@ -115,14 +134,14 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                 life: 0,
             },
         ),
-        //Definition Stromgenerator Maschine
+        // Electricity machine
         (
             "Stromgenerator".to_string(),
             Rect {
-                x: 284.0,
-                y: 740.0,
-                w: 200.0,
-                h: 200.0,
+                x: 282.0,
+                y: 752.0,
+                w: 194.0,
+                h: 189.0,
             },
             vec![
                 Trade::new(
@@ -156,14 +175,14 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                 life: 0,
             },
         ),
-        //Definition werkermaschine Maschine
+        // worker machine
         (
-            "werkermaschine".to_string(),
+            "Werkermaschine".to_string(),
             Rect {
-                x: 600.0,
-                y: 600.0,
-                w: 200.0,
-                h: 100.0,
+                x: 1000.0,
+                y: 780.0,
+                w: 300.0,
+                h: 150.0,
             },
             vec![
                 Trade::new(
@@ -189,14 +208,14 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                 life: 0,
             },
         ),
-        //Definition 3d_printer Maschine
+        // 3d_printer machine
         (
             "3d_printer".to_string(),
             Rect {
-                x: 1722.0,
-                y: 840.0,
-                w: 100.0,
-                h: 100.0,
+                x: 930.0,
+                y: 230.0,
+                w: 200.0,
+                h: 148.0,
             },
             vec![
                 Trade::new(
@@ -222,14 +241,14 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                 life: 0,
             },
         ),
-        //Definition Kommunikationsmodul Maschine
+        // Communication module
         (
             "Kommunikationsmodul".to_string(),
             Rect {
-                x: 1000.0,
-                y: 230.0,
-                w: 300.0,
-                h: 100.0,
+                x: 1640.0,
+                y: 320.0,
+                w: 175.0,
+                h: 477.0,
             },
             vec![
                 Trade::new(
@@ -255,14 +274,14 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                 life: 0,
             },
         ),
-        //Definition vom ersten Loch
+        // first hole
         (
             "Loch".to_string(),
             Rect {
-                x: 1722.0,
+                x: 680.0,
                 y: 230.0,
-                w: 100.0,
-                h: 100.0,
+                w: 32.0,
+                h: 18.0,
             },
             vec![Trade::new(
                 "repair_Loch".to_string(),

@@ -4,7 +4,9 @@ use std::cmp::PartialOrd;
 use std::ops;
 
 /// This struct holds data for resources
-/// This is used to describe the current state and change rate of the player's resources.
+/// This is used to describe the current state and change rate of the player's resources
+/// Use type `i16` for the resource change rate
+/// Use type `u16` for the resource amount
 #[derive(Copy, Default, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Resources<T: PartialOrd> {
     pub(crate) oxygen: T,
@@ -12,6 +14,7 @@ pub struct Resources<T: PartialOrd> {
     pub(crate) life: T,
 }
 
+/// Define how struct will be created from an iterator
 impl FromIterator<u16> for Resources<u16> {
     fn from_iter<I: IntoIterator<Item = u16>>(iter: I) -> Self {
         let mut iter = iter.into_iter();
@@ -23,6 +26,7 @@ impl FromIterator<u16> for Resources<u16> {
     }
 }
 
+/// Define how resources can be compared
 impl<T: PartialOrd> IntoIterator for Resources<T> {
     type Item = T;
     type IntoIter = std::array::IntoIter<T, 3>;
@@ -32,6 +36,8 @@ impl<T: PartialOrd> IntoIterator for Resources<T> {
     }
 }
 
+/// Implement the `Add` trait for `Resources`
+/// Use '+' to add two `Resources` of the same type
 impl<T: ops::Add<Output = T> + PartialOrd> ops::Add<Resources<T>> for Resources<T> {
     type Output = Self;
     fn add(self, rhs: Self) -> Self {
@@ -43,6 +49,8 @@ impl<T: ops::Add<Output = T> + PartialOrd> ops::Add<Resources<T>> for Resources<
     }
 }
 
+/// Implement the `Sub` trait for `Resources`
+/// Use '-' to substract two `Resources` of the same type from each other
 impl<T: ops::Sub<Output = T> + PartialOrd> ops::Sub<Resources<T>> for Resources<T> {
     type Output = Self;
     fn sub(self, rhs: Self) -> Self {
@@ -54,6 +62,7 @@ impl<T: ops::Sub<Output = T> + PartialOrd> ops::Sub<Resources<T>> for Resources<
     }
 }
 
+/// Implement function to check on death reason for `Resources` of type `u16`
 impl Resources<u16> {
     /// This function returns the value that reached zero first
     /// If no value reached zero, it returns None
