@@ -78,15 +78,15 @@ impl Event {
                 None,
                 0,
             )),
-            2 => Some(Event::new(
+            2|9 => Some(Event::new(STROMAUSFALL, WARNINGS[1], "warning", None, 0)),
+            3|5|7 => Some(Event::new(
                 SANDSTURM,
                 WARNINGS[2],
                 "warning",
                 Some(SANDSTURM_CR),
                 10,
             )),
-            3 => Some(Event::new(STROMAUSFALL, WARNINGS[1], "warning", None, 0)),
-            4 => Some(Event::new(
+            4|6|8 => Some(Event::new(
                 INFORMATIONSPOPUP_MARS,
                 MARS_INFO[rng.usize(..5)],
                 "mars",
