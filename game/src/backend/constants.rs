@@ -53,7 +53,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
     [
         // Test machine, only for testing purpose -- should be deleted in final game
         (
-            "test".to_string(),
+            MACHINE_NAMES[0].to_string(),
             Rect {
                 x: 700.0,
                 y: 500.0,
@@ -62,7 +62,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
             },
             vec![
                 Trade::new(
-                    MACHINE_NAMES[0].to_string(),
+                    "free_items".to_string(),
                     10,
                     State::Broken,
                     State::Idle,
