@@ -49,7 +49,7 @@ pub(crate) const SANDSTURM_CR: Resources<i16> = Resources {
 /// `Rect` - Returns the collision area of the machine.
 /// `Vec<Trade>` - Returns the trades of the machine.
 /// `Vec<Resources>` - Returns the resources of the machine.
-pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>); 7] {
+pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>); 8] {
     [
         // Test machine, only for testing purpose -- should be deleted in final game
         (
@@ -279,6 +279,29 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
             Rect {
                 x: 680.0,
                 y: 230.0,
+                w: 32.0,
+                h: 18.0,
+            },
+            vec![Trade::new(
+                "repair_Loch".to_string(),
+                100,
+                State::Running,
+                State::Idle,
+                false,
+                gen_inventory(2, 0, 0),
+            )],
+            Resources {
+                oxygen: -20,
+                energy: -5,
+                life: -2,
+            },
+        ),
+        // second hole
+        (
+            MACHINE_NAMES[7].to_string(),
+            Rect {
+                x: 680.0,
+                y: 900.0,
                 w: 32.0,
                 h: 18.0,
             },
