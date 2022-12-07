@@ -1,9 +1,8 @@
+//! Starts the game and handles window configuration
 #![warn(clippy::pedantic)]
 #![allow(clippy::cast_precision_loss)]
 #![allow(clippy::cast_possible_truncation)]
-#[allow(unused_imports)]
 mod backend;
-mod basis;
 mod game_core;
 mod languages;
 mod machines;
@@ -13,6 +12,7 @@ use crate::backend::constants::SCREEN_RESOLUTION;
 use crate::backend::{error, screen::Screenstack};
 use chrono::Local;
 
+#[cfg_attr(debug_assertions, allow(unused_imports))]
 use ggez::conf::FullscreenType;
 use ggez::{event, Context};
 use std::fs::File;
@@ -21,7 +21,8 @@ use tracing::{info, Level};
 
 /// Our own Result Type for custom Error handling.
 pub type RLResult<T = ()> = Result<T, error::RLError>;
-
+/// The main function, which is the entry point of our program
+/// builds the game and sets window configuration, icon and title
 pub fn main() -> RLResult {
     let cb = ggez::ContextBuilder::new("red-life", "red-life-project")
         .resources_dir_name("assets")
@@ -52,7 +53,7 @@ pub fn main() -> RLResult {
     let screen_stack = Screenstack::default();
     event::run(ctx, event_loop, screen_stack);
 }
-
+/// Sets the window size to resizeable in debug mode and fullscreen mode for release mode
 fn window_setup(ctx: &mut Context) -> RLResult {
     ctx.gfx.set_resizable(true)?;
     ctx.gfx

@@ -3,7 +3,6 @@ use crate::backend::gamestate::GameCommand;
 use crate::backend::rlcolor::RLColor;
 use crate::backend::screen::{Popup, StackCommand};
 use crate::backend::utils::is_colliding;
-use crate::game_core::infoscreen::InfoScreen;
 use crate::game_core::item::Item;
 use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
@@ -15,6 +14,7 @@ use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
 use std::sync::mpsc::Sender;
 
+use crate::RLResult;
 use ggez::graphics::{Color, Image, Rect};
 use tracing::info;
 
@@ -122,13 +122,6 @@ impl Machine {
             screen_sender: None,
         }
     }
-    pub fn no_energy(&mut self) {
-        if self.running_resources.energy < 0 {
-            // if the is no energy and the machine needs some we stop it
-            self.change_state_to(&Idle);
-            self.time_change = 0;
-        }
-    }
     fn get_trade(&self) -> Trade {
         // returns the first possible trade
         if let Some(t) = self.trades.iter().find(|t| t.initial_state == self.state) {
@@ -140,7 +133,7 @@ impl Machine {
     fn check_change(&self, before: &State, after: &State) {
         match (before, after) {
             (Broken, Idle) => {
-                let _e = self.sender.as_ref().unwrap().send(GameCommand::Milestone());
+                let _e = self.sender.as_ref().unwrap().send(GameCommand::Milestone);
             }
             (Idle, Broken) => {}
             (Broken | Idle, Running) => {
@@ -149,7 +142,7 @@ impl Machine {
                     .as_ref()
                     .unwrap()
                     .send(GameCommand::ResourceChange(self.running_resources));
-                let _e = self.sender.as_ref().unwrap().send(GameCommand::Milestone());
+                let _e = self.sender.as_ref().unwrap().send(GameCommand::Milestone);
             }
             (Running, Broken | Idle) => {
                 let _e = self
@@ -257,7 +250,7 @@ impl Machine {
         self.sprite.as_ref().unwrap().get(self.state.clone())
     }
 
-    pub(crate) fn tick(&mut self, delta_ticks: i16) {
+    pub(crate) fn tick(&mut self, delta_ticks: i16) -> RLResult {
         self.time_remaining -= self.time_change * delta_ticks;
         if self.time_remaining < 0 {
             //timer run out
@@ -266,7 +259,7 @@ impl Machine {
 
             if self.last_trade.return_after_timer {
                 if self.last_trade.name == "Notfall_signal_absetzen" {
-                    let _e = self.sender.as_ref().unwrap().send(GameCommand::Winning());
+                    let _e = self.sender.as_ref().unwrap().send(GameCommand::Winning);
                 }
 
                 self.change_state_to(&self.last_trade.initial_state.clone());
@@ -284,9 +277,9 @@ impl Machine {
             self.sender
                 .as_ref()
                 .unwrap()
-                .send(GameCommand::AddItems(items))
-                .expect("could not send AddItems");
+                .send(GameCommand::AddItems(items))?;
         }
+        Ok(())
     }
     pub(crate) fn get_time_percentage(&self) -> f32 {
         if self.og_time == 0 {

@@ -1,6 +1,7 @@
 //! Contains the game logic, updates the game and draws the current board
-use crate::backend::constants::{COLORS, HANDBOOK_TEXT};
-use crate::backend::constants::{DESIRED_FPS, MAP_BORDER, RESOURCE_POSITION};
+use crate::backend::constants::{
+    COLORS, DESIRED_FPS, MAP_BORDER, RESOURCE_POSITION, TIME_POSITION,
+};
 use crate::backend::rlcolor::RLColor;
 use crate::backend::screen::{Popup, StackCommand};
 use crate::backend::utils::get_scale;
@@ -12,14 +13,13 @@ use crate::game_core::infoscreen::InfoScreen;
 use crate::game_core::item::Item;
 use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
-use crate::languages::german::RESOURCE_NAME;
+use crate::languages::german::{MACHINE_NAMES, RESOURCE_NAME, TIME_NAME};
 use crate::machines::machine::Machine;
 use crate::machines::machine::State::Broken;
 use crate::{draw, RLResult};
 use ggez::glam::Vec2;
 use ggez::graphics::{Canvas, Image, TextFragment};
 use ggez::graphics::{DrawMode, Mesh, Rect};
-use ggez::input::mouse::CursorIcon::Text;
 use ggez::{graphics, Context};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -31,8 +31,8 @@ use tracing::info;
 pub enum GameCommand {
     AddItems(Vec<(Item, i32)>),
     ResourceChange(Resources<i16>),
-    Milestone(),
-    Winning(),
+    Milestone,
+    Winning,
 }
 
 /// This is the game state. It contains all the data that is needed to run the game.
@@ -40,32 +40,45 @@ pub enum GameCommand {
 pub struct GameState {
     /// Contains the current player position, resources(air, energy, life) and the inventory and their change rates
     pub player: Player,
+    /// Contains the event generator and the current events
     pub(crate) events: Vec<Event>,
+    /// Contains the machines and their current state
     pub machines: Vec<Machine>,
     #[serde(skip)]
+    /// Contains all the images that are needed to draw the game on the canvas
     assets: HashMap<String, Image>,
     #[serde(skip)]
+    /// Needed to send Messages to the `Screenstack` to make changes to the screen
     pub(crate) screen_sender: Option<Sender<StackCommand>>,
     #[serde(skip)]
+    /// Needed to receive Messages from `machine` to make changes to the game
     pub(crate) receiver: Option<Receiver<GameCommand>>,
     #[serde(skip)]
+    /// Needed to send Messages to `machine` to make changes to the game
     pub(crate) sender: Option<Sender<GameCommand>>,
+    /// Defines if the handbook is currently open
     pub handbook_visible: bool,
 }
 
 impl PartialEq for GameState {
+    /// Compares the game state by comparing the player, events and machines
     fn eq(&self, other: &Self) -> bool {
         self.player == other.player && self.player.milestone == other.player.milestone
     }
 }
 
 impl GameState {
+    /// Gets the screen sender
+    /// # Returns
+    /// * `RLResult<Sender<StackCommand>>`: The screen sender in a `RLResult` to handle Initialization errors
     pub(crate) fn get_screen_sender(&mut self) -> RLResult<&mut Sender<StackCommand>> {
         self.screen_sender.as_mut().ok_or(RLError::InitError(
             "No Screen Sender found. The game was not initialized properly".to_string(),
         ))
     }
-
+    /// Gets the receiver
+    /// # Returns
+    /// * `RLResult<Receiver<GameCommand>>`: The receiver in a `RLResult` to handle Initialization errors
     pub(crate) fn get_receiver(&mut self) -> RLResult<&Receiver<GameCommand>> {
         self.receiver.as_ref().ok_or(RLError::InitError(
             "No Receiver found. The game was not initialized properly".to_string(),
@@ -74,6 +87,8 @@ impl GameState {
 
     /// Creates a new game state at the beginning of the game and after every loading.
     /// It loads all the assets and creates the areas of the machines.
+    /// # Returns
+    /// * `RLResult<GameState>`: The new game state initialized in a `RLResult` to handle setup errors
     pub fn new(ctx: &mut Context) -> RLResult<Self> {
         info!("Creating new gamestate");
         let (sender, receiver) = channel();
@@ -86,9 +101,9 @@ impl GameState {
     /// Gets called every tick in the update fn to update the internal game logic.
     /// It updates the player resources, checks on the current milestone if the player has reached a new one
     /// and checks if the player has died.
+    /// # Returns
+    /// * `RLResult`: A `RLResult` to validate the success of the tick function
     pub fn tick(&mut self, ctx: &mut Context) -> RLResult {
-        // TODO: Remove this if fixed
-        assert!(self.receiver.is_some(), "No receiver found");
         // Update Resources
         self.player.resources = self
             .player
@@ -97,7 +112,7 @@ impl GameState {
             .zip(self.player.resources_change.into_iter())
             .map(|(a, b)| a.saturating_add_signed(b))
             .collect::<Resources<_>>();
-
+        self.player.time += 1;
         // Everything inside will only be checked every 15 ticks
         match ctx.time.ticks() % 15 {
             3 => {
@@ -131,22 +146,21 @@ impl GameState {
                                 self.player.add_item(item, *amount);
                             }
                         }
-                        GameCommand::Milestone() => {
-                            self.get_current_milestone(ctx);
+                        GameCommand::Milestone => {
+                            self.get_current_milestone()?;
                         }
-                        GameCommand::Winning() => match self.player.milestone {
-                            0 => {
+                        GameCommand::Winning => match self.player.milestone {
+                            1 => {
                                 let sender = self.get_screen_sender()?;
                                 let popup = Popup::new(RLColor::GREEN, "Die Nachricht kann nicht gesendet werden solange das System nicht wiederhergestellt ist".to_string(), 5);
                                 sender.send(StackCommand::Popup(popup)).unwrap()
                             }
-                            1 => {
+                            2 => {
                                 self.player.milestone += 1;
-                                self.get_current_milestone(ctx)
+                                self.get_current_milestone()?;
                             }
                             _ => {}
                         },
-                        _ => {}
                     };
                 }
             }
@@ -154,14 +168,22 @@ impl GameState {
         }
         // Regenerate life if applicable
         self.player
-            .life_regeneration(&self.screen_sender.as_ref().unwrap().clone());
-        self.machines.iter_mut().for_each(|machine| machine.tick(1));
+            .life_regeneration(&self.screen_sender.as_ref().unwrap().clone())?;
+        for machine in &mut self.machines {
+            machine.tick(1)?;
+        }
 
         Ok(())
     }
 
     /// Paints the current resource level of air, energy and life as a bar on the screen and
     /// draws the amount of every resource in the inventory.
+    /// # Arguments
+    /// * `canvas`: The canvas to draw on
+    /// * `scale`: The scale of the canvas
+    /// * `ctx`: The `Context` of the game
+    /// # Returns
+    /// * `RLResult`: A `RLResult` to validate the success of the paint function
     fn draw_resources(&self, canvas: &mut Canvas, scale: Vec2, ctx: &mut Context) -> RLResult {
         self.player
             .resources
@@ -191,7 +213,10 @@ impl GameState {
             .for_each(drop);
         Ok(())
     }
-    /// draws the handbook while pressing the H key
+    /// Draws the handbook while pressing the H key
+    /// # Arguments
+    /// * `canvas`: The canvas to draw on
+    /// * `ctx`: The `Context` of the game
     pub fn draw_handbook(&self, canvas: &mut Canvas, ctx: &mut Context) {
         let scale = get_scale(ctx);
         let image = self.assets.get("Handbook.png").unwrap();
@@ -227,6 +252,11 @@ impl GameState {
             });
     }
     /// Iterates trough the inventory and draws the amount of every item in the inventory.
+    /// # Arguments
+    /// * `canvas` - The current canvas to draw on
+    /// * `ctx` - The current game context
+    /// # Returns
+    /// * `RLResult` - validates if the drawing was successful
     fn draw_items(&self, canvas: &mut Canvas, ctx: &mut Context) -> RLResult {
         self.player
             .inventory
@@ -253,7 +283,32 @@ impl GameState {
             .for_each(drop);
         Ok(())
     }
+
+    /// Draws the current time on the screen
+    /// # Arguments
+    /// * `canvas` - The current canvas to draw on
+    /// * `scale` - The current scale of the canvas
+    pub(crate) fn draw_time(&self, canvas: &mut Canvas, scale: Vec2) {
+        let time = self.player.time / DESIRED_FPS;
+        let time_text = format!(
+            "{}: {}h {}m {}s",
+            TIME_NAME[0],
+            time / 3600,
+            time / 60,
+            time % 60
+        );
+        let mut text = graphics::Text::new(TextFragment::new(time_text).color(RLColor::BLACK));
+        text.set_scale(18.0);
+        draw!(
+            canvas,
+            &text,
+            Vec2::new(TIME_POSITION.0, TIME_POSITION.1),
+            scale
+        );
+    }
     /// Loads the assets. Has to be called before drawing the game.
+    /// # Returns
+    /// * `RLResult` - Returns an error if the assets could not be loaded.
     pub(crate) fn init(&mut self, ctx: &mut Context) -> RLResult {
         info!("Loading assets");
         read_dir("assets")?.for_each(|file| {
@@ -272,12 +327,15 @@ impl GameState {
         self.receiver = Some(receiver);
         Ok(())
     }
+    /// Initializes the machines by loading the assets for all existing machines
+    /// Checks if the machine has one asset if it does not change or three assets for the different states
     pub(crate) fn init_all_machines(&mut self) {
         let machine_assets: Vec<Vec<Image>> = self
             .machines
             .iter()
             .map(|m| m.name.clone())
             .map(|name| {
+                info!("Loading assets for {}", name);
                 if self.assets.contains_key(&format!("{name}.png")) {
                     vec![self.assets.get(&format!("{name}.png")).unwrap().clone()]
                 } else {
@@ -314,16 +372,18 @@ impl GameState {
     /// If the file already exists, it will be overwritten.
     /// # Arguments
     /// * `milestone` - Boolean value that determines whether this is a milestone save or an autosave.
+    /// # Returns
+    /// * `RLResult` - validates if the save was successful
     pub(crate) fn save(&self, milestone: bool) -> RLResult {
         let save_data = serde_yaml::to_string(self)?;
         // Create the folder if it doesn't exist
         fs::create_dir_all("./saves")?;
         if milestone {
             fs::write("./saves/milestone.yaml", save_data)?;
-            info!("Saved gamestate as milestone");
+            info!("Saved game state as milestone");
         } else {
             fs::write("./saves/autosave.yaml", save_data)?;
-            info!("Saved gamestate as autosave");
+            info!("Saved game state as autosave");
         }
         Ok(())
     }
@@ -331,6 +391,8 @@ impl GameState {
     /// If the file doesn't exist, it will return a default game state.
     /// # Arguments
     /// * `milestone` - Whether to load the milestone or the autosave
+    /// # Returns
+    /// * `RLResult<Gamestate>` containing the loaded game state or a default game state if the file doesn't exist.
     pub fn load(milestone: bool) -> RLResult<GameState> {
         let save_data = if milestone {
             info!("Loading milestone...");
@@ -339,11 +401,13 @@ impl GameState {
             info!("Loading autosave...");
             fs::read_to_string("./saves/autosave.yaml")
         }?;
-        let mut game_state: GameState = serde_yaml::from_str(&save_data)?;
+        let game_state: GameState = serde_yaml::from_str(&save_data)?;
 
         Ok(game_state)
     }
     /// Returns the area the player needs to stand in to interact with a machine
+    /// # Returns
+    /// * `Option<&mut Machine>` - The machines the player can interact with if one exists or None
     pub(crate) fn get_interactable(&mut self) -> Option<&mut Machine> {
         self.machines
             .iter_mut()
@@ -373,6 +437,8 @@ impl GameState {
     /// Returns the asset if it exists
     /// # Arguments
     /// * `name` - The name of the asset
+    /// # Returns
+    /// * `RLResult<&Image>` - The asset if it exists
     pub fn get_asset(&self, name: &str) -> RLResult<&Image> {
         self.assets.get(name).ok_or(RLError::AssetError(format!(
             "Could not find asset with name {}",
@@ -399,34 +465,35 @@ impl GameState {
         {
             return true;
         }
-        return false;
+        false
+    }
+    fn increase_milestone(&mut self) -> RLResult {
+        self.player.milestone += 1;
+        info!("Player reached milestone {}", self.player.milestone);
+        self.save(true)?;
+        Ok(())
     }
     /// Decides what happens if a certain milestone is reached
     /// divided into 3 milestones
-    fn get_current_milestone(&mut self, ctx: &mut Context) {
+    fn get_current_milestone(&mut self) -> RLResult {
         match self.player.milestone {
             0 => {
-                if self.player.match_milestone == 0 {
-                    self.player.resources_change.oxygen = -1;
-                    self.player.resources_change.energy = -1;
-                    self.player.last_damage = 0;
-                    self.events = Vec::new();
-                    self.player.match_milestone = 1;
-                }
+                self.player.resources_change.oxygen = -1;
+                self.player.resources_change.energy = -1;
+                self.player.last_damage = 0;
+                self.increase_milestone()?;
+            }
+            1 => {
                 if self.check_on_milestone_machines(vec![
-                    "Oxygen".to_string(),
-                    "Stromgenerator".to_string(),
+                    MACHINE_NAMES[1].to_string(),
+                    MACHINE_NAMES[2].to_string(),
                 ]) {
-                    self.player.milestone += 1;
-                    info!("Player reached milestone {}", self.player.milestone);
-                    self.save(true).unwrap();
+                    self.increase_milestone()?;
                 }
             }
-            2 => {
+            3 => {
                 info!("Player won the Game");
                 self.player.milestone += 1;
-                self.save(true).unwrap();
-                self.save(false).unwrap();
                 let cloned_sender = self.screen_sender.as_mut().unwrap().clone();
                 self.screen_sender
                     .as_mut()
@@ -438,6 +505,7 @@ impl GameState {
             }
             _ => {}
         }
+        Ok(())
     }
     /// Deletes all files in the directory saves, returns Ok if saves directory does not exist
     pub(crate) fn delete_saves() -> RLResult {
@@ -462,11 +530,15 @@ impl Screen for GameState {
         if ctx.time.check_update_time(DESIRED_FPS) {
             self.tick(ctx)?;
             self.move_player(ctx)?;
-            Event::update_events(ctx, self);
+            Event::update_events(ctx, self)?;
         }
         Ok(())
     }
     /// Draws the game state to the screen.
+    /// Draws the background, the player, the machines, the resources,
+    /// the inventory and the and the handbook.
+    /// # Returns
+    /// `RLResult` validates the success of the drawing process
     fn draw(&self, ctx: &mut Context) -> RLResult {
         let scale = get_scale(ctx);
         let mut canvas = Canvas::from_frame(ctx, graphics::Color::from([0.1, 0.2, 0.3, 1.0]));
@@ -490,10 +562,13 @@ impl Screen for GameState {
             let fps = graphics::Text::new(format!("FPS: {}", ctx.time.fps()));
             draw!(canvas, &fps, Vec2::new(0.0, 0.0), scale);
         }
-
+        self.draw_time(&mut canvas, scale);
         canvas.finish(ctx)?;
         Ok(())
     }
+    /// Sets the screen sender to the given sender.
+    /// # Arguments
+    /// `sender` - The sender that is assigned to the screen sender
     fn set_sender(&mut self, sender: Sender<StackCommand>) {
         self.screen_sender = Some(sender);
         self.init_all_machines();
