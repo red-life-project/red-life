@@ -150,12 +150,12 @@ impl GameState {
                             self.get_current_milestone()?;
                         }
                         GameCommand::Winning => match self.player.milestone {
-                            0 => {
+                            1 => {
                                 let sender = self.get_screen_sender()?;
                                 let popup = Popup::new(RLColor::GREEN, "Die Nachricht kann nicht gesendet werden solange das System nicht wiederhergestellt ist".to_string(), 5);
                                 sender.send(StackCommand::Popup(popup)).unwrap()
                             }
-                            1 => {
+                            2 => {
                                 self.player.milestone += 1;
                                 self.get_current_milestone()?;
                             }
@@ -491,7 +491,7 @@ impl GameState {
                     self.increase_milestone()?;
                 }
             }
-            2 => {
+            3 => {
                 info!("Player won the Game");
                 self.player.milestone += 1;
                 let cloned_sender = self.screen_sender.as_mut().unwrap().clone();
