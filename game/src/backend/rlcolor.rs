@@ -9,7 +9,7 @@ impl RLColor {
         r: 0.49,
         g: 0.49,
         b: 0.49,
-        a: 1.,
+        a: 0.8,
     };
     /// Color: grey
     pub const GREY: Color = Color {
