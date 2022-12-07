@@ -124,7 +124,7 @@ impl GameState {
                 self.player.resources_change.life = -10;
             }
             if empty_resource == Oxygen || empty_resource == Both {
-                self.player.resources_change.life = -50;
+                self.player.resources_change.life = -60;
             }
 
             if self.player.resources.life == 0 {
