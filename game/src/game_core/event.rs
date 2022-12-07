@@ -151,7 +151,8 @@ impl Event {
                             &sender,
                             &self.popup_type,
                             &self.name,
-                        );
+                        )
+                        .unwrap();
                         machine.change_state_to(&State::Running);
                     }
                 });
@@ -166,7 +167,8 @@ impl Event {
                             &sender,
                             &self.popup_type,
                             &self.name,
-                        );
+                        )
+                        .unwrap();
                         machine.change_state_to(&State::Idle);
                     }
                 });
