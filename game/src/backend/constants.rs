@@ -277,7 +277,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
         (
             MACHINE_NAMES[6].to_string(),
             Rect {
-                x: 680.0,
+                x: 780.0,
                 y: 230.0,
                 w: 32.0,
                 h: 18.0,
