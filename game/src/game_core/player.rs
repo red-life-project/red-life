@@ -25,8 +25,6 @@ pub struct Player {
     pub milestone: usize,
     /// helper variable to check if the player lost life in the last tick
     pub(crate) last_damage: u32,
-    /// helper variable to check if the player just started the game
-    pub(crate) match_milestone: i8,
     /// contains the current ingame time
     pub(crate) time: u32,
 }
@@ -53,7 +51,6 @@ impl Default for Player {
             },
             milestone: 0,
             last_damage: 0,
-            match_milestone: 0,
             time: 0,
         }
     }
