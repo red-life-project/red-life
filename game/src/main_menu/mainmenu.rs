@@ -9,6 +9,7 @@ use crate::main_menu::mainmenu::Message::{Exit, NewGame, Start};
 use crate::RLResult;
 
 use crate::game_core::infoscreen::InfoScreen;
+use crate::languages::german::BUTTON_TEXT;
 use ggez::{graphics, Context};
 use std::sync::mpsc::{channel, Receiver, Sender};
 
@@ -40,7 +41,7 @@ impl MainMenu {
         let (sender, receiver) = channel();
 
         let start_button = Button::new(
-            "Start".to_string(),
+            BUTTON_TEXT[0].to_string(),
             Start,
             sender.clone(),
             graphics::Rect::new(1322., 350., 450., 120.),
@@ -49,7 +50,7 @@ impl MainMenu {
         );
 
         let new_game_button = Button::new(
-            "Neues Spiel".to_string(),
+            BUTTON_TEXT[1].to_string(),
             NewGame,
             sender.clone(),
             graphics::Rect::new(1322., 490., 450., 120.),
@@ -58,7 +59,7 @@ impl MainMenu {
         );
 
         let exit_button = Button::new(
-            "Beenden".to_string(),
+            BUTTON_TEXT[2].to_string(),
             Exit,
             sender.clone(),
             graphics::Rect::new(1322., 630., 450., 120.),
