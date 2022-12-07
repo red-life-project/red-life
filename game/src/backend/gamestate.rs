@@ -257,7 +257,7 @@ impl GameState {
     pub(crate) fn draw_time(&self, canvas: &mut Canvas, scale: Vec2, ctx: &mut Context) {
         let time = self.player.time / DESIRED_FPS;
         let time_text = format!(
-            "{}: {}s {}m {}s",
+            "{}: {}h {}m {}s",
             TIME_NAME[0],
             time / 3600,
             time / 60,
