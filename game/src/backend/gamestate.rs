@@ -213,7 +213,7 @@ impl GameState {
             .for_each(drop);
         Ok(())
     }
-    /// draws the handbook while pressing the H key
+    /// Draws the handbook while pressing the H key
     /// # Arguments
     /// * `canvas`: The canvas to draw on
     /// * `ctx`: The `Context` of the game
@@ -284,7 +284,7 @@ impl GameState {
         Ok(())
     }
 
-    /// A function which draws the current time on the screen
+    /// Draws the current time on the screen
     /// # Arguments
     /// * `canvas` - The current canvas to draw on
     /// * `scale` - The current scale of the canvas
@@ -327,7 +327,7 @@ impl GameState {
         self.receiver = Some(receiver);
         Ok(())
     }
-    /// initializes the machines by loading the assets for all existing machines
+    /// Initializes the machines by loading the assets for all existing machines
     /// Checks if the machine has one asset if it does not change or three assets for the different states
     pub(crate) fn init_all_machines(&mut self) {
         let machine_assets: Vec<Vec<Image>> = self
@@ -368,7 +368,7 @@ impl GameState {
             });
     }
 
-    /// Saves the active gamestate to a file. The boolean value "milestone" determines whether this is a milestone or an autosave.
+    /// Saves the active game state to a file. The boolean value "milestone" determines whether this is a milestone or an autosave.
     /// If the file already exists, it will be overwritten.
     /// # Arguments
     /// * `milestone` - Boolean value that determines whether this is a milestone save or an autosave.
@@ -380,10 +380,10 @@ impl GameState {
         fs::create_dir_all("./saves")?;
         if milestone {
             fs::write("./saves/milestone.yaml", save_data)?;
-            info!("Saved gamestate as milestone");
+            info!("Saved game state as milestone");
         } else {
             fs::write("./saves/autosave.yaml", save_data)?;
-            info!("Saved gamestate as autosave");
+            info!("Saved game state as autosave");
         }
         Ok(())
     }
@@ -500,7 +500,6 @@ impl GameState {
                     ))))
                     .expect("Show Winning Screen");
             }
-            3 => {}
             _ => {}
         }
     }
