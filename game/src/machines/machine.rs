@@ -90,7 +90,6 @@ impl Machine {
         }
     }
 
-
     fn new(
         // this function is supposed to be private
         name: String,
@@ -176,12 +175,12 @@ impl Machine {
     }
 
     pub(crate) fn interact(&mut self, player: &mut Player) -> Player {
-
         let trade = self.get_trade();
         if trade.name == *"no_Trade" {
             return player.clone();
         }
-        if player.resources.energy == 0 && self.running_resources.energy < 0 && self.name != "Loch" {
+        if player.resources.energy == 0 && self.running_resources.energy < 0 && self.name != "Loch"
+        {
             return player.clone();
         }
 
@@ -292,7 +291,7 @@ impl Machine {
         }
     }
     pub fn no_energy(&mut self) {
-        if self.running_resources.energy < 0 && self.name != "Loch"{
+        if self.running_resources.energy < 0 && self.name != "Loch" {
             // if the is no energy and the machine needs some we stop it
             if self.state == Running {
                 self.change_state_to(&Idle);

@@ -118,15 +118,13 @@ impl GameState {
             3 => {
                 // Check if the player is dead
                 if let Some(empty_resource) = Resources::get_death_reason(&self.player.resources) {
-
-                    if empty_resource == Energy
-                    {
+                    if empty_resource == Energy {
                         self.machines
-                            .iter_mut().for_each(|machine|machine.no_energy());
+                            .iter_mut()
+                            .for_each(|machine| machine.no_energy());
                         self.player.resources_change.life = -10;
                     }
-                    if empty_resource == Oxygen
-                    {
+                    if empty_resource == Oxygen {
                         self.player.resources_change.life = -20;
                     }
 
