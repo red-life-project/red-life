@@ -95,12 +95,13 @@ pub const TIME_NAME: [&str; 1] = ["Zeit"];
 /// Constants for the text of the button in the main menu
 pub const BUTTON_TEXT: [&str; 3] = ["Fortsetzen", "Neues Spiel", "Beenden"];
 /// Contains all machine names as a vec of strings.
-pub(crate) const MACHINE_NAMES: [&str; 7] = [
+pub(crate) const MACHINE_NAMES: [&str; 8] = [
     "test",
     "Sauerstoffgenerator",
     "Stromgenerator",
     "Werkermaschine",
     "3D-Drucker",
     "Kommunikationsmodul",
-    "Loch",
+    "Loch1",
+    "Loch2",
 ];
