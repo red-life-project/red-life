@@ -169,7 +169,7 @@ impl Screen for InfoScreen {
         if self.screentype == ScreenType::Intro {
             draw!(canvas, &self.main_message, Vec2::new(300., 300.), scale);
         } else {
-            draw!(canvas, &self.main_message, Vec2::new(372., 500.), scale);
+            draw!(canvas, &self.main_message, Vec2::new(220., 500.), scale);
         }
 
         draw!(canvas, &self.additional_text, Vec2::new(646., 740.), scale);

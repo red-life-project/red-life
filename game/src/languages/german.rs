@@ -48,10 +48,10 @@ pub const NASA_INFO: [&str; 5] = [
 pub const GAME_INFO: [&str; 1] = ["Lebensregeneration gestartet"];
 
 /// Constants for all strings used in deathscreen
-pub const AIR_STRING: &str = "Luft";
-pub const ENERGY_STRING: &str = "Energie";
-pub const AIR_AND_ENERGY_STRING: &str = "Luft und Energie";
-pub const DEATH_REASON_STRING: &str = "Dein Todesgrund: ";
+pub const AIR_STRING: &str = "zu wenig Luft";
+pub const ENERGY_STRING: &str = "Kälte";
+pub const AIR_AND_ENERGY_STRING: &str = "Kälte und zu wenig Luft";
+pub const DEATH_REASON_STRING: &str = "Du bist gestorben an";
 pub const ADDITIONAL_INFO_STRING: &str = "Bitte drücke ESC!";
 
 /// Constant for all strings used in IntroScreen
