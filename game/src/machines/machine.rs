@@ -178,14 +178,14 @@ impl Machine {
         }
     }
 
-    pub(crate) fn interact(&mut self, player: &mut Player) -> Player {
+    pub(crate) fn interact(&mut self, player: &mut Player) -> RLResult<Player> {
         let trade = self.get_trade();
         if trade.name == *"no_Trade" {
-            return player.clone();
+            return Ok(player.clone());
         }
         if player.resources.energy == 0 && self.running_resources.energy < 0 && self.name != "Loch"
         {
-            return player.clone();
+            return Ok(player.clone());
         }
 
         // dif = items the player has - the cost of the trade
@@ -209,9 +209,8 @@ impl Machine {
             self.screen_sender
                 .as_ref()
                 .unwrap()
-                .send(StackCommand::Popup(popup))
-                .unwrap();
-            return player.clone();
+                .send(StackCommand::Popup(popup))?;
+            return Ok(player.clone());
         }
 
         // the player has enough items for the trade so we will execute on it
@@ -249,7 +248,7 @@ impl Machine {
             self.change_state_to(&trade.resulting_state);
         }
 
-        player.clone()
+        Ok(player.clone())
     }
 
     pub(crate) fn get_graphic(&self) -> &Image {
