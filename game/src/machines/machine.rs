@@ -16,7 +16,7 @@ use std::sync::mpsc::Sender;
 
 use crate::RLResult;
 use ggez::graphics::{Color, Image, Rect};
-use tracing::{info};
+use tracing::info;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum State {
