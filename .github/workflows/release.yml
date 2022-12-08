@@ -41,19 +41,27 @@ jobs:
         if : ${{ runner.os == 'Linux' }}
         run: strip target/release/game
 
+      - name: Copy binary Linux
+        if: ${{ runner.os == 'Linux' }}
+        run: cp target/release/game game
+
+      - name: Copy binary Windows
+        if: ${{ runner.os == 'Windows' }}
+        run: cp target/release/game.exe game.exe
+
       - name: Zip Release
         if : ${{ runner.os == 'Windows' }}
         uses: vimtor/action-zip@v1
         with:
-          files: assets target/release/game.exe
           recursive: false
+          files: assets game.exe
           dest: game_windows.zip
 
       - name: Zip Release Linux
         if : ${{ runner.os == 'Linux' }}
         uses: vimtor/action-zip@v1
         with:
-          files: assets target/release/game
+          files: assets game
           recursive: false
           dest: game_linux.zip
 
