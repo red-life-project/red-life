@@ -86,8 +86,8 @@ impl Machine {
         self.sender = Some(sender);
         self.screen_sender = Some(screen_sender);
         if self.name == "Loch" {
-            if (self.hitbox.x - 780.).abs() == 0_f32 {
-                // constant
+            // Constant (pos of hole)
+            if self.hitbox.x == 780.0 {
                 self.change_state_to(&Running);
             } else {
                 self.change_state_to(&Idle);
