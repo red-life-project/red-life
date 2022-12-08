@@ -13,7 +13,10 @@ use crate::game_core::infoscreen::InfoScreen;
 use crate::game_core::item::Item;
 use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
-use crate::languages::german::{MACHINE_NAMES, RESOURCE_NAME, TIME_NAME};
+use crate::languages::german::{
+    FIRST_MILESTONE_HANDBOOK_TEXT, MACHINE_NAMES, RESOURCE_NAME, SECOND_MILESTONE_HANDBOOK_TEXT,
+    TIME_NAME,
+};
 use crate::machines::machine::Machine;
 use crate::machines::machine::State::Broken;
 use crate::{draw, RLResult};
@@ -219,38 +222,43 @@ impl GameState {
     /// # Arguments
     /// * `canvas`: The canvas to draw on
     /// * `ctx`: The `Context` of the game
-    pub fn draw_handbook(&self, canvas: &mut Canvas, ctx: &mut Context) {
+    pub fn open_handbook(&self, canvas: &mut Canvas, ctx: &mut Context) -> RLResult {
         let scale = get_scale(ctx);
         let image = self.assets.get("Handbook.png").unwrap();
         draw!(canvas, image, Vec2::new(700.0, 300.0), scale);
-        let trade_text = self
-            .machines
+        match self.player.milestone {
+            1 => {
+                self.get_handbook_text(canvas, scale, ctx, &FIRST_MILESTONE_HANDBOOK_TEXT);
+            }
+
+            2 => {
+                self.get_handbook_text(canvas, scale, ctx, &SECOND_MILESTONE_HANDBOOK_TEXT);
+            }
+            _ => {}
+        }
+        Ok(())
+    }
+
+    pub fn get_handbook_text(
+        &self,
+        canvas: &mut Canvas,
+        scale: Vec2,
+        ctx: &mut Context,
+        handbook_text: &[&str],
+    ) {
+        handbook_text
             .iter()
-            .map(|machine| {
-                machine
-                    .trades
-                    .iter()
-                    .map(|trade| (trade.name.clone(), trade.cost.clone()))
-            })
-            .flatten()
-            .collect::<Vec<(String, Vec<(Item, i32)>)>>();
-        trade_text
-            .into_iter()
             .enumerate()
-            .for_each(|(number, trade)| {
-                let mut text = format!("{}: ", trade.0);
-                trade.1.iter().for_each(|item| {
-                    text.push_str(&format!("{}: {}, ", item.0.name, item.1));
-                });
-                let mut graphic_text =
-                    graphics::Text::new(TextFragment::new(text).color(RLColor::BLACK));
-                graphic_text.set_scale(15.0);
+            .for_each(|(i, const_text)| {
+                let mut text =
+                    graphics::Text::new(TextFragment::new(*const_text).color(RLColor::BLACK));
+                text.set_scale(28.0);
                 draw!(
                     canvas,
-                    &graphic_text,
-                    Vec2::new(800.0, 400.0 + (number * 20) as f32),
+                    &text,
+                    Vec2::new(800.0, 400.0 + (i * 30) as f32),
                     scale
-                );
+                )
             });
     }
     /// Iterates trough the inventory and draws the amount of every item in the inventory.
@@ -551,7 +559,7 @@ impl Screen for GameState {
         self.draw_machines(&mut canvas, scale, ctx)?;
         self.draw_items(&mut canvas, ctx)?;
         if self.handbook_visible {
-            self.draw_handbook(&mut canvas, ctx);
+            self.open_handbook(&mut canvas, ctx);
         }
         #[cfg(debug_assertions)]
         {
