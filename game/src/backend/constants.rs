@@ -37,11 +37,6 @@ pub const MOVEMENT_SPEED: usize = 10;
 /// Contains the position of the time.
 pub(crate) const TIME_POSITION: (f32, f32) = (1205., 960.);
 
-pub(crate) const SANDSTURM_CR: Resources<i16> = Resources {
-    oxygen: 0,
-    energy: 5,
-    life: 0,
-};
 #[allow(clippy::too_many_lines)]
 /// Generates all machines with all their name, position, trades and resources.
 /// # Returns
@@ -49,49 +44,8 @@ pub(crate) const SANDSTURM_CR: Resources<i16> = Resources {
 /// `Rect` - Returns the collision area of the machine.
 /// `Vec<Trade>` - Returns the trades of the machine.
 /// `Vec<Resources>` - Returns the resources of the machine.
-pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>); 8] {
+pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>); 7] {
     [
-        // Test machine, only for testing purpose -- should be deleted in final game
-        (
-            MACHINE_NAMES[0].to_string(),
-            Rect {
-                x: 700.0,
-                y: 500.0,
-                w: 100.0,
-                h: 100.0,
-            },
-            vec![
-                Trade::new(
-                    "free_items".to_string(),
-                    10,
-                    State::Broken,
-                    State::Idle,
-                    true,
-                    gen_inventory(-100, -100, -100),
-                ),
-                Trade::new(
-                    "reset_items".to_string(),
-                    0,
-                    State::Idle,
-                    State::Running,
-                    true,
-                    gen_inventory(100, 97, 99),
-                ),
-                Trade::new(
-                    "free_items".to_string(),
-                    0,
-                    State::Running,
-                    State::Idle,
-                    true,
-                    gen_inventory(-100, -100, -100),
-                ),
-            ],
-            Resources {
-                oxygen: -25,
-                energy: -25,
-                life: -4,
-            },
-        ),
         // Oxygen machine
         (
             MACHINE_NAMES[1].to_string(),
@@ -128,7 +82,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                 ),
             ],
             Resources {
-                oxygen: 20,
+                oxygen: 25,
                 energy: -30,
                 life: 0,
             },
@@ -145,7 +99,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
             vec![
                 Trade::new(
                     "fueling_Stromgenerator".to_string(),
-                    1000,
+                    700,
                     State::Broken,
                     State::Running,
                     true,
@@ -170,7 +124,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
             ],
             Resources {
                 oxygen: -5,
-                energy: 50,
+                energy: 200,
                 life: 0,
             },
         ),
@@ -316,7 +270,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
             Resources {
                 oxygen: -20,
                 energy: -5,
-                life: -2,
+                life: 0,
             },
         ),
     ]

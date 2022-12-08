@@ -8,7 +8,7 @@ use crate::backend::utils::get_scale;
 use crate::backend::utils::*;
 use crate::backend::{error::RLError, screen::Screen};
 use crate::game_core::event::Event;
-use crate::game_core::infoscreen::DeathReason::{Energy, Oxygen};
+use crate::game_core::infoscreen::DeathReason::{Both, Energy, Oxygen};
 use crate::game_core::infoscreen::InfoScreen;
 use crate::game_core::item::Item;
 use crate::game_core::player::Player;
@@ -103,7 +103,7 @@ impl GameState {
     /// and checks if the player has died.
     /// # Returns
     /// * `RLResult`: A `RLResult` to validate the success of the tick function
-    pub fn tick(&mut self, ctx: &mut Context) -> RLResult {
+    pub fn tick(&mut self, _ctx: &mut Context) -> RLResult {
         // Update Resources
         self.player.resources = self
             .player
@@ -114,64 +114,60 @@ impl GameState {
             .collect::<Resources<_>>();
         self.player.time += 1;
         // Everything inside will only be checked every 15 ticks
-        match ctx.time.ticks() % 15 {
-            3 => {
-                // Check if the player is dead
-                if let Some(empty_resource) = Resources::get_death_reason(&self.player.resources) {
-                    if empty_resource == Energy {
-                        self.machines
-                            .iter_mut()
-                            .for_each(|machine| machine.no_energy());
-                        self.player.resources_change.life = -10;
-                    }
-                    if empty_resource == Oxygen {
-                        self.player.resources_change.life = -20;
-                    }
 
-                    if self.player.resources.life == 0 {
-                        let gamestate = GameState::load(true).unwrap_or_default();
-                        gamestate.save(false)?;
-                        let cloned_sender = self.get_screen_sender()?.clone();
-                        self.get_screen_sender()?.send(StackCommand::Push(Box::new(
-                            InfoScreen::new_deathscreen(empty_resource, cloned_sender),
-                        )))?;
-                    };
-                } else if self.player.resources_change.life < 0 {
-                    self.player.resources_change.life = 0;
-                }
+        // Check if the player is dead
+        if let Some(empty_resource) = Resources::get_death_reason(&self.player.resources) {
+            if empty_resource == Energy || empty_resource == Both {
+                self.machines
+                    .iter_mut()
+                    .for_each(|machine| machine.no_energy());
+                self.player.resources_change.life = -10;
             }
-            9 => {
-                // process received GameCommands
-                if let Ok(msg) = self.get_receiver()?.try_recv() {
-                    match msg {
-                        GameCommand::ResourceChange(new_rs) => {
-                            self.player.resources_change = self.player.resources_change + new_rs;
-                        }
-                        GameCommand::AddItems(items) => {
-                            for (item, amount) in &items {
-                                self.player.add_item(item, *amount);
-                            }
-                        }
-                        GameCommand::Milestone => {
-                            self.get_current_milestone()?;
-                        }
-                        GameCommand::Winning => match self.player.milestone {
-                            1 => {
-                                let sender = self.get_screen_sender()?;
-                                let popup = Popup::new(RLColor::GREEN, "Die Nachricht kann nicht gesendet werden solange das System nicht wiederhergestellt ist".to_string(), 5);
-                                sender.send(StackCommand::Popup(popup)).unwrap()
-                            }
-                            2 => {
-                                self.player.milestone += 1;
-                                self.get_current_milestone()?;
-                            }
-                            _ => {}
-                        },
-                    };
-                }
+            if empty_resource == Oxygen || empty_resource == Both {
+                self.player.resources_change.life = -60;
             }
-            _ => {}
+
+            if self.player.resources.life == 0 {
+                let gamestate = GameState::load(true).unwrap_or_default();
+                gamestate.save(false)?;
+                let cloned_sender = self.get_screen_sender()?.clone();
+                self.get_screen_sender()?.send(StackCommand::Push(Box::new(
+                    InfoScreen::new_deathscreen(empty_resource, cloned_sender),
+                )))?;
+            };
+        } else if self.player.resources_change.life < 0 {
+            self.player.resources_change.life = 0;
         }
+
+        // process received GameCommands
+        if let Ok(msg) = self.get_receiver()?.try_recv() {
+            match msg {
+                GameCommand::ResourceChange(new_rs) => {
+                    self.player.resources_change = self.player.resources_change + new_rs;
+                }
+                GameCommand::AddItems(items) => {
+                    for (item, amount) in &items {
+                        self.player.add_item(item, *amount);
+                    }
+                }
+                GameCommand::Milestone => {
+                    self.get_current_milestone()?;
+                }
+                GameCommand::Winning => match self.player.milestone {
+                    1 => {
+                        let sender = self.get_screen_sender()?;
+                        let popup = Popup::new(RLColor::GREEN, "Die Nachricht kann nicht gesendet werden solange das System nicht wiederhergestellt ist".to_string(), 5);
+                        sender.send(StackCommand::Popup(popup)).unwrap()
+                    }
+                    2 => {
+                        self.player.milestone += 1;
+                        self.get_current_milestone()?;
+                    }
+                    _ => {}
+                },
+            };
+        }
+
         // Regenerate life if applicable
         self.player
             .life_regeneration(&self.screen_sender.as_ref().unwrap().clone())?;

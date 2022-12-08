@@ -76,10 +76,6 @@ pub const INFORMATIONSPOPUP_NASA: [&str; 2] = [
     "InformationspopupNASA",
     "Ein Informationspopup über die NASA, welches Fakten und Informationen über die NASA enthält",
 ];
-pub const SANDSTURM: [&str; 2] = [
-    "Sandsturm",
-    "Ein Sandsturm, welcher zu einer Störung des Sauerstoffgenerators führt",
-];
 pub const STROMAUSFALL: [&str; 2] = [
     "Stromausfall",
     "Ein Stromausfall, welcher zu einer Störung des Sauerstoffgenerators führt",
