@@ -136,7 +136,7 @@ impl Event {
         // handle event effects
         match self.name.as_str() {
             KOMETENEINSCHLAG_NAME => {
-                if let Some(ein_loch) = gamestate
+                if let Some(one_hole) = gamestate
                     .machines
                     .iter_mut()
                     .find(|machine| machine.name == "Loch" && machine.state != State::Running)
@@ -144,7 +144,7 @@ impl Event {
                     // event not triggered if both machine are already running
                     Event::send_popup(&self.popup_message, &sender, &self.popup_type, &self.name)
                         .unwrap();
-                    ein_loch.change_state_to(&State::Running);
+                    one_hole.change_state_to(&State::Running);
                 }
             }
             STROMAUSTFALL_NAME => {
@@ -193,7 +193,7 @@ impl Event {
     pub fn update_events(ctx: &Context, gamestate: &mut GameState) -> RLResult {
         if ctx.time.ticks() % 20 == 0 {
             gamestate.events.iter_mut().for_each(|event| {
-                event.duration -= 20;
+                event.duration = event.duration.saturating_sub(20);
             });
 
             let old_events = gamestate.events.clone();

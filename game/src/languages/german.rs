@@ -56,7 +56,7 @@ pub const ADDITIONAL_INFO_STRING: &str = "Bitte drücke ESC!";
 
 /// Constant for all strings used in `IntroScreen`
 pub const INTRO_TEXT: &str = "Du bist auf dem Mars gestrandet und musst überleben.\nDazu musst du die \
-Sauerstoffproduktion wiederherstellen.\nHoffentlich schaffst du es die Kommunikation zu reparieren, \ndamit du gerettet werden kannst.\n";
+Sauerstoffproduktion wiederherstellen.\nHoffentlich schaffst du es, die Kommunikation zu reparieren, \ndamit du gerettet werden kannst.\n";
 pub const TUTORIAL_TEXT: &str =
     "Bewege dich mit WASD. Interagiere mit E.\nZum Nachschlagen hast du auf H dein Handbuch.";
 
