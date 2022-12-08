@@ -1,9 +1,9 @@
-use crate::backend::constants::{DESIRED_FPS, SANDSTURM_CR};
+use crate::backend::constants::DESIRED_FPS;
 use crate::backend::gamestate::GameState;
 use crate::backend::screen::{Popup, StackCommand};
 use crate::game_core::resources::Resources;
 use crate::languages::german::{
-    INFORMATIONSPOPUP_MARS, INFORMATIONSPOPUP_NASA, KOMETENEINSCHLAG, SANDSTURM, STROMAUSFALL,
+    INFORMATIONSPOPUP_MARS, INFORMATIONSPOPUP_NASA, KOMETENEINSCHLAG, STROMAUSFALL,
 };
 use crate::languages::german::{MARS_INFO, NASA_INFO, WARNINGS};
 use crate::machines::machine::State;
@@ -64,28 +64,21 @@ impl Event {
         let rng = fastrand::Rng::new();
         let event = rng.usize(..10);
         match event {
-            0 => Some(Event::new(
+            0 | 3 => Some(Event::new(
                 KOMETENEINSCHLAG,
                 WARNINGS[0],
                 "warning",
                 None,
                 0,
             )),
-            1 => Some(Event::new(
+            1 | 5 => Some(Event::new(
                 INFORMATIONSPOPUP_NASA,
                 NASA_INFO[rng.usize(..4)],
                 "nasa",
                 None,
                 0,
             )),
-            2 | 9 => Some(Event::new(STROMAUSFALL, WARNINGS[1], "warning", None, 0)),
-            3 | 5 | 7 => Some(Event::new(
-                SANDSTURM,
-                WARNINGS[2],
-                "warning",
-                Some(SANDSTURM_CR),
-                10,
-            )),
+            2 | 9 | 7 => Some(Event::new(STROMAUSFALL, WARNINGS[1], "warning", None, 0)),
             4 | 6 | 8 => Some(Event::new(
                 INFORMATIONSPOPUP_MARS,
                 MARS_INFO[rng.usize(..5)],
