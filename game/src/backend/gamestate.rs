@@ -495,13 +495,9 @@ impl GameState {
                 info!("Player won the Game");
                 self.player.milestone += 1;
                 let cloned_sender = self.get_screen_sender()?.clone();
-                self.screen_sender
-                    .as_mut()
-                    .expect("No Screensender")
-                    .send(StackCommand::Push(Box::new(InfoScreen::new_winningscreen(
-                        cloned_sender,
-                    ))))
-                    .expect("Show Winning Screen");
+                self.get_screen_sender()?.send(StackCommand::Push(Box::new(
+                    InfoScreen::new_winningscreen(cloned_sender),
+                )))?;
             }
             _ => {}
         }

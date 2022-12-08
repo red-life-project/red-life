@@ -1,4 +1,4 @@
-//! miscellaneous utilities used by the backend
+//! Miscellaneous utilities used by the backend.
 use crate::backend::constants::{PLAYER_ICON_SIZE, SCREEN_RESOLUTION};
 use ggez::glam::Vec2;
 use ggez::graphics::{Color, Rect};
@@ -20,6 +20,9 @@ pub fn get_scale(ctx: &Context) -> Vec2 {
 /// # Arguments
 /// * `player_pos` - The position of the player
 /// * `direction` - The direction the player wants to move
+/// # Returns
+/// * `true` if the player collides with an area
+/// * `false` if the player does not collide with an area
 #[inline(always)]
 pub fn is_colliding(player_pos: (usize, usize), area: &Rect) -> bool {
     area.x < player_pos.0 as f32 + PLAYER_ICON_SIZE.0 as f32
