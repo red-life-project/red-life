@@ -142,17 +142,19 @@ impl Screen for InfoScreen {
                         .send(GameCommand::Milestone)?;
                     gamestate
                 })))?;
-                Ok(())
             }
             (ScreenType::Death | ScreenType::Winning, Some(&VirtualKeyCode::Escape)) => {
+                if self.screentype == ScreenType::Winning {
+                    GameState::delete_saves()?;
+                }
                 self.sender.send(StackCommand::Pop)?;
                 self.sender.send(StackCommand::Push(Box::new(MainMenu::new(
                     self.sender.clone(),
                 ))))?;
-                Ok(())
             }
-            _ => Ok(()),
+            _ => {}
         }
+        Ok(())
     }
     /// Draws the info screen with the given background and two texts
     /// # Arguments
