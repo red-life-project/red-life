@@ -136,23 +136,20 @@ impl Event {
         // handle event effects
         match self.name.as_str() {
             KOMETENEINSCHLAG_NAME => {
-                gamestate.machines.iter_mut().for_each(|machine| {
-                    // event not triggered if machine is already running
-                    if machine.name == "Loch" && machine.state != State::Running {
-                        Event::send_popup(
-                            &self.popup_message,
-                            &sender,
-                            &self.popup_type,
-                            &self.name,
-                        )
+                if let Some(ein_loch) = gamestate
+                    .machines
+                    .iter_mut()
+                    .find(|machine| machine.name == "Loch" && machine.state != State::Running)
+                {
+                    // event not triggered if both machine are already running
+                    Event::send_popup(&self.popup_message, &sender, &self.popup_type, &self.name)
                         .unwrap();
-                        machine.change_state_to(&State::Running);
-                    }
-                });
+                    ein_loch.change_state_to(&State::Running);
+                }
             }
             STROMAUSTFALL_NAME => {
                 gamestate.machines.iter_mut().for_each(|machine| {
-                    // if machine is running it will be stopped
+                    // if machine is running it will b use tracing::{info, Id};e stopped
                     // event not triggered if machine is broken or idling
                     if machine.name == "Stromgenerator" && machine.state == State::Running {
                         Event::send_popup(
