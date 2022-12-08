@@ -231,24 +231,18 @@ impl GameState {
         draw!(canvas, image, Vec2::new(700.0, 300.0), scale);
         match self.player.milestone {
             1 => {
-                self.get_handbook_text(canvas, scale, ctx, &FIRST_MILESTONE_HANDBOOK_TEXT);
+                self.get_handbook_text(canvas, scale, &FIRST_MILESTONE_HANDBOOK_TEXT);
             }
 
             2 => {
-                self.get_handbook_text(canvas, scale, ctx, &SECOND_MILESTONE_HANDBOOK_TEXT);
+                self.get_handbook_text(canvas, scale, &SECOND_MILESTONE_HANDBOOK_TEXT);
             }
             _ => {}
         }
         Ok(())
     }
 
-    pub fn get_handbook_text(
-        &self,
-        canvas: &mut Canvas,
-        scale: Vec2,
-        ctx: &mut Context,
-        handbook_text: &[&str],
-    ) {
+    pub fn get_handbook_text(&self, canvas: &mut Canvas, scale: Vec2, handbook_text: &[&str]) {
         handbook_text
             .iter()
             .enumerate()
@@ -561,7 +555,7 @@ impl Screen for GameState {
         self.draw_machines(&mut canvas, scale, ctx)?;
         self.draw_items(&mut canvas, ctx)?;
         if self.handbook_visible {
-            self.open_handbook(&mut canvas, ctx);
+            self.open_handbook(&mut canvas, ctx)?;
         }
         #[cfg(debug_assertions)]
         {
