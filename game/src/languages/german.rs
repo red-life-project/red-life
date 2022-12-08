@@ -101,3 +101,26 @@ pub(crate) const MACHINE_NAMES: [&str; 8] = [
     "Loch",
     "Loch",
 ];
+/// Contains the Messages that are displayed in the Handbook
+pub(crate) const FIRST_MILESTONE_HANDBOOK_TEXT: [&str; 10] = [
+    "- Repariere den Sauerstoffgenerator (oben links)",
+    "- Repariere den Stromgenerator (unten links)",
+    "- Kometen erzeugen Löcher in den Wänden",
+    "- Löcher werden mit SuperGlue repariert",
+    "- Bei einem Stromausfall",
+    "   musst du den Stromgenerator erneut starten.",
+    "- Denk daran sparsam mit Benzin umzugehen!",
+    "- Du kannst den Generator kurz anhalten,",
+    "   wenn du genug Energie hast",
+    "c:",
+];
+
+pub(crate) const SECOND_MILESTONE_HANDBOOK_TEXT: [&str; 7] = [
+    "- Repariere das Kommunikationssystem (rechts)",
+    "- Sende eine Nachricht ab um gerettet zu werden",
+    "- Dein Strom kann immernoch ausfallen,",
+    "   während du die Nachricht sendest!",
+    "- Wenn du die Nachricht abgeschickt hast,",
+    "   gewinnst du automatisch.",
+    "<*~*>",
+];

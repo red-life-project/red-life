@@ -71,7 +71,7 @@ impl Event {
                 None,
                 0,
             )),
-            1 | 5 => Some(Event::new(
+            1 => Some(Event::new(
                 INFORMATIONSPOPUP_NASA,
                 NASA_INFO[rng.usize(..4)],
                 "nasa",
@@ -79,7 +79,7 @@ impl Event {
                 0,
             )),
             2 | 9 | 7 => Some(Event::new(STROMAUSFALL, WARNINGS[1], "warning", None, 0)),
-            4 | 6 | 8 => Some(Event::new(
+            4 => Some(Event::new(
                 INFORMATIONSPOPUP_MARS,
                 MARS_INFO[rng.usize(..5)],
                 "mars",
