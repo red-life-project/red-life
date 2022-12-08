@@ -109,7 +109,8 @@ impl Player {
     /// # Arguments
     /// * `item` - The item to get the amount of
     /// # Returns
-    /// `ret` - The amount of the chosen item in the inventory
+    /// `ret` - The amount of the chosen item in the inventory or if the item is not in the
+    /// inventory -100
     pub fn get_item_amount(&self, item: &Item) -> i32 {
         let mut ret: i32 = -100;
         self.inventory.iter().for_each(|(i, amount)| {
@@ -119,6 +120,19 @@ impl Player {
         });
         ret
     }
+}
+
+/// Returns a Inventory with set sizes for all items
+/// # Arguments
+/// * `super_glue` - The amount of super glue
+/// * `benzin` - The amount of benzin
+/// * `gedrucktesteil` - The amount of the printed part
+pub fn gen_inventory(super_glue: i32, benzin: i32, gedrucktesteil: i32) -> Vec<(Item, i32)> {
+    vec![
+        (Item::new(SUPER_GLUE), super_glue),
+        (Item::new(BENZIN), benzin),
+        (Item::new(GEDRUCKTESTEIL), gedrucktesteil),
+    ]
 }
 
 #[cfg(test)]
