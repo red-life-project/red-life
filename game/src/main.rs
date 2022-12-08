@@ -60,6 +60,6 @@ fn window_setup(ctx: &mut Context) -> RLResult {
         .set_drawable_size(SCREEN_RESOLUTION.0, SCREEN_RESOLUTION.1)?;
     // If we're in a release build set fullscreen to true
     #[cfg(not(debug_assertions))]
-    ctx.gfx.set_fullscreen(FullscreenType::True)?;
+    ctx.gfx.set_fullscreen(FullscreenType::Desktop)?;
     Ok(())
 }
