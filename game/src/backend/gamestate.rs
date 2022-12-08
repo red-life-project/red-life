@@ -157,7 +157,7 @@ impl GameState {
                     1 => {
                         let sender = self.get_screen_sender()?;
                         let popup = Popup::new(RLColor::GREEN, "Die Nachricht kann nicht gesendet werden solange das System nicht wiederhergestellt ist".to_string(), 5);
-                        sender.send(StackCommand::Popup(popup)).unwrap()
+                        sender.send(StackCommand::Popup(popup))?
                     }
                     2 => {
                         self.player.milestone += 1;
@@ -452,8 +452,6 @@ impl GameState {
     /// # Arguments
     /// * `milestone_machines` - A vec of machines needed to reach the next milestone
     pub fn check_on_milestone_machines(&mut self, milestone_machines: Vec<String>) -> bool {
-        //let a = self.areas.get(0).unwrap().deref(); erst einfügen, wenn man es auch benutzt
-
         let running_machine = self
             .machines
             .iter()
@@ -496,7 +494,7 @@ impl GameState {
             3 => {
                 info!("Player won the Game");
                 self.player.milestone += 1;
-                let cloned_sender = self.screen_sender.as_mut().unwrap().clone();
+                let cloned_sender = self.get_screen_sender()?.clone();
                 self.screen_sender
                     .as_mut()
                     .expect("No Screensender")

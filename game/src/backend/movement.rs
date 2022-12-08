@@ -25,7 +25,7 @@ impl GameState {
             info!("Interacting with Area: {:?}", self.get_interactable());
             let player_ref = &mut self.player.clone();
             if let Some(interactable) = self.get_interactable() {
-                self.player = interactable.interact(player_ref);
+                self.player = interactable.interact(player_ref)?;
             }
         }
         if ctx.keyboard.is_key_just_pressed(VirtualKeyCode::H) {

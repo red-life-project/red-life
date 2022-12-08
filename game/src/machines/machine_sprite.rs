@@ -11,6 +11,6 @@ impl From<&[Image]> for MachineSprite {
 
 impl MachineSprite {
     pub fn get(&self, state: State) -> &Image {
-        &self.0.get(state as usize).unwrap_or(&self.0[0])
+        self.0.get(state as usize).unwrap_or(&self.0[0])
     }
 }
