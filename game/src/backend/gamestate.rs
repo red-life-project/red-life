@@ -560,7 +560,27 @@ impl Screen for GameState {
         #[cfg(debug_assertions)]
         {
             let fps = graphics::Text::new(format!("FPS: {}", ctx.time.fps()));
-            draw!(canvas, &fps, Vec2::new(0.0, 0.0), scale);
+            draw!(canvas, &fps, Vec2::new(1400.0, 0.0), scale);
+            let milestone = graphics::Text::new(format!("Milestone: {}", self.player.milestone));
+            draw!(canvas, &milestone, Vec2::new(1400.0, 20.0), scale);
+            let events = graphics::Text::new(format!("Events: {:?}", self.events));
+            draw!(canvas, &events, Vec2::new(1400.0, 40.0), scale);
+            let last_damage =
+                graphics::Text::new(format!("Last Damage: {}", self.player.last_damage));
+            draw!(canvas, &last_damage, Vec2::new(1400.0, 60.0), scale);
+            let oxygen_cr = graphics::Text::new(format!(
+                "Oxygen CR: {}",
+                self.player.resources_change.oxygen
+            ));
+            draw!(canvas, &oxygen_cr, Vec2::new(1400.0, 80.0), scale);
+            let energy_cr = graphics::Text::new(format!(
+                "Energy CR: {}",
+                self.player.resources_change.energy
+            ));
+            draw!(canvas, &energy_cr, Vec2::new(1400.0, 100.0), scale);
+            let life_cr =
+                graphics::Text::new(format!("Life CR: {}", self.player.resources_change.life));
+            draw!(canvas, &life_cr, Vec2::new(1400.0, 120.0), scale);
         }
         self.draw_time(&mut canvas, scale);
         canvas.finish(ctx)?;
