@@ -44,8 +44,8 @@ impl Default for Player {
                 life: u16::MAX,
             },
             resources_change: Resources {
-                oxygen: 0,
-                energy: -1,
+                oxygen: -5,
+                energy: -10,
                 life: 0,
             },
             milestone: 0,

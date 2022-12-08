@@ -1,9 +1,9 @@
-use crate::backend::constants::{DESIRED_FPS, SANDSTURM_CR};
+use crate::backend::constants::DESIRED_FPS;
 use crate::backend::gamestate::GameState;
 use crate::backend::screen::{Popup, StackCommand};
 use crate::game_core::resources::Resources;
 use crate::languages::german::{
-    INFORMATIONSPOPUP_MARS, INFORMATIONSPOPUP_NASA, KOMETENEINSCHLAG, SANDSTURM, STROMAUSFALL,
+    INFORMATIONSPOPUP_MARS, INFORMATIONSPOPUP_NASA, KOMETENEINSCHLAG, STROMAUSFALL,
 };
 use crate::languages::german::{MARS_INFO, NASA_INFO, WARNINGS};
 use crate::machines::machine::State;
@@ -62,31 +62,24 @@ impl Event {
     /// if no Event is active it either chooses a random event of the Event enum or nothing every 60 seconds
     pub fn event_generator() -> Option<Event> {
         let rng = fastrand::Rng::new();
-        let event = rng.usize(..50);
+        let event = rng.usize(..10);
         match event {
-            0 => Some(Event::new(
+            0 | 3 => Some(Event::new(
                 KOMETENEINSCHLAG,
                 WARNINGS[0],
                 "warning",
                 None,
                 0,
             )),
-            11 => Some(Event::new(
+            1 | 5 => Some(Event::new(
                 INFORMATIONSPOPUP_NASA,
                 NASA_INFO[rng.usize(..4)],
                 "nasa",
                 None,
                 0,
             )),
-            22 => Some(Event::new(
-                SANDSTURM,
-                WARNINGS[2],
-                "warning",
-                Some(SANDSTURM_CR),
-                10,
-            )),
-            33 => Some(Event::new(STROMAUSFALL, WARNINGS[1], "warning", None, 0)),
-            44 => Some(Event::new(
+            2 | 9 | 7 => Some(Event::new(STROMAUSFALL, WARNINGS[1], "warning", None, 0)),
+            4 | 6 | 8 => Some(Event::new(
                 INFORMATIONSPOPUP_MARS,
                 MARS_INFO[rng.usize(..5)],
                 "mars",
@@ -143,23 +136,20 @@ impl Event {
         // handle event effects
         match self.name.as_str() {
             KOMETENEINSCHLAG_NAME => {
-                gamestate.machines.iter_mut().for_each(|machine| {
-                    // event not triggered if machine is already running
-                    if machine.name == "Loch" && machine.state != State::Running {
-                        Event::send_popup(
-                            &self.popup_message,
-                            &sender,
-                            &self.popup_type,
-                            &self.name,
-                        )
+                if let Some(ein_loch) = gamestate
+                    .machines
+                    .iter_mut()
+                    .find(|machine| machine.name == "Loch" && machine.state != State::Running)
+                {
+                    // event not triggered if both machine are already running
+                    Event::send_popup(&self.popup_message, &sender, &self.popup_type, &self.name)
                         .unwrap();
-                        machine.change_state_to(&State::Running);
-                    }
-                });
+                    ein_loch.change_state_to(&State::Running);
+                }
             }
             STROMAUSTFALL_NAME => {
                 gamestate.machines.iter_mut().for_each(|machine| {
-                    // if machine is running it will be stopped
+                    // if machine is running it will b use tracing::{info, Id};e stopped
                     // event not triggered if machine is broken or idling
                     if machine.name == "Stromgenerator" && machine.state == State::Running {
                         Event::send_popup(
@@ -227,7 +217,7 @@ impl Event {
             }
         }
         // have a maximum of one active event
-        if ctx.time.ticks() % 100 == 0 {
+        if ctx.time.ticks() % 200 == 0 {
             // generate new event
             // might not return an event
             let gen_event = Event::event_generator();
