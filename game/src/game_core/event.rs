@@ -24,7 +24,7 @@ pub(crate) struct Event {
     name: String,
     info_text: String,
     pub(crate) resources: Option<Resources<i16>>,
-    duration: i32,
+    duration: u32,
     popup_type: String,
     popup_message: String,
 }
@@ -42,7 +42,7 @@ impl Event {
         popup_message: &str,
         popup_type: &str,
         resources: Option<Resources<i16>>,
-        duration: i32,
+        duration: u32,
     ) -> Self {
         info!(
             "New event created: {}, info text: {}",
@@ -53,7 +53,7 @@ impl Event {
             name: event[0].to_string(),
             info_text: event[1].to_string(),
             resources,
-            duration: duration * (DESIRED_FPS as i32),
+            duration: duration * DESIRED_FPS,
             popup_type: popup_type.to_string(),
             popup_message: popup_message.to_string(),
         }
@@ -121,7 +121,7 @@ impl Event {
     /// Check if event is still active
     pub fn is_active(&self) -> bool {
         // check if time since event creation is greater than the duration of the event
-        !self.duration <= 0
+        !self.duration == 0
     }
 
     /// Triggers the event and activates its effect
@@ -207,7 +207,7 @@ impl Event {
                 }
             });
             // restore resources of inactive events
-            for event in old_events.iter() {
+            for event in &old_events {
                 if !event.is_active() {
                     if let Some(resources) = event.resources {
                         gamestate.player.resources_change =

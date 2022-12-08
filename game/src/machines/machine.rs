@@ -86,6 +86,7 @@ impl Machine {
         self.sender = Some(sender);
         self.screen_sender = Some(screen_sender);
         if self.name == "Loch" {
+            // Constant (pos of hole)
             if self.hitbox.x == 780.0 {
                 self.change_state_to(&Running);
             } else {
@@ -195,8 +196,8 @@ impl Machine {
             .map(|(item, demand)| (item, player.get_item_amount(item) - demand))
             .filter(|(_item, dif)| *dif < 0)
             .collect::<Vec<(&Item, i32)>>();
+        // If one item is not available in enough quantity
         if dif.iter().any(|(_, demand)| *demand < 0) {
-            // If one item is not available in enough quantity
             let mut missing_items = String::new();
             dif.iter()
                 .map(|(item, amount)| format!("*{} {}\n", amount * -1, item.name))

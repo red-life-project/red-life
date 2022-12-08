@@ -5,7 +5,7 @@ use crate::backend::constants::{
 use crate::backend::rlcolor::RLColor;
 use crate::backend::screen::{Popup, StackCommand};
 use crate::backend::utils::get_scale;
-use crate::backend::utils::*;
+use crate::backend::utils::{get_draw_params, is_colliding};
 use crate::backend::{error::RLError, screen::Screen};
 use crate::game_core::event::Event;
 use crate::game_core::infoscreen::DeathReason::{Both, Energy, Oxygen};
@@ -92,9 +92,11 @@ impl GameState {
     pub fn new(ctx: &mut Context) -> RLResult<Self> {
         info!("Creating new gamestate");
         let (sender, receiver) = channel();
-        let mut result = GameState::default();
-        result.sender = Some(sender);
-        result.receiver = Some(receiver);
+        let mut result = GameState {
+            sender: Some(sender),
+            receiver: Some(receiver),
+            ..Default::default()
+        };
         result.init(ctx)?;
         Ok(result)
     }
@@ -116,11 +118,9 @@ impl GameState {
         // Everything inside will only be checked every 15 ticks
 
         // Check if the player is dead
-        if let Some(empty_resource) = Resources::get_death_reason(&self.player.resources) {
+        if let Some(empty_resource) = Resources::get_death_reason(self.player.resources) {
             if empty_resource == Energy || empty_resource == Both {
-                self.machines
-                    .iter_mut()
-                    .for_each(|machine| machine.no_energy());
+                self.machines.iter_mut().for_each(Machine::no_energy);
                 self.player.resources_change.life = -10;
             }
             if empty_resource == Oxygen || empty_resource == Both {
@@ -157,7 +157,7 @@ impl GameState {
                     1 => {
                         let sender = self.get_screen_sender()?;
                         let popup = Popup::new(RLColor::GREEN, "Die Nachricht kann nicht gesendet werden solange das System nicht wiederhergestellt ist".to_string(), 5);
-                        sender.send(StackCommand::Popup(popup))?
+                        sender.send(StackCommand::Popup(popup))?;
                     }
                     2 => {
                         self.player.milestone += 1;
@@ -226,13 +226,12 @@ impl GameState {
         let trade_text = self
             .machines
             .iter()
-            .map(|machine| {
+            .flat_map(|machine| {
                 machine
                     .trades
                     .iter()
                     .map(|trade| (trade.name.clone(), trade.cost.clone()))
             })
-            .flatten()
             .collect::<Vec<(String, Vec<(Item, i32)>)>>();
         trade_text
             .into_iter()
@@ -277,7 +276,7 @@ impl GameState {
                 );
                 draw!(
                     canvas,
-                    &graphics::Text::new(format!("{}", amount)),
+                    &graphics::Text::new(format!("{amount}")),
                     Vec2::new(position.0 + (i * 63) as f32, position.1),
                     scale
                 );
@@ -443,15 +442,14 @@ impl GameState {
     /// * `RLResult<&Image>` - The asset if it exists
     pub fn get_asset(&self, name: &str) -> RLResult<&Image> {
         self.assets.get(name).ok_or(RLError::AssetError(format!(
-            "Could not find asset with name {}",
-            name
+            "Could not find asset with name {name}"
         )))
     }
     /// Checks if the milestone is reached which means the vec of repaired machines
     /// contain the vec of machines needed to reach the next milestone.
     /// # Arguments
     /// * `milestone_machines` - A vec of machines needed to reach the next milestone
-    pub fn check_on_milestone_machines(&mut self, milestone_machines: Vec<String>) -> bool {
+    pub fn check_on_milestone_machines(&mut self, milestone_machines: &[String]) -> bool {
         let running_machine = self
             .machines
             .iter()
@@ -484,7 +482,7 @@ impl GameState {
                 self.increase_milestone()?;
             }
             1 => {
-                if self.check_on_milestone_machines(vec![
+                if self.check_on_milestone_machines(&[
                     MACHINE_NAMES[1].to_string(),
                     MACHINE_NAMES[2].to_string(),
                 ]) {
