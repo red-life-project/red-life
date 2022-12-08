@@ -49,7 +49,7 @@ fn create_io_error(message: &str, value: impl std::fmt::Display) -> RLError {
         format!("{message}: {value}"),
     ))
 }
-/// Macro for converting a SendError to an RLError
+/// Macro for converting a `SendError` to an `RLError`
 #[macro_export]
 macro_rules! convert_senderror {
     ($($command:ty),*) => {

@@ -24,7 +24,7 @@ pub(crate) struct Event {
     name: String,
     info_text: String,
     pub(crate) resources: Option<Resources<i16>>,
-    duration: i32,
+    duration: u32,
     popup_type: String,
     popup_message: String,
 }
@@ -42,7 +42,7 @@ impl Event {
         popup_message: &str,
         popup_type: &str,
         resources: Option<Resources<i16>>,
-        duration: i32,
+        duration: u32,
     ) -> Self {
         info!(
             "New event created: {}, info text: {}",
@@ -53,7 +53,7 @@ impl Event {
             name: event[0].to_string(),
             info_text: event[1].to_string(),
             resources,
-            duration: duration * (DESIRED_FPS as i32),
+            duration: duration * DESIRED_FPS,
             popup_type: popup_type.to_string(),
             popup_message: popup_message.to_string(),
         }
@@ -121,7 +121,7 @@ impl Event {
     /// Check if event is still active
     pub fn is_active(&self) -> bool {
         // check if time since event creation is greater than the duration of the event
-        !self.duration <= 0
+        !self.duration == 0
     }
 
     /// Triggers the event and activates its effect
@@ -136,7 +136,7 @@ impl Event {
         // handle event effects
         match self.name.as_str() {
             KOMETENEINSCHLAG_NAME => {
-                if let Some(ein_loch) = gamestate
+                if let Some(one_hole) = gamestate
                     .machines
                     .iter_mut()
                     .find(|machine| machine.name == "Loch" && machine.state != State::Running)
@@ -144,7 +144,7 @@ impl Event {
                     // event not triggered if both machine are already running
                     Event::send_popup(&self.popup_message, &sender, &self.popup_type, &self.name)
                         .unwrap();
-                    ein_loch.change_state_to(&State::Running);
+                    one_hole.change_state_to(&State::Running);
                 }
             }
             STROMAUSTFALL_NAME => {
@@ -193,7 +193,7 @@ impl Event {
     pub fn update_events(ctx: &Context, gamestate: &mut GameState) -> RLResult {
         if ctx.time.ticks() % 20 == 0 {
             gamestate.events.iter_mut().for_each(|event| {
-                event.duration -= 20;
+                event.duration = event.duration.saturating_sub(20);
             });
 
             let old_events = gamestate.events.clone();
@@ -207,7 +207,7 @@ impl Event {
                 }
             });
             // restore resources of inactive events
-            for event in old_events.iter() {
+            for event in &old_events {
                 if !event.is_active() {
                     if let Some(resources) = event.resources {
                         gamestate.player.resources_change =
