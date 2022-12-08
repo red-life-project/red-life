@@ -114,7 +114,8 @@ impl Screenstack {
     fn draw_popups(&mut self, ctx: &mut Context) -> RLResult {
         let mut canvas = graphics::Canvas::from_frame(ctx, None);
         let scale = get_scale(ctx);
-        for (pos, popup) in self.popup.iter().enumerate() {
+        let mut new_y = 0.0;
+        for popup in &self.popup {
             let mut text = graphics::Text::new(popup.text.clone());
             text.set_scale(25.);
             let dimensions = text.measure(ctx)?;
@@ -123,24 +124,25 @@ impl Screenstack {
             let rect = graphics::Mesh::new_rectangle(
                 ctx,
                 graphics::DrawMode::fill(),
-                graphics::Rect::new(0., 0., x + 4., y + 4.),
+                graphics::Rect::new(0., 0., x, y),
                 RLColor::LIGHT_GREY,
             )?;
             let outer = graphics::Mesh::new_rectangle(
                 ctx,
                 graphics::DrawMode::stroke(3.),
-                graphics::Rect::new(0., 0., x + 4., y + 4.),
+                graphics::Rect::new(0., 0., x, y),
                 RLColor::BLACK,
             )?;
-            draw!(canvas, &rect, vec2(0., pos as f32 * (y + 4.)), scale);
-            draw!(canvas, &outer, vec2(0., pos as f32 * (y + 4.)), scale);
-            canvas.draw(
+            draw!(canvas, &rect, vec2(0., new_y), scale);
+            draw!(canvas, &outer, vec2(0., new_y), scale);
+            draw!(
+                canvas,
                 &text,
-                graphics::DrawParam::default()
-                    .scale(scale)
-                    .dest([0., pos as f32 * (y + 4.) * scale.y])
-                    .color(popup.color),
+                Some(vec2(0., new_y)),
+                scale,
+                Some(popup.color)
             );
+            new_y += y;
         }
         canvas.finish(ctx)?;
         Ok(())

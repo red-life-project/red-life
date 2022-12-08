@@ -17,12 +17,15 @@ pub struct Player {
     /// The current items of the player.
     pub(crate) inventory: Vec<(Item, i32)>,
     pub(crate) position: (usize, usize),
+    /// The current air, energy and life of the player.
     pub(crate) resources: Resources<u16>,
+    /// The current change rate of the air, energy and life of the player.
     pub(crate) resources_change: Resources<i16>,
     /// The current milestone the player has reached.
     pub milestone: usize,
+    /// helper variable to check if the player lost life in the last tick
     pub(crate) last_damage: u32,
-    pub(crate) match_milestone: i8,
+    /// contains the current ingame time
     pub(crate) time: u32,
 }
 impl Default for Player {
@@ -41,14 +44,12 @@ impl Default for Player {
                 life: u16::MAX,
             },
             resources_change: Resources {
-                oxygen: 0,
-                // In release Version this Value shouldplayer.inventory.0  be 0
-                energy: -1,
+                oxygen: -5,
+                energy: -10,
                 life: 0,
             },
             milestone: 0,
             last_damage: 0,
-            match_milestone: 0,
             time: 0,
         }
     }
@@ -56,6 +57,10 @@ impl Default for Player {
 
 impl Player {
     /// Checks whether the player has taken damage in the past few seconds and if not so start the regeneration
+    /// # Arguments
+    /// * `sender` - The sender of the screen, needed to send a `Popup` to the screen.
+    /// # Returns
+    /// * `RLResult` - validates if life regeneration was started correctly
     pub(crate) fn life_regeneration(&mut self, sender: &Sender<StackCommand>) -> RLResult {
         match (
             self.resources_change.life,
@@ -89,13 +94,23 @@ impl Player {
         }
         Ok(())
     }
-    pub fn add_item(&mut self, item: &Item, n: i32) {
+    /// changes the amount of an specific item in the inventory by a given number
+    /// # Arguments
+    /// * `item` - The item to change the amount of
+    /// * `amount_change` - The amount to change the item by
+    pub fn add_item(&mut self, item: &Item, amount_change: i32) {
         self.inventory.iter_mut().for_each(|(i, amount)| {
             if i.name == item.name {
-                *amount += n;
+                *amount += amount_change;
             }
         });
     }
+    /// returns the amount of an specific item in the inventory
+    /// # Arguments
+    /// * `item` - The item to get the amount of
+    /// # Returns
+    /// `ret` - The amount of the chosen item in the inventory or if the item is not in the
+    /// inventory -100
     pub fn get_item_amount(&self, item: &Item) -> i32 {
         let mut ret: i32 = -100;
         self.inventory.iter().for_each(|(i, amount)| {
@@ -105,6 +120,19 @@ impl Player {
         });
         ret
     }
+}
+
+/// Returns a Inventory with set sizes for all items
+/// # Arguments
+/// * `super_glue` - The amount of super glue
+/// * `benzin` - The amount of benzin
+/// * `gedrucktesteil` - The amount of the printed part
+pub fn gen_inventory(super_glue: i32, benzin: i32, gedrucktesteil: i32) -> Vec<(Item, i32)> {
+    vec![
+        (Item::new(SUPER_GLUE), super_glue),
+        (Item::new(BENZIN), benzin),
+        (Item::new(GEDRUCKTESTEIL), gedrucktesteil),
+    ]
 }
 
 #[cfg(test)]

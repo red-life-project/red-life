@@ -85,6 +85,13 @@ impl Machine {
         self.sprite = Some(images.into());
         self.sender = Some(sender);
         self.screen_sender = Some(screen_sender);
+        if self.name == "Loch" {
+            if self.hitbox.x == 780.0 {
+                self.change_state_to(&Running);
+            } else {
+                self.change_state_to(&Idle);
+            }
+        }
     }
 
     fn new(
@@ -129,7 +136,7 @@ impl Machine {
     fn check_change(&self, before: &State, after: &State) {
         match (before, after) {
             (Broken, Idle) => {
-                let _e = self.sender.as_ref().unwrap().send(GameCommand::Milestone());
+                let _e = self.sender.as_ref().unwrap().send(GameCommand::Milestone);
             }
             (Idle, Broken) => {}
             (Broken | Idle, Running) => {
@@ -138,7 +145,7 @@ impl Machine {
                     .as_ref()
                     .unwrap()
                     .send(GameCommand::ResourceChange(self.running_resources));
-                let _e = self.sender.as_ref().unwrap().send(GameCommand::Milestone());
+                let _e = self.sender.as_ref().unwrap().send(GameCommand::Milestone);
             }
             (Running, Broken | Idle) => {
                 let _e = self
@@ -176,6 +183,10 @@ impl Machine {
         if trade.name == *"no_Trade" {
             return player.clone();
         }
+        if player.resources.energy == 0 && self.running_resources.energy < 0 && self.name != "Loch"
+        {
+            return player.clone();
+        }
 
         // dif = items the player has - the cost of the trade
         let dif = trade
@@ -188,9 +199,8 @@ impl Machine {
             // If one item is not available in enough quantity
             let mut missing_items = String::new();
             dif.iter()
-                .map(|(item, amount)| format!("{amount} {}\n", item.name))
+                .map(|(item, amount)| format!("*{} {}\n", amount * -1, item.name))
                 .for_each(|x| missing_items.push_str(&x));
-
             let popup = Popup::info(format!("{}\n{missing_items}", TRADE_CONFLICT_POPUP[0]));
             info!(
                 "Popup for Trade conflict sent: Missing Items: {}",
@@ -255,7 +265,7 @@ impl Machine {
 
             if self.last_trade.return_after_timer {
                 if self.last_trade.name == "Notfall_signal_absetzen" {
-                    let _e = self.sender.as_ref().unwrap().send(GameCommand::Winning());
+                    let _e = self.sender.as_ref().unwrap().send(GameCommand::Winning);
                 }
 
                 self.change_state_to(&self.last_trade.initial_state.clone());
@@ -282,6 +292,15 @@ impl Machine {
             -1.0
         } else {
             f32::from(self.time_remaining) / f32::from(self.og_time)
+        }
+    }
+    pub fn no_energy(&mut self) {
+        if self.running_resources.energy < 0 && self.name != "Loch" {
+            // if the is no energy and the machine needs some we stop it
+            if self.state == Running {
+                self.change_state_to(&Idle);
+                self.time_change = 0;
+            }
         }
     }
 }

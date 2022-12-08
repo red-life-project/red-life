@@ -1,10 +1,11 @@
-use crate::backend::gamestate::GameState;
+use crate::backend::gamestate::{GameCommand, GameState};
 use crate::backend::screen::{Screen, StackCommand};
 use crate::backend::utils::*;
 use crate::languages::german::{
     ADDITIONAL_INFO_STRING, AIR_AND_ENERGY_STRING, AIR_STRING, BUTTON_INFO, DEATH_REASON_STRING,
     ENERGY_STRING, INTRO_TEXT, TUTORIAL_TEXT, WINNING_TEXT,
 };
+
 use crate::main_menu::mainmenu::MainMenu;
 use crate::{draw, RLResult};
 use ggez::glam::Vec2;
@@ -111,8 +112,13 @@ impl InfoScreen {
         }
     }
 }
-
+/// Implement the `Screen` trait for `InfoScreen`
 impl Screen for InfoScreen {
+    /// Updates the screen every tick, checks if esc or space is pressed
+    /// # Arguments
+    /// * `ctx` - The ggez context
+    /// # Returns
+    /// `RLResult` - Returns an `RLResult`.
     fn update(&mut self, ctx: &mut Context) -> RLResult {
         if self.background_image.is_none() {
             self.background_image = Some(graphics::Image::from_bytes(
@@ -123,27 +129,36 @@ impl Screen for InfoScreen {
         let keys = ctx.keyboard.pressed_keys();
         // Here we only use the first pressed key, but in the infoscreen this is fine
         match (self.screentype, keys.iter().next()) {
-            (_, None) => Ok(()),
-            (ScreenType::Intro, Some(key)) => match key {
-                VirtualKeyCode::Space => {
-                    self.sender.send(StackCommand::Pop)?;
-                    Ok(self.sender.send(StackCommand::Push(Box::new({
-                        let mut gamestate = GameState::new(ctx).unwrap_or_default();
-                        gamestate.init(ctx)?;
-                        gamestate.create_machine();
-                        gamestate
-                    })))?)
-                }
-                VirtualKeyCode::Escape => Ok(self.sender.send(StackCommand::Pop)?),
-                _ => Ok(()),
-            },
-            (_, Some(VirtualKeyCode::Escape)) => Ok(self.sender.send(StackCommand::Push(
-                Box::new(MainMenu::new(self.sender.clone())),
-            ))?),
+            (ScreenType::Intro, Some(&VirtualKeyCode::Space)) => {
+                self.sender.send(StackCommand::Pop)?;
+                self.sender.send(StackCommand::Push(Box::new({
+                    let mut gamestate = GameState::new(ctx)?;
+                    gamestate.init(ctx)?;
+                    gamestate.create_machine();
+                    gamestate
+                        .sender
+                        .as_mut()
+                        .unwrap()
+                        .send(GameCommand::Milestone)?;
+                    gamestate
+                })))?;
+                Ok(())
+            }
+            (ScreenType::Death | ScreenType::Winning, Some(&VirtualKeyCode::Escape)) => {
+                self.sender.send(StackCommand::Pop)?;
+                self.sender.send(StackCommand::Push(Box::new(MainMenu::new(
+                    self.sender.clone(),
+                ))))?;
+                Ok(())
+            }
             _ => Ok(()),
         }
     }
     /// Draws the info screen with the given background and two texts
+    /// # Arguments
+    /// * `ctx` - The ggez context
+    /// # Returns
+    /// `RLResult` - Returns an `RLResult`.
     fn draw(&self, ctx: &mut Context) -> RLResult {
         let scale = get_scale(ctx);
         let mut canvas = graphics::Canvas::from_frame(ctx, graphics::Color::RED);
@@ -154,7 +169,7 @@ impl Screen for InfoScreen {
         if self.screentype == ScreenType::Intro {
             draw!(canvas, &self.main_message, Vec2::new(300., 300.), scale);
         } else {
-            draw!(canvas, &self.main_message, Vec2::new(372., 500.), scale);
+            draw!(canvas, &self.main_message, Vec2::new(220., 500.), scale);
         }
 
         draw!(canvas, &self.additional_text, Vec2::new(646., 740.), scale);
