@@ -103,7 +103,7 @@ impl GameState {
     /// and checks if the player has died.
     /// # Returns
     /// * `RLResult`: A `RLResult` to validate the success of the tick function
-    pub fn tick(&mut self, ctx: &mut Context) -> RLResult {
+    pub fn tick(&mut self, _ctx: &mut Context) -> RLResult {
         // Update Resources
         self.player.resources = self
             .player

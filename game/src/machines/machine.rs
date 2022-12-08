@@ -16,7 +16,7 @@ use std::sync::mpsc::Sender;
 
 use crate::RLResult;
 use ggez::graphics::{Color, Image, Rect};
-use tracing::{Id, info};
+use tracing::{info};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum State {
@@ -88,8 +88,7 @@ impl Machine {
         if self.name == "Loch" {
             if self.hitbox.x == 780.0 {
                 self.change_state_to(&Running);
-            }
-            else {
+            } else {
                 self.change_state_to(&Idle);
             }
         }

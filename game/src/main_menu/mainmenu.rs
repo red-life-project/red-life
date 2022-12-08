@@ -85,7 +85,6 @@ impl Screen for MainMenu {
     /// # Returns
     /// `RLResult` - Returns an `RLResult`.
     fn update(&mut self, ctx: &mut Context) -> RLResult {
-
         let scale = get_scale(ctx);
         self.buttons.iter_mut().for_each(|btn| {
             btn.action(ctx, scale);
