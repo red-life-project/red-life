@@ -226,8 +226,7 @@ impl Machine {
         self.sender
             .as_ref()
             .unwrap()
-            .send(GameCommand::AddItems(items_cost))
-            .expect("could not send AddItems");
+            .send(GameCommand::AddItems(items_cost))?;
 
         if trade.time_ticks == 0 {
             // this trade has no timer
