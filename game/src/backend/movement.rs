@@ -34,6 +34,11 @@ impl GameState {
         let keys = ctx.keyboard.pressed_keys();
         for key in keys.iter() {
             match key {
+                // If we are in debug mode, change the milestone by using Z
+                #[cfg(debug_assertions)]
+                VirtualKeyCode::Z => {
+                    self.player.milestone += 1;
+                }
                 VirtualKeyCode::W => {
                     if !self.collision_detection((
                         self.player.position.0,
