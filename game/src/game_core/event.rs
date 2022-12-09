@@ -64,7 +64,7 @@ impl Event {
         let rng = fastrand::Rng::new();
         let event = rng.usize(..10);
         match event {
-            1 | 2 | 3 | 4 | 5 | 6 | 7 | 9 | 10 | 8 => Some(Event::new(
+            8 => Some(Event::new(
                 SANDSTURM,
                 WARNINGS[2],
                 "warning",
