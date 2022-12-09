@@ -71,7 +71,10 @@ pub const KOMETENEINSCHLAG: [&str; 2] = [
     "KOMETENEINSCHLAG",
     "Ein KOMETENEINSCHLAG hat die Erde getroffen und hat ein Loch in der Wand erzeugt",
 ];
-/// Constants for the events that can occur.
+pub const SANDSTURM: [&str; 2] = [
+    "Sandsturm",
+    "Ein Sandsturm, welcher zu einer Störung des Sauerstoffgenerators führt",
+];
 pub const INFORMATIONSPOPUP_NASA: [&str; 2] = [
     "InformationspopupNASA",
     "Ein Informationspopup über die NASA, welches Fakten und Informationen über die NASA enthält",
