@@ -86,6 +86,7 @@ impl Machine {
         self.sender = Some(sender);
         self.screen_sender = Some(screen_sender);
         if self.name == "Loch" {
+            // Constant (pos of hole)
             if self.hitbox.x == 780.0 {
                 self.change_state_to(&Running);
             } else {
@@ -178,14 +179,14 @@ impl Machine {
         }
     }
 
-    pub(crate) fn interact(&mut self, player: &mut Player) -> Player {
+    pub(crate) fn interact(&mut self, player: &mut Player) -> RLResult<Player> {
         let trade = self.get_trade();
         if trade.name == *"no_Trade" {
-            return player.clone();
+            return Ok(player.clone());
         }
         if player.resources.energy == 0 && self.running_resources.energy < 0 && self.name != "Loch"
         {
-            return player.clone();
+            return Ok(player.clone());
         }
 
         // dif = items the player has - the cost of the trade
@@ -195,8 +196,8 @@ impl Machine {
             .map(|(item, demand)| (item, player.get_item_amount(item) - demand))
             .filter(|(_item, dif)| *dif < 0)
             .collect::<Vec<(&Item, i32)>>();
+        // If one item is not available in enough quantity
         if dif.iter().any(|(_, demand)| *demand < 0) {
-            // If one item is not available in enough quantity
             let mut missing_items = String::new();
             dif.iter()
                 .map(|(item, amount)| format!("*{} {}\n", amount * -1, item.name))
@@ -209,9 +210,8 @@ impl Machine {
             self.screen_sender
                 .as_ref()
                 .unwrap()
-                .send(StackCommand::Popup(popup))
-                .unwrap();
-            return player.clone();
+                .send(StackCommand::Popup(popup))?;
+            return Ok(player.clone());
         }
 
         // the player has enough items for the trade so we will execute on it
@@ -227,8 +227,7 @@ impl Machine {
         self.sender
             .as_ref()
             .unwrap()
-            .send(GameCommand::AddItems(items_cost))
-            .expect("could not send AddItems");
+            .send(GameCommand::AddItems(items_cost))?;
 
         if trade.time_ticks == 0 {
             // this trade has no timer
@@ -249,7 +248,7 @@ impl Machine {
             self.change_state_to(&trade.resulting_state);
         }
 
-        player.clone()
+        Ok(player.clone())
     }
 
     pub(crate) fn get_graphic(&self) -> &Image {

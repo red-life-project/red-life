@@ -247,7 +247,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
             Resources {
                 oxygen: -20,
                 energy: -5,
-                life: -2,
+                life: 0,
             },
         ),
         // second hole

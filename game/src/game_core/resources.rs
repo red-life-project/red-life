@@ -66,7 +66,7 @@ impl<T: ops::Sub<Output = T> + PartialOrd> ops::Sub<Resources<T>> for Resources<
 impl Resources<u16> {
     /// This function returns the value that reached zero first
     /// If no value reached zero, it returns None
-    pub fn get_death_reason(&self) -> Option<DeathReason> {
+    pub fn get_death_reason(self) -> Option<DeathReason> {
         if self.oxygen == 0 && self.energy == 0 {
             Some(DeathReason::Both)
         } else if self.oxygen == 0 {

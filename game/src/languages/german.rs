@@ -54,16 +54,16 @@ pub const AIR_AND_ENERGY_STRING: &str = "Kälte und zu wenig Luft";
 pub const DEATH_REASON_STRING: &str = "Du bist gestorben an";
 pub const ADDITIONAL_INFO_STRING: &str = "Bitte drücke ESC!";
 
-/// Constant for all strings used in IntroScreen
+/// Constant for all strings used in `IntroScreen`
 pub const INTRO_TEXT: &str = "Du bist auf dem Mars gestrandet und musst überleben.\nDazu musst du die \
-Sauerstoffproduktion wiederherstellen.\nHoffentlich schaffst du es die Kommunikation zu reparieren, \ndamit du gerettet werden kannst.\n";
+Sauerstoffproduktion wiederherstellen.\nHoffentlich schaffst du es, die Kommunikation zu reparieren, \ndamit du gerettet werden kannst.\n";
 pub const TUTORIAL_TEXT: &str =
     "Bewege dich mit WASD. Interagiere mit E.\nZum Nachschlagen hast du auf H dein Handbuch.";
 
-/// Constant for the Text used in the Button info
+/// Constant for the Text used in the `Button` info
 pub const BUTTON_INFO: &str = "Bitte drücke die Leertaste!";
 
-/// Constants for all strings used in WinningScreen
+/// Constants for all strings used in `WinningScreen`
 pub const WINNING_TEXT: &str = "Du wurdest gerettet!";
 
 /// Constants for the events that can occur.
@@ -86,7 +86,7 @@ pub const INFORMATIONSPOPUP_MARS: [&str; 2] = [
 ];
 /// Constants for the trade conflict.
 pub const TRADE_CONFLICT_POPUP: [&str; 1] = ["Es fehlen folgende Items, um den Trade auszuführen:"];
-/// Constants for the time_name.
+/// Constants for the `time_name`.
 pub const TIME_NAME: [&str; 1] = ["Zeit"];
 /// Constants for the text of the button in the main menu
 pub const BUTTON_TEXT: [&str; 3] = ["Fortsetzen", "Neues Spiel", "Beenden"];
@@ -100,4 +100,27 @@ pub(crate) const MACHINE_NAMES: [&str; 8] = [
     "Kommunikationsmodul",
     "Loch",
     "Loch",
+];
+/// Contains the Messages that are displayed in the Handbook
+pub(crate) const FIRST_MILESTONE_HANDBOOK_TEXT: [&str; 10] = [
+    "- Repariere den Sauerstoffgenerator (oben links)",
+    "- Repariere den Stromgenerator (unten links)",
+    "- Kometen erzeugen Löcher in den Wänden",
+    "- Löcher werden mit SuperGlue repariert",
+    "- Bei einem Stromausfall",
+    "   musst du den Stromgenerator erneut starten.",
+    "- Denk daran sparsam mit Benzin umzugehen!",
+    "- Du kannst den Generator kurz anhalten,",
+    "   wenn du genug Energie hast",
+    "c:",
+];
+
+pub(crate) const SECOND_MILESTONE_HANDBOOK_TEXT: [&str; 7] = [
+    "- Repariere das Kommunikationssystem (rechts)",
+    "- Sende eine Nachricht ab um gerettet zu werden",
+    "- Dein Strom kann immernoch ausfallen,",
+    "   während du die Nachricht sendest!",
+    "- Wenn du die Nachricht abgeschickt hast,",
+    "   gewinnst du automatisch.",
+    "<*~*>",
 ];
