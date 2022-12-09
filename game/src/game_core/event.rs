@@ -202,7 +202,6 @@ impl Event {
             gamestate.events.iter_mut().for_each(|event| {
                 event.duration = event.duration.saturating_sub(20);
             });
-            dbg!(&gamestate.player.resources_change);
             // restore resources of inactive events
             for event in gamestate.events.iter().filter(|event| !event.is_active()) {
                 if let Some(resources) = event.resources {
