@@ -69,7 +69,7 @@ impl Event {
                 WARNINGS[2],
                 "warning",
                 Some(SANDSTURM_CR),
-                20,
+                5,
             )),
             0 | 3 => Some(Event::new(
                 KOMETENEINSCHLAG,
@@ -128,7 +128,7 @@ impl Event {
     /// Check if event is still active
     pub fn is_active(&self) -> bool {
         // check if time since event creation is greater than the duration of the event
-        !self.duration == 0
+        self.duration != 0
     }
 
     /// Triggers the event and activates its effect
@@ -198,15 +198,20 @@ impl Event {
     /// * `gamestate` - The gamestate which is used to access the events vector
     /// * `context` - The game context which is used to access the current tick
     pub fn update_events(ctx: &Context, gamestate: &mut GameState) -> RLResult {
+
         if ctx.time.ticks() % 20 == 0 {
             gamestate.events.iter_mut().for_each(|event| {
                 event.duration = event.duration.saturating_sub(20);
+                if event.name == "Sandsturm" {
+                }
             });
             // restore resources of inactive events
-            for event in gamestate.events.iter().filter(|event| !event.is_active()) {
-                if let Some(resources) = event.resources {
-                    gamestate.player.resources_change =
-                        gamestate.player.resources_change + resources;
+            for event in gamestate.events.iter() {
+                if !event.is_active() {
+                    if let Some(resources) = event.resources {
+                        gamestate.player.resources_change =
+                            gamestate.player.resources_change + resources;
+                    }
                 }
             }
             // remove all events which are not active anymore
