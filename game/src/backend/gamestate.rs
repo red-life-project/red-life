@@ -124,12 +124,12 @@ impl GameState {
         if let Some(empty_resource) = Resources::get_death_reason(self.player.resources) {
             match empty_resource {
                 Both => {
-                    self.player.resources_change.life -= 60;
+                    self.player.resources_change.life = -60;
                     self.machines.iter_mut().for_each(Machine::no_energy);
                 }
-                Oxygen => self.player.resources_change.life -= 60,
+                Oxygen => self.player.resources_change.life = -50,
                 Energy => {
-                    self.player.resources_change.life -= 10;
+                    self.player.resources_change.life = -10;
                     self.machines.iter_mut().for_each(Machine::no_energy);
                 }
             };
