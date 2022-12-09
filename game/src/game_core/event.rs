@@ -1,9 +1,9 @@
-use crate::backend::constants::DESIRED_FPS;
+use crate::backend::constants::{DESIRED_FPS, SANDSTURM_CR};
 use crate::backend::gamestate::GameState;
 use crate::backend::screen::{Popup, StackCommand};
 use crate::game_core::resources::Resources;
 use crate::languages::german::{
-    INFORMATIONSPOPUP_MARS, INFORMATIONSPOPUP_NASA, KOMETENEINSCHLAG, STROMAUSFALL,
+    INFORMATIONSPOPUP_MARS, INFORMATIONSPOPUP_NASA, KOMETENEINSCHLAG, SANDSTURM, STROMAUSFALL,
 };
 use crate::languages::german::{MARS_INFO, NASA_INFO, WARNINGS};
 use crate::machines::machine::State;
@@ -64,6 +64,13 @@ impl Event {
         let rng = fastrand::Rng::new();
         let event = rng.usize(..10);
         match event {
+            1 | 2 | 3 | 4 | 5 | 6 | 7 | 9 | 10 | 8 => Some(Event::new(
+                SANDSTURM,
+                WARNINGS[2],
+                "warning",
+                Some(SANDSTURM_CR),
+                20,
+            )),
             0 | 3 => Some(Event::new(
                 KOMETENEINSCHLAG,
                 WARNINGS[0],
@@ -195,11 +202,12 @@ impl Event {
             gamestate.events.iter_mut().for_each(|event| {
                 event.duration = event.duration.saturating_sub(20);
             });
+            dbg!(&gamestate.player.resources_change);
             // restore resources of inactive events
             for event in gamestate.events.iter().filter(|event| !event.is_active()) {
                 if let Some(resources) = event.resources {
                     gamestate.player.resources_change =
-                        gamestate.player.resources_change - resources;
+                        gamestate.player.resources_change + resources;
                 }
             }
             // remove all events which are not active anymore
