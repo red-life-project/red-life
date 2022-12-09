@@ -37,6 +37,13 @@ pub const MOVEMENT_SPEED: usize = 10;
 /// Contains the position of the time.
 pub(crate) const TIME_POSITION: (f32, f32) = (1205., 960.);
 
+/// Change rate fot the event Sandsturm
+pub(crate) const SANDSTURM_CR: Resources<i16> = Resources {
+    oxygen: 0,
+    energy: 5,
+    life: 0,
+};
+
 #[allow(clippy::too_many_lines)]
 /// Generates all machines with all their name, position, trades and resources.
 /// # Returns
@@ -247,7 +254,7 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
             Resources {
                 oxygen: -20,
                 energy: -5,
-                life: -2,
+                life: 0,
             },
         ),
         // second hole

@@ -1,6 +1,6 @@
 //! Contains the screen system, which is responsible for managing the different screens of the game.
 use crate::backend::rlcolor::RLColor;
-use crate::backend::utils::*;
+use crate::backend::utils::{get_draw_params, get_scale};
 use crate::error::RLError;
 use crate::main_menu::mainmenu::MainMenu;
 use crate::{draw, RLResult};

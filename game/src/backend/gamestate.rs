@@ -5,7 +5,7 @@ use crate::backend::constants::{
 use crate::backend::rlcolor::RLColor;
 use crate::backend::screen::{Popup, StackCommand};
 use crate::backend::utils::get_scale;
-use crate::backend::utils::*;
+use crate::backend::utils::{get_draw_params, is_colliding};
 use crate::backend::{error::RLError, screen::Screen};
 use crate::game_core::event::Event;
 use crate::game_core::infoscreen::DeathReason::{Both, Energy, Oxygen};
@@ -13,7 +13,10 @@ use crate::game_core::infoscreen::InfoScreen;
 use crate::game_core::item::Item;
 use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
-use crate::languages::german::{MACHINE_NAMES, RESOURCE_NAME, TIME_NAME};
+use crate::languages::german::{
+    FIRST_MILESTONE_HANDBOOK_TEXT, MACHINE_NAMES, RESOURCE_NAME, SECOND_MILESTONE_HANDBOOK_TEXT,
+    TIME_NAME,
+};
 use crate::machines::machine::Machine;
 use crate::machines::machine::State::Broken;
 use crate::{draw, RLResult};
@@ -92,9 +95,11 @@ impl GameState {
     pub fn new(ctx: &mut Context) -> RLResult<Self> {
         info!("Creating new gamestate");
         let (sender, receiver) = channel();
-        let mut result = GameState::default();
-        result.sender = Some(sender);
-        result.receiver = Some(receiver);
+        let mut result = GameState {
+            sender: Some(sender),
+            receiver: Some(receiver),
+            ..Default::default()
+        };
         result.init(ctx)?;
         Ok(result)
     }
@@ -116,17 +121,18 @@ impl GameState {
         // Everything inside will only be checked every 15 ticks
 
         // Check if the player is dead
-        if let Some(empty_resource) = Resources::get_death_reason(&self.player.resources) {
-            if empty_resource == Energy || empty_resource == Both {
-                self.machines
-                    .iter_mut()
-                    .for_each(|machine| machine.no_energy());
-                self.player.resources_change.life = -10;
-            }
-            if empty_resource == Oxygen || empty_resource == Both {
-                self.player.resources_change.life = -60;
-            }
-
+        if let Some(empty_resource) = Resources::get_death_reason(self.player.resources) {
+            match empty_resource {
+                Both => {
+                    self.player.resources_change.life = -60;
+                    self.machines.iter_mut().for_each(Machine::no_energy);
+                }
+                Oxygen => self.player.resources_change.life = -50,
+                Energy => {
+                    self.player.resources_change.life = -10;
+                    self.machines.iter_mut().for_each(Machine::no_energy);
+                }
+            };
             if self.player.resources.life == 0 {
                 let gamestate = GameState::load(true).unwrap_or_default();
                 gamestate.save(false)?;
@@ -157,7 +163,7 @@ impl GameState {
                     1 => {
                         let sender = self.get_screen_sender()?;
                         let popup = Popup::new(RLColor::GREEN, "Die Nachricht kann nicht gesendet werden solange das System nicht wiederhergestellt ist".to_string(), 5);
-                        sender.send(StackCommand::Popup(popup)).unwrap()
+                        sender.send(StackCommand::Popup(popup))?;
                     }
                     2 => {
                         self.player.milestone += 1;
@@ -219,38 +225,37 @@ impl GameState {
     /// # Arguments
     /// * `canvas`: The canvas to draw on
     /// * `ctx`: The `Context` of the game
-    pub fn draw_handbook(&self, canvas: &mut Canvas, ctx: &mut Context) {
+    pub fn open_handbook(&self, canvas: &mut Canvas, ctx: &mut Context) -> RLResult {
         let scale = get_scale(ctx);
         let image = self.assets.get("Handbook.png").unwrap();
         draw!(canvas, image, Vec2::new(700.0, 300.0), scale);
-        let trade_text = self
-            .machines
+        match self.player.milestone {
+            1 => {
+                self.get_handbook_text(canvas, scale, &FIRST_MILESTONE_HANDBOOK_TEXT);
+            }
+
+            2 => {
+                self.get_handbook_text(canvas, scale, &SECOND_MILESTONE_HANDBOOK_TEXT);
+            }
+            _ => {}
+        }
+        Ok(())
+    }
+
+    pub fn get_handbook_text(&self, canvas: &mut Canvas, scale: Vec2, handbook_text: &[&str]) {
+        handbook_text
             .iter()
-            .map(|machine| {
-                machine
-                    .trades
-                    .iter()
-                    .map(|trade| (trade.name.clone(), trade.cost.clone()))
-            })
-            .flatten()
-            .collect::<Vec<(String, Vec<(Item, i32)>)>>();
-        trade_text
-            .into_iter()
             .enumerate()
-            .for_each(|(number, trade)| {
-                let mut text = format!("{}: ", trade.0);
-                trade.1.iter().for_each(|item| {
-                    text.push_str(&format!("{}: {}, ", item.0.name, item.1));
-                });
-                let mut graphic_text =
-                    graphics::Text::new(TextFragment::new(text).color(RLColor::BLACK));
-                graphic_text.set_scale(15.0);
+            .for_each(|(i, const_text)| {
+                let mut text =
+                    graphics::Text::new(TextFragment::new(*const_text).color(RLColor::BLACK));
+                text.set_scale(28.0);
                 draw!(
                     canvas,
-                    &graphic_text,
-                    Vec2::new(800.0, 400.0 + (number * 20) as f32),
+                    &text,
+                    Vec2::new(800.0, 400.0 + (i * 30) as f32),
                     scale
-                );
+                )
             });
     }
     /// Iterates trough the inventory and draws the amount of every item in the inventory.
@@ -277,7 +282,7 @@ impl GameState {
                 );
                 draw!(
                     canvas,
-                    &graphics::Text::new(format!("{}", amount)),
+                    &graphics::Text::new(format!("{amount}")),
                     Vec2::new(position.0 + (i * 63) as f32, position.1),
                     scale
                 );
@@ -443,17 +448,14 @@ impl GameState {
     /// * `RLResult<&Image>` - The asset if it exists
     pub fn get_asset(&self, name: &str) -> RLResult<&Image> {
         self.assets.get(name).ok_or(RLError::AssetError(format!(
-            "Could not find asset with name {}",
-            name
+            "Could not find asset with name {name}"
         )))
     }
     /// Checks if the milestone is reached which means the vec of repaired machines
     /// contain the vec of machines needed to reach the next milestone.
     /// # Arguments
     /// * `milestone_machines` - A vec of machines needed to reach the next milestone
-    pub fn check_on_milestone_machines(&mut self, milestone_machines: Vec<String>) -> bool {
-        //let a = self.areas.get(0).unwrap().deref(); erst einfügen, wenn man es auch benutzt
-
+    pub fn check_on_milestone_machines(&mut self, milestone_machines: &[String]) -> bool {
         let running_machine = self
             .machines
             .iter()
@@ -486,7 +488,7 @@ impl GameState {
                 self.increase_milestone()?;
             }
             1 => {
-                if self.check_on_milestone_machines(vec![
+                if self.check_on_milestone_machines(&[
                     MACHINE_NAMES[1].to_string(),
                     MACHINE_NAMES[2].to_string(),
                 ]) {
@@ -496,14 +498,10 @@ impl GameState {
             3 => {
                 info!("Player won the Game");
                 self.player.milestone += 1;
-                let cloned_sender = self.screen_sender.as_mut().unwrap().clone();
-                self.screen_sender
-                    .as_mut()
-                    .expect("No Screensender")
-                    .send(StackCommand::Push(Box::new(InfoScreen::new_winningscreen(
-                        cloned_sender,
-                    ))))
-                    .expect("Show Winning Screen");
+                let cloned_sender = self.get_screen_sender()?.clone();
+                self.get_screen_sender()?.send(StackCommand::Push(Box::new(
+                    InfoScreen::new_winningscreen(cloned_sender),
+                )))?;
             }
             _ => {}
         }
@@ -557,12 +555,32 @@ impl Screen for GameState {
         self.draw_machines(&mut canvas, scale, ctx)?;
         self.draw_items(&mut canvas, ctx)?;
         if self.handbook_visible {
-            self.draw_handbook(&mut canvas, ctx);
+            self.open_handbook(&mut canvas, ctx)?;
         }
         #[cfg(debug_assertions)]
         {
             let fps = graphics::Text::new(format!("FPS: {}", ctx.time.fps()));
-            draw!(canvas, &fps, Vec2::new(0.0, 0.0), scale);
+            draw!(canvas, &fps, Vec2::new(1400.0, 0.0), scale);
+            let milestone = graphics::Text::new(format!("Milestone: {}", self.player.milestone));
+            draw!(canvas, &milestone, Vec2::new(1400.0, 20.0), scale);
+            let events = graphics::Text::new(format!("Events: {:?}", self.events));
+            draw!(canvas, &events, Vec2::new(1400.0, 40.0), scale);
+            let last_damage =
+                graphics::Text::new(format!("Last Damage: {}", self.player.last_damage));
+            draw!(canvas, &last_damage, Vec2::new(1400.0, 60.0), scale);
+            let oxygen_cr = graphics::Text::new(format!(
+                "Oxygen CR: {}",
+                self.player.resources_change.oxygen
+            ));
+            draw!(canvas, &oxygen_cr, Vec2::new(1400.0, 80.0), scale);
+            let energy_cr = graphics::Text::new(format!(
+                "Energy CR: {}",
+                self.player.resources_change.energy
+            ));
+            draw!(canvas, &energy_cr, Vec2::new(1400.0, 100.0), scale);
+            let life_cr =
+                graphics::Text::new(format!("Life CR: {}", self.player.resources_change.life));
+            draw!(canvas, &life_cr, Vec2::new(1400.0, 120.0), scale);
         }
         self.draw_time(&mut canvas, scale);
         canvas.finish(ctx)?;

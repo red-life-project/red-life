@@ -1,6 +1,6 @@
 use crate::backend::gamestate::{GameCommand, GameState};
 use crate::backend::screen::{Screen, StackCommand};
-use crate::backend::utils::*;
+use crate::backend::utils::{get_draw_params, get_scale};
 use crate::languages::german::{
     ADDITIONAL_INFO_STRING, AIR_AND_ENERGY_STRING, AIR_STRING, BUTTON_INFO, DEATH_REASON_STRING,
     ENERGY_STRING, INTRO_TEXT, TUTORIAL_TEXT, WINNING_TEXT,
@@ -39,7 +39,8 @@ pub enum ScreenType {
     Intro,
     Winning,
 }
-/// Create `DeathScreen`, `IntroScreen` or `WinningSreen`. DeathScreen needs the reason of death from `DeathReason` enum.
+
+/// Create `DeathScreen`, `IntroScreen` or `WinningSreen`. `DeathScreen` needs the reason of death from `DeathReason` enum.
 #[derive(Debug)]
 pub struct InfoScreen {
     background: String,
@@ -51,7 +52,7 @@ pub struct InfoScreen {
 }
 
 impl InfoScreen {
-    /// Creates a new DeathScreen using InfoScreen with a Deathreason
+    /// Creates a new `DeathScreen` using `InfoScreen` with a `Deathreason`
     /// # Arguments
     /// * `death_reason` - The reason for the death of the player
     /// * `sender` - The sender to send the command to the `ScreenStack`
@@ -73,7 +74,7 @@ impl InfoScreen {
             background_image: None,
         }
     }
-    /// Creates a new IntroScreen using InfoScreen
+    /// Creates a new `IntroScreen` using `InfoScreen`
     /// # Arguments
     /// * `sender` - The sender to send the command to the `ScreenStack`
     pub fn new_introscreen(sender: Sender<StackCommand>) -> Self {
@@ -92,7 +93,7 @@ impl InfoScreen {
             background_image: None,
         }
     }
-    /// Creates a new Winning using InfoScreen
+    /// Creates a new Winning using `InfoScreen`
     /// # Arguments
     /// * `sender` - The sender to send the command to the `ScreenStack`
     pub fn new_winningscreen(sender: Sender<StackCommand>) -> Self {
@@ -142,17 +143,19 @@ impl Screen for InfoScreen {
                         .send(GameCommand::Milestone)?;
                     gamestate
                 })))?;
-                Ok(())
             }
             (ScreenType::Death | ScreenType::Winning, Some(&VirtualKeyCode::Escape)) => {
+                if self.screentype == ScreenType::Winning {
+                    GameState::delete_saves()?;
+                }
                 self.sender.send(StackCommand::Pop)?;
                 self.sender.send(StackCommand::Push(Box::new(MainMenu::new(
                     self.sender.clone(),
                 ))))?;
-                Ok(())
             }
-            _ => Ok(()),
+            _ => {}
         }
+        Ok(())
     }
     /// Draws the info screen with the given background and two texts
     /// # Arguments

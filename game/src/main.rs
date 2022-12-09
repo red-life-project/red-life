@@ -35,10 +35,10 @@ pub fn main() -> RLResult {
     // Start logging
     // Check if log folder exists
     if !std::path::Path::new("logs").exists() {
-        std::fs::create_dir("logs").expect("Could not create log folder");
+        std::fs::create_dir("logs")?;
     }
     let filename = format!("logs/RL-{}.log", Local::now().format("%Y-%m-%d_%H-%M-%S"));
-    let log_file = File::create(filename).unwrap();
+    let log_file = File::create(filename)?;
     let subscriber = tracing_subscriber::fmt()
         .with_max_level(Level::TRACE)
         .with_writer(Mutex::new(log_file))
@@ -60,6 +60,6 @@ fn window_setup(ctx: &mut Context) -> RLResult {
         .set_drawable_size(SCREEN_RESOLUTION.0, SCREEN_RESOLUTION.1)?;
     // If we're in a release build set fullscreen to true
     #[cfg(not(debug_assertions))]
-    ctx.gfx.set_fullscreen(FullscreenType::True)?;
+    ctx.gfx.set_fullscreen(FullscreenType::Desktop)?;
     Ok(())
 }

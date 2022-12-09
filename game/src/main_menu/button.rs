@@ -1,4 +1,4 @@
-use crate::backend::utils::*;
+use crate::backend::utils::{get_draw_params, get_scale};
 use crate::main_menu::mainmenu::Message;
 use crate::{draw, RLResult};
 use ggez::glam::f32::Vec2;
@@ -44,13 +44,13 @@ impl Button {
     // processing button interaction: click, hover
     // determines if button is clicked
     pub(crate) fn action(&mut self, ctx: &Context, scale: Vec2) {
-        info!("User clicked: mouse position: {:?}", ctx.mouse.position());
         if self.in_area(ctx.mouse.position(), scale) {
             self.current_color = self.hover_color;
             if ctx
                 .mouse
                 .button_just_pressed(ggez::event::MouseButton::Left)
             {
+                info!("User clicked: mouse position: {:?}", ctx.mouse.position());
                 self.click();
             }
         } else {

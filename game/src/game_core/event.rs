@@ -1,9 +1,9 @@
-use crate::backend::constants::DESIRED_FPS;
+use crate::backend::constants::{DESIRED_FPS, SANDSTURM_CR};
 use crate::backend::gamestate::GameState;
 use crate::backend::screen::{Popup, StackCommand};
 use crate::game_core::resources::Resources;
 use crate::languages::german::{
-    INFORMATIONSPOPUP_MARS, INFORMATIONSPOPUP_NASA, KOMETENEINSCHLAG, STROMAUSFALL,
+    INFORMATIONSPOPUP_MARS, INFORMATIONSPOPUP_NASA, KOMETENEINSCHLAG, SANDSTURM, STROMAUSFALL,
 };
 use crate::languages::german::{MARS_INFO, NASA_INFO, WARNINGS};
 use crate::machines::machine::State;
@@ -24,7 +24,7 @@ pub(crate) struct Event {
     name: String,
     info_text: String,
     pub(crate) resources: Option<Resources<i16>>,
-    duration: i32,
+    duration: u32,
     popup_type: String,
     popup_message: String,
 }
@@ -42,7 +42,7 @@ impl Event {
         popup_message: &str,
         popup_type: &str,
         resources: Option<Resources<i16>>,
-        duration: i32,
+        duration: u32,
     ) -> Self {
         info!(
             "New event created: {}, info text: {}",
@@ -53,7 +53,7 @@ impl Event {
             name: event[0].to_string(),
             info_text: event[1].to_string(),
             resources,
-            duration: duration * (DESIRED_FPS as i32),
+            duration: duration * DESIRED_FPS,
             popup_type: popup_type.to_string(),
             popup_message: popup_message.to_string(),
         }
@@ -64,6 +64,13 @@ impl Event {
         let rng = fastrand::Rng::new();
         let event = rng.usize(..10);
         match event {
+            8 => Some(Event::new(
+                SANDSTURM,
+                WARNINGS[2],
+                "warning",
+                Some(SANDSTURM_CR),
+                5,
+            )),
             0 | 3 => Some(Event::new(
                 KOMETENEINSCHLAG,
                 WARNINGS[0],
@@ -71,7 +78,7 @@ impl Event {
                 None,
                 0,
             )),
-            1 | 5 => Some(Event::new(
+            1 => Some(Event::new(
                 INFORMATIONSPOPUP_NASA,
                 NASA_INFO[rng.usize(..4)],
                 "nasa",
@@ -79,7 +86,7 @@ impl Event {
                 0,
             )),
             2 | 9 | 7 => Some(Event::new(STROMAUSFALL, WARNINGS[1], "warning", None, 0)),
-            4 | 6 | 8 => Some(Event::new(
+            4 => Some(Event::new(
                 INFORMATIONSPOPUP_MARS,
                 MARS_INFO[rng.usize(..5)],
                 "mars",
@@ -121,7 +128,7 @@ impl Event {
     /// Check if event is still active
     pub fn is_active(&self) -> bool {
         // check if time since event creation is greater than the duration of the event
-        !self.duration <= 0
+        self.duration != 0
     }
 
     /// Triggers the event and activates its effect
@@ -136,7 +143,7 @@ impl Event {
         // handle event effects
         match self.name.as_str() {
             KOMETENEINSCHLAG_NAME => {
-                if let Some(ein_loch) = gamestate
+                if let Some(one_hole) = gamestate
                     .machines
                     .iter_mut()
                     .find(|machine| machine.name == "Loch" && machine.state != State::Running)
@@ -144,7 +151,7 @@ impl Event {
                     // event not triggered if both machine are already running
                     Event::send_popup(&self.popup_message, &sender, &self.popup_type, &self.name)
                         .unwrap();
-                    ein_loch.change_state_to(&State::Running);
+                    one_hole.change_state_to(&State::Running);
                 }
             }
             STROMAUSTFALL_NAME => {
@@ -193,10 +200,18 @@ impl Event {
     pub fn update_events(ctx: &Context, gamestate: &mut GameState) -> RLResult {
         if ctx.time.ticks() % 20 == 0 {
             gamestate.events.iter_mut().for_each(|event| {
-                event.duration -= 20;
+                event.duration = event.duration.saturating_sub(20);
+                if event.name == "Sandsturm" {}
             });
-
-            let old_events = gamestate.events.clone();
+            // restore resources of inactive events
+            for event in gamestate.events.iter() {
+                if !event.is_active() {
+                    if let Some(resources) = event.resources {
+                        gamestate.player.resources_change =
+                            gamestate.player.resources_change + resources;
+                    }
+                }
+            }
             // remove all events which are not active anymore
             gamestate.events.retain(|event| {
                 if event.is_active() {
@@ -206,15 +221,6 @@ impl Event {
                     false
                 }
             });
-            // restore resources of inactive events
-            for event in old_events.iter() {
-                if !event.is_active() {
-                    if let Some(resources) = event.resources {
-                        gamestate.player.resources_change =
-                            gamestate.player.resources_change - resources;
-                    }
-                }
-            }
         }
         // have a maximum of one active event
         if ctx.time.ticks() % 200 == 0 {

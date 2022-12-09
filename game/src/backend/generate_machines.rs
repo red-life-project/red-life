@@ -5,7 +5,7 @@ use crate::machines::machine::Machine;
 
 use crate::backend::constants::gen_all_machines;
 use crate::backend::rlcolor::RLColor;
-use crate::backend::utils::*;
+use crate::backend::utils::get_draw_params;
 use crate::{draw, RLResult};
 use ggez::glam::Vec2;
 use ggez::graphics::{Canvas, Mesh, Rect};
