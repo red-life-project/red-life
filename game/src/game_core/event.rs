@@ -195,8 +195,13 @@ impl Event {
             gamestate.events.iter_mut().for_each(|event| {
                 event.duration = event.duration.saturating_sub(20);
             });
-
-            let old_events = gamestate.events.clone();
+            // restore resources of inactive events
+            for event in gamestate.events.iter().filter(|event| !event.is_active()) {
+                if let Some(resources) = event.resources {
+                    gamestate.player.resources_change =
+                        gamestate.player.resources_change - resources;
+                }
+            }
             // remove all events which are not active anymore
             gamestate.events.retain(|event| {
                 if event.is_active() {
@@ -206,15 +211,6 @@ impl Event {
                     false
                 }
             });
-            // restore resources of inactive events
-            for event in &old_events {
-                if !event.is_active() {
-                    if let Some(resources) = event.resources {
-                        gamestate.player.resources_change =
-                            gamestate.player.resources_change - resources;
-                    }
-                }
-            }
         }
         // have a maximum of one active event
         if ctx.time.ticks() % 200 == 0 {
