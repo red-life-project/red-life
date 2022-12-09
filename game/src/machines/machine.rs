@@ -87,7 +87,7 @@ impl Machine {
         self.screen_sender = Some(screen_sender);
         if self.name == "Loch" {
             // Constant (pos of hole)
-            if self.hitbox.x == 780.0 {
+            if self.hitbox.x == 780. {
                 self.change_state_to(&Running);
             } else {
                 self.change_state_to(&Idle);
@@ -98,7 +98,7 @@ impl Machine {
     fn new(
         // this function is supposed to be private
         name: String,
-        hit_box: Rect,
+        hitbox: Rect,
         trades: Vec<Trade>,
         running_resources: Resources<i16>,
     ) -> Self {
@@ -107,12 +107,12 @@ impl Machine {
         //let sprite = MachineSprite::new(gs, name.as_str())?;
         Self {
             name,
-            hitbox: hit_box,
+            hitbox,
             interaction_area: Rect {
-                x: hit_box.x - PLAYER_INTERACTION_RADIUS,
-                y: hit_box.y - PLAYER_INTERACTION_RADIUS,
-                w: hit_box.w + (PLAYER_INTERACTION_RADIUS * 2.),
-                h: hit_box.h + (PLAYER_INTERACTION_RADIUS * 2.),
+                x: hitbox.x - PLAYER_INTERACTION_RADIUS,
+                y: hitbox.y - PLAYER_INTERACTION_RADIUS,
+                w: hitbox.w + (PLAYER_INTERACTION_RADIUS * 2.),
+                h: hitbox.h + (PLAYER_INTERACTION_RADIUS * 2.),
             },
             state: Broken,
             sprite: None,
@@ -154,7 +154,6 @@ impl Machine {
                     .as_ref()
                     .unwrap()
                     .send(GameCommand::ResourceChange(
-                        // 0-n = n*-1  = n.invert()                            // TODO: add .invert() to Resources
                         Resources {
                             oxygen: 0,
                             energy: 0,
@@ -295,7 +294,7 @@ impl Machine {
     }
     pub fn no_energy(&mut self) {
         if self.running_resources.energy < 0 && self.name != "Loch" {
-            // if the is no energy and the machine needs some we stop it
+            // If we have no energy available and the machine needs some, we stop it.
             if self.state == Running {
                 self.change_state_to(&Idle);
                 self.time_change = 0;
