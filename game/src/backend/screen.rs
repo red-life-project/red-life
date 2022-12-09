@@ -164,9 +164,11 @@ impl Screenstack {
                 self.screens.push(screen);
             }
             StackCommand::Pop => {
-                match self.screens.len() {
-                    1 => std::process::exit(0),
-                    _ => self.screens.pop(),
+                if self.screens.len() == 1 {
+                    std::process::exit(0)
+                } else {
+                    self.popup.clear();
+                    self.screens.pop();
                 };
             }
             StackCommand::Popup(popup) => self.popup.push(popup),
