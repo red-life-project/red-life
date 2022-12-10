@@ -43,25 +43,25 @@ jobs:
 
       - name: Copy binary Linux
         if: ${{ runner.os == 'Linux' }}
-        run: cp target/release/game game
+        run: cp target/release/game redlife
 
       - name: Copy binary Windows
         if: ${{ runner.os == 'Windows' }}
-        run: cp target/release/game.exe game.exe
+        run: cp target/release/game.exe redlife.exe
 
       - name: Zip Release
         if : ${{ runner.os == 'Windows' }}
         uses: vimtor/action-zip@v1
         with:
           recursive: false
-          files: assets game.exe
+          files: assets redlife.exe
           dest: game_windows.zip
 
       - name: Zip Release Linux
         if : ${{ runner.os == 'Linux' }}
         uses: vimtor/action-zip@v1
         with:
-          files: assets game
+          files: assets redlife
           recursive: false
           dest: game_linux.zip
 
