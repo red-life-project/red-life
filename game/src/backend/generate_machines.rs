@@ -1,8 +1,5 @@
-//!DIESE DATEI IST ZUM TESTEN VON SANDER
 use crate::backend::gamestate::GameState;
-
 use crate::machines::machine::Machine;
-
 use crate::backend::constants::gen_all_machines;
 use crate::backend::rlcolor::RLColor;
 use crate::backend::utils::get_draw_params;
@@ -13,6 +10,7 @@ use ggez::Context;
 use tracing::info;
 
 impl GameState {
+    /// Creates all Machines for initial creation and pushes them into a list
     pub fn create_machine(&mut self) {
         info!("Generating all Machines");
         let all = gen_all_machines();
@@ -22,6 +20,15 @@ impl GameState {
         }
     }
 
+
+
+    /// Paints the machine sprites and if applicable it shows the state or time remaining
+    /// # Arguments
+    /// * `canvas`: The canvas to draw on
+    /// * `scale`: The scale of the canvas
+    /// * `ctx`: The `Context` of the game
+    /// # Returns
+    /// * `RLResult`: A `RLResult` to validate the success of the paint function
     pub fn draw_machines(&self, canvas: &mut Canvas, scale: Vec2, ctx: &mut Context) -> RLResult {
         for machine in &self.machines {
             let image = machine.get_graphic();
