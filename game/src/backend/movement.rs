@@ -23,22 +23,22 @@ impl GameState {
         }
         if ctx.keyboard.is_key_just_pressed(VirtualKeyCode::E) {
             info!("Interacting with Area: {:?}", self.get_interactable());
-            let player_ref = &mut self.player.clone();
+            let player_ref = &self.player.clone();
             if let Some(interactable) = self.get_interactable() {
-                self.player = interactable.interact(player_ref)?;
+                interactable.interact(player_ref)?;
             }
         }
         if ctx.keyboard.is_key_just_pressed(VirtualKeyCode::H) {
-            self.handbook_visible = !self.handbook_visible;
+            self.handbook_invisible = !self.handbook_invisible;
+        }
+        // If we are in debug mode, change the milestone by using Z
+        #[cfg(debug_assertions)]
+        if ctx.keyboard.is_key_just_pressed(VirtualKeyCode::Z) {
+            self.player.milestone += 1;
         }
         let keys = ctx.keyboard.pressed_keys();
         for key in keys.iter() {
             match key {
-                // If we are in debug mode, change the milestone by using Z
-                #[cfg(debug_assertions)]
-                VirtualKeyCode::Z => {
-                    self.player.milestone += 1;
-                }
                 VirtualKeyCode::W => {
                     if !self.collision_detection((
                         self.player.position.0,

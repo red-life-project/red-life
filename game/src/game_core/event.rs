@@ -1,9 +1,9 @@
-use crate::backend::constants::DESIRED_FPS;
+use crate::backend::constants::{DESIRED_FPS, SANDSTURM_CR};
 use crate::backend::gamestate::GameState;
 use crate::backend::screen::{Popup, StackCommand};
 use crate::game_core::resources::Resources;
 use crate::languages::german::{
-    INFORMATIONSPOPUP_MARS, INFORMATIONSPOPUP_NASA, KOMETENEINSCHLAG, STROMAUSFALL,
+    INFORMATIONSPOPUP_MARS, INFORMATIONSPOPUP_NASA, KOMETENEINSCHLAG, SANDSTURM, STROMAUSFALL,
 };
 use crate::languages::german::{MARS_INFO, NASA_INFO, WARNINGS};
 use crate::machines::machine::State;
@@ -62,8 +62,15 @@ impl Event {
     /// if no Event is active it either chooses a random event of the Event enum or nothing every 60 seconds
     pub fn event_generator() -> Option<Event> {
         let rng = fastrand::Rng::new();
-        let event = rng.usize(..10);
+        let event = rng.usize(..15);
         match event {
+            8 => Some(Event::new(
+                SANDSTURM,
+                WARNINGS[2],
+                "warning",
+                Some(SANDSTURM_CR),
+                5,
+            )),
             0 | 3 => Some(Event::new(
                 KOMETENEINSCHLAG,
                 WARNINGS[0],
@@ -120,8 +127,7 @@ impl Event {
 
     /// Check if event is still active
     pub fn is_active(&self) -> bool {
-        // check if time since event creation is greater than the duration of the event
-        !self.duration == 0
+        self.duration != 0
     }
 
     /// Triggers the event and activates its effect
@@ -130,7 +136,7 @@ impl Event {
     /// * `gamestate` - The gamestate which is used to access the player and the machines
     pub fn action(&self, restore: bool, gamestate: &mut GameState) -> RLResult {
         const KOMETENEINSCHLAG_NAME: &str = KOMETENEINSCHLAG[0];
-        const STROMAUSTFALL_NAME: &str = STROMAUSFALL[0];
+        const STROMAUSFALL_NAME: &str = STROMAUSFALL[0];
         let sender = gamestate.get_screen_sender()?.clone();
 
         // handle event effects
@@ -147,7 +153,7 @@ impl Event {
                     one_hole.change_state_to(&State::Running);
                 }
             }
-            STROMAUSTFALL_NAME => {
+            STROMAUSFALL_NAME => {
                 gamestate.machines.iter_mut().for_each(|machine| {
                     // if machine is running it will b use tracing::{info, Id};e stopped
                     // event not triggered if machine is broken or idling
@@ -194,9 +200,17 @@ impl Event {
         if ctx.time.ticks() % 20 == 0 {
             gamestate.events.iter_mut().for_each(|event| {
                 event.duration = event.duration.saturating_sub(20);
+                if event.name == "Sandsturm" {}
             });
-
-            let old_events = gamestate.events.clone();
+            // restore resources of inactive events
+            for event in &gamestate.events {
+                if !event.is_active() {
+                    if let Some(resources) = event.resources {
+                        gamestate.player.resources_change =
+                            gamestate.player.resources_change + resources;
+                    }
+                }
+            }
             // remove all events which are not active anymore
             gamestate.events.retain(|event| {
                 if event.is_active() {
@@ -206,18 +220,9 @@ impl Event {
                     false
                 }
             });
-            // restore resources of inactive events
-            for event in &old_events {
-                if !event.is_active() {
-                    if let Some(resources) = event.resources {
-                        gamestate.player.resources_change =
-                            gamestate.player.resources_change - resources;
-                    }
-                }
-            }
         }
         // have a maximum of one active event
-        if ctx.time.ticks() % 200 == 0 {
+        if ctx.time.ticks() >= 400 && ctx.time.ticks() % 200 == 0 {
             // generate new event
             // might not return an event
             let gen_event = Event::event_generator();

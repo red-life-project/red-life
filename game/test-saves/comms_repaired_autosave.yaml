@@ -1,0 +1,565 @@
+player:
+  inventory:
+  - - name: SuperGlue
+      info_text: SuperGlue kann zur Reparatur der Maschinen oder Löcher verwendet werden
+      img: SuperGlue.png
+    - 3
+  - - name: Benzin
+      info_text: Benzin kann mit dem Notstromgenerator verwendet werden um Strom zu generieren
+      img: Benzin.png
+    - 2
+  - - name: 3D-gedrucktes-Teil
+      info_text: Ein 3D-gedrucktes-Teil, welches zur Reparatur des Kommunikationsmoduls verwendet werden kann
+      img: 3D-gedrucktes-Teil.png
+    - 1
+  position:
+  - 1120
+  - 540
+  resources:
+    oxygen: 25641
+    energy: 25641
+    life: 55445
+  resources_change:
+    oxygen: -21
+    energy: -11
+    life: -10
+  milestone: 2
+  last_damage: 0
+  time: 8490
+events:
+- name: Sandsturm
+  info_text: Ein Sandsturm, welcher zu einer Störung des Sauerstoffgenerators führt
+  resources:
+    oxygen: 10
+    energy: 0
+    life: 0
+  duration: 60
+  popup_type: warning
+  popup_message: Ein Sandsturm ist auf dem Weg!
+machines:
+- name: Sauerstoffgenerator
+  state: Idle
+  hitbox:
+    x: 280.0
+    y: 230.0
+    w: 350.0
+    h: 182.0
+  interaction_area:
+    x: 230.0
+    y: 180.0
+    w: 450.0
+    h: 282.0
+  trades:
+  - name: repair_Oxygen
+    time_ticks: 100
+    initial_state: Broken
+    resulting_state: Idle
+    return_after_timer: false
+    cost:
+    - - name: SuperGlue
+        info_text: SuperGlue kann zur Reparatur der Maschinen oder Löcher verwendet werden
+        img: SuperGlue.png
+      - 2
+    - - name: Benzin
+        info_text: Benzin kann mit dem Notstromgenerator verwendet werden um Strom zu generieren
+        img: Benzin.png
+      - 0
+    - - name: 3D-gedrucktes-Teil
+        info_text: Ein 3D-gedrucktes-Teil, welches zur Reparatur des Kommunikationsmoduls verwendet werden kann
+        img: 3D-gedrucktes-Teil.png
+      - 0
+  - name: start_Oxygen
+    time_ticks: 0
+    initial_state: Idle
+    resulting_state: Running
+    return_after_timer: true
+    cost:
+    - - name: SuperGlue
+        info_text: SuperGlue kann zur Reparatur der Maschinen oder Löcher verwendet werden
+        img: SuperGlue.png
+      - 0
+    - - name: Benzin
+        info_text: Benzin kann mit dem Notstromgenerator verwendet werden um Strom zu generieren
+        img: Benzin.png
+      - 0
+    - - name: 3D-gedrucktes-Teil
+        info_text: Ein 3D-gedrucktes-Teil, welches zur Reparatur des Kommunikationsmoduls verwendet werden kann
+        img: 3D-gedrucktes-Teil.png
+      - 0
+  - name: stop_Oxygen
+    time_ticks: 0
+    initial_state: Running
+    resulting_state: Idle
+    return_after_timer: true
+    cost:
+    - - name: SuperGlue
+        info_text: SuperGlue kann zur Reparatur der Maschinen oder Löcher verwendet werden
+        img: SuperGlue.png
+      - 0
+    - - name: Benzin
+        info_text: Benzin kann mit dem Notstromgenerator verwendet werden um Strom zu generieren
+        img: Benzin.png
+      - 0
+    - - name: 3D-gedrucktes-Teil
+        info_text: Ein 3D-gedrucktes-Teil, welches zur Reparatur des Kommunikationsmoduls verwendet werden kann
+        img: 3D-gedrucktes-Teil.png
+      - 0
+  last_trade:
+    name: repair_Oxygen
+    time_ticks: 100
+    initial_state: Broken
+    resulting_state: Idle
+    return_after_timer: false
+    cost:
+    - - name: SuperGlue
+        info_text: SuperGlue kann zur Reparatur der Maschinen oder Löcher verwendet werden
+        img: SuperGlue.png
+      - 2
+    - - name: Benzin
+        info_text: Benzin kann mit dem Notstromgenerator verwendet werden um Strom zu generieren
+        img: Benzin.png
+      - 0
+    - - name: 3D-gedrucktes-Teil
+        info_text: Ein 3D-gedrucktes-Teil, welches zur Reparatur des Kommunikationsmoduls verwendet werden kann
+        img: 3D-gedrucktes-Teil.png
+      - 0
+  running_resources:
+    oxygen: 30
+    energy: -30
+    life: 0
+  og_time: 100
+  time_remaining: 0
+  time_change: 0
+- name: Stromgenerator
+  state: Broken
+  hitbox:
+    x: 282.0
+    y: 752.0
+    w: 194.0
+    h: 189.0
+  interaction_area:
+    x: 232.0
+    y: 702.0
+    w: 294.0
+    h: 289.0
+  trades:
+  - name: fueling_Stromgenerator
+    time_ticks: 700
+    initial_state: Broken
+    resulting_state: Running
+    return_after_timer: true
+    cost:
+    - - name: SuperGlue
+        info_text: SuperGlue kann zur Reparatur der Maschinen oder Löcher verwendet werden
+        img: SuperGlue.png
+      - 0
+    - - name: Benzin
+        info_text: Benzin kann mit dem Notstromgenerator verwendet werden um Strom zu generieren
+        img: Benzin.png
+      - 1
+    - - name: 3D-gedrucktes-Teil
+        info_text: Ein 3D-gedrucktes-Teil, welches zur Reparatur des Kommunikationsmoduls verwendet werden kann
+        img: 3D-gedrucktes-Teil.png
+      - 0
+  - name: start_Stromgenerator
+    time_ticks: 1
+    initial_state: Idle
+    resulting_state: Running
+    return_after_timer: true
+    cost:
+    - - name: SuperGlue
+        info_text: SuperGlue kann zur Reparatur der Maschinen oder Löcher verwendet werden
+        img: SuperGlue.png
+      - 0
+    - - name: Benzin
+        info_text: Benzin kann mit dem Notstromgenerator verwendet werden um Strom zu generieren
+        img: Benzin.png
+      - 0
+    - - name: 3D-gedrucktes-Teil
+        info_text: Ein 3D-gedrucktes-Teil, welches zur Reparatur des Kommunikationsmoduls verwendet werden kann
+        img: 3D-gedrucktes-Teil.png
+      - 0
+  - name: stop_Stromgenerator
+    time_ticks: 0
+    initial_state: Running
+    resulting_state: Idle
+    return_after_timer: true
+    cost:
+    - - name: SuperGlue
+        info_text: SuperGlue kann zur Reparatur der Maschinen oder Löcher verwendet werden
+        img: SuperGlue.png
+      - 0
+    - - name: Benzin
+        info_text: Benzin kann mit dem Notstromgenerator verwendet werden um Strom zu generieren
+        img: Benzin.png
+      - 0
+    - - name: 3D-gedrucktes-Teil
+        info_text: Ein 3D-gedrucktes-Teil, welches zur Reparatur des Kommunikationsmoduls verwendet werden kann
+        img: 3D-gedrucktes-Teil.png
+      - 0
+  last_trade:
+    name: fueling_Stromgenerator
+    time_ticks: 700
+    initial_state: Broken
+    resulting_state: Running
+    return_after_timer: true
+    cost:
+    - - name: SuperGlue
+        info_text: SuperGlue kann zur Reparatur der Maschinen oder Löcher verwendet werden
+        img: SuperGlue.png
+      - 0
+    - - name: Benzin
+        info_text: Benzin kann mit dem Notstromgenerator verwendet werden um Strom zu generieren
+        img: Benzin.png
+      - 1
+    - - name: 3D-gedrucktes-Teil
+        info_text: Ein 3D-gedrucktes-Teil, welches zur Reparatur des Kommunikationsmoduls verwendet werden kann
+        img: 3D-gedrucktes-Teil.png
+      - 0
+  running_resources:
+    oxygen: -5
+    energy: 200
+    life: 0
+  og_time: 700
+  time_remaining: 0
+  time_change: 0
+- name: Werkermaschine
+  state: Idle
+  hitbox:
+    x: 1000.0
+    y: 780.0
+    w: 300.0
+    h: 150.0
+  interaction_area:
+    x: 950.0
+    y: 730.0
+    w: 400.0
+    h: 250.0
+  trades:
+  - name: repair_werkermaschine
+    time_ticks: 100
+    initial_state: Broken
+    resulting_state: Idle
+    return_after_timer: false
+    cost:
+    - - name: SuperGlue
+        info_text: SuperGlue kann zur Reparatur der Maschinen oder Löcher verwendet werden
+        img: SuperGlue.png
+      - 0
+    - - name: Benzin
+        info_text: Benzin kann mit dem Notstromgenerator verwendet werden um Strom zu generieren
+        img: Benzin.png
+      - 0
+    - - name: 3D-gedrucktes-Teil
+        info_text: Ein 3D-gedrucktes-Teil, welches zur Reparatur des Kommunikationsmoduls verwendet werden kann
+        img: 3D-gedrucktes-Teil.png
+      - 1
+  - name: produce_superglue
+    time_ticks: 120
+    initial_state: Idle
+    resulting_state: Running
+    return_after_timer: true
+    cost:
+    - - name: SuperGlue
+        info_text: SuperGlue kann zur Reparatur der Maschinen oder Löcher verwendet werden
+        img: SuperGlue.png
+      - -1
+    - - name: Benzin
+        info_text: Benzin kann mit dem Notstromgenerator verwendet werden um Strom zu generieren
+        img: Benzin.png
+      - 0
+    - - name: 3D-gedrucktes-Teil
+        info_text: Ein 3D-gedrucktes-Teil, welches zur Reparatur des Kommunikationsmoduls verwendet werden kann
+        img: 3D-gedrucktes-Teil.png
+      - 0
+  last_trade:
+    name: produce_superglue
+    time_ticks: 120
+    initial_state: Idle
+    resulting_state: Running
+    return_after_timer: true
+    cost:
+    - - name: SuperGlue
+        info_text: SuperGlue kann zur Reparatur der Maschinen oder Löcher verwendet werden
+        img: SuperGlue.png
+      - -1
+    - - name: Benzin
+        info_text: Benzin kann mit dem Notstromgenerator verwendet werden um Strom zu generieren
+        img: Benzin.png
+      - 0
+    - - name: 3D-gedrucktes-Teil
+        info_text: Ein 3D-gedrucktes-Teil, welches zur Reparatur des Kommunikationsmoduls verwendet werden kann
+        img: 3D-gedrucktes-Teil.png
+      - 0
+  running_resources:
+    oxygen: 0
+    energy: -15
+    life: 0
+  og_time: 120
+  time_remaining: 0
+  time_change: 0
+- name: 3D-Drucker
+  state: Idle
+  hitbox:
+    x: 930.0
+    y: 230.0
+    w: 200.0
+    h: 148.0
+  interaction_area:
+    x: 880.0
+    y: 180.0
+    w: 300.0
+    h: 248.0
+  trades:
+  - name: repair_3d_printer
+    time_ticks: 300
+    initial_state: Broken
+    resulting_state: Idle
+    return_after_timer: false
+    cost:
+    - - name: SuperGlue
+        info_text: SuperGlue kann zur Reparatur der Maschinen oder Löcher verwendet werden
+        img: SuperGlue.png
+      - 2
+    - - name: Benzin
+        info_text: Benzin kann mit dem Notstromgenerator verwendet werden um Strom zu generieren
+        img: Benzin.png
+      - 0
+    - - name: 3D-gedrucktes-Teil
+        info_text: Ein 3D-gedrucktes-Teil, welches zur Reparatur des Kommunikationsmoduls verwendet werden kann
+        img: 3D-gedrucktes-Teil.png
+      - 0
+  - name: produce_3d_teil
+    time_ticks: 200
+    initial_state: Idle
+    resulting_state: Running
+    return_after_timer: true
+    cost:
+    - - name: SuperGlue
+        info_text: SuperGlue kann zur Reparatur der Maschinen oder Löcher verwendet werden
+        img: SuperGlue.png
+      - 2
+    - - name: Benzin
+        info_text: Benzin kann mit dem Notstromgenerator verwendet werden um Strom zu generieren
+        img: Benzin.png
+      - 0
+    - - name: 3D-gedrucktes-Teil
+        info_text: Ein 3D-gedrucktes-Teil, welches zur Reparatur des Kommunikationsmoduls verwendet werden kann
+        img: 3D-gedrucktes-Teil.png
+      - -1
+  last_trade:
+    name: produce_3d_teil
+    time_ticks: 200
+    initial_state: Idle
+    resulting_state: Running
+    return_after_timer: true
+    cost:
+    - - name: SuperGlue
+        info_text: SuperGlue kann zur Reparatur der Maschinen oder Löcher verwendet werden
+        img: SuperGlue.png
+      - 2
+    - - name: Benzin
+        info_text: Benzin kann mit dem Notstromgenerator verwendet werden um Strom zu generieren
+        img: Benzin.png
+      - 0
+    - - name: 3D-gedrucktes-Teil
+        info_text: Ein 3D-gedrucktes-Teil, welches zur Reparatur des Kommunikationsmoduls verwendet werden kann
+        img: 3D-gedrucktes-Teil.png
+      - -1
+  running_resources:
+    oxygen: 0
+    energy: -25
+    life: 0
+  og_time: 200
+  time_remaining: 0
+  time_change: 0
+- name: Kommunikationsmodul
+  state: Idle
+  hitbox:
+    x: 1640.0
+    y: 320.0
+    w: 175.0
+    h: 477.0
+  interaction_area:
+    x: 1590.0
+    y: 270.0
+    w: 275.0
+    h: 577.0
+  trades:
+  - name: Kommunikationsmodul_reparieren
+    time_ticks: 400
+    initial_state: Broken
+    resulting_state: Idle
+    return_after_timer: false
+    cost:
+    - - name: SuperGlue
+        info_text: SuperGlue kann zur Reparatur der Maschinen oder Löcher verwendet werden
+        img: SuperGlue.png
+      - 5
+    - - name: Benzin
+        info_text: Benzin kann mit dem Notstromgenerator verwendet werden um Strom zu generieren
+        img: Benzin.png
+      - 0
+    - - name: 3D-gedrucktes-Teil
+        info_text: Ein 3D-gedrucktes-Teil, welches zur Reparatur des Kommunikationsmoduls verwendet werden kann
+        img: 3D-gedrucktes-Teil.png
+      - 3
+  - name: Notfall_signal_absetzen
+    time_ticks: 1000
+    initial_state: Idle
+    resulting_state: Running
+    return_after_timer: true
+    cost:
+    - - name: SuperGlue
+        info_text: SuperGlue kann zur Reparatur der Maschinen oder Löcher verwendet werden
+        img: SuperGlue.png
+      - 1
+    - - name: Benzin
+        info_text: Benzin kann mit dem Notstromgenerator verwendet werden um Strom zu generieren
+        img: Benzin.png
+      - 0
+    - - name: 3D-gedrucktes-Teil
+        info_text: Ein 3D-gedrucktes-Teil, welches zur Reparatur des Kommunikationsmoduls verwendet werden kann
+        img: 3D-gedrucktes-Teil.png
+      - 1
+  last_trade:
+    name: Kommunikationsmodul_reparieren
+    time_ticks: 400
+    initial_state: Broken
+    resulting_state: Idle
+    return_after_timer: false
+    cost:
+    - - name: SuperGlue
+        info_text: SuperGlue kann zur Reparatur der Maschinen oder Löcher verwendet werden
+        img: SuperGlue.png
+      - 5
+    - - name: Benzin
+        info_text: Benzin kann mit dem Notstromgenerator verwendet werden um Strom zu generieren
+        img: Benzin.png
+      - 0
+    - - name: 3D-gedrucktes-Teil
+        info_text: Ein 3D-gedrucktes-Teil, welches zur Reparatur des Kommunikationsmoduls verwendet werden kann
+        img: 3D-gedrucktes-Teil.png
+      - 3
+  running_resources:
+    oxygen: 0
+    energy: -30
+    life: 0
+  og_time: 400
+  time_remaining: 0
+  time_change: 0
+- name: Loch
+  state: Running
+  hitbox:
+    x: 780.0
+    y: 230.0
+    w: 32.0
+    h: 18.0
+  interaction_area:
+    x: 730.0
+    y: 180.0
+    w: 132.0
+    h: 118.0
+  trades:
+  - name: repair_Loch
+    time_ticks: 100
+    initial_state: Running
+    resulting_state: Idle
+    return_after_timer: false
+    cost:
+    - - name: SuperGlue
+        info_text: SuperGlue kann zur Reparatur der Maschinen oder Löcher verwendet werden
+        img: SuperGlue.png
+      - 2
+    - - name: Benzin
+        info_text: Benzin kann mit dem Notstromgenerator verwendet werden um Strom zu generieren
+        img: Benzin.png
+      - 0
+    - - name: 3D-gedrucktes-Teil
+        info_text: Ein 3D-gedrucktes-Teil, welches zur Reparatur des Kommunikationsmoduls verwendet werden kann
+        img: 3D-gedrucktes-Teil.png
+      - 0
+  last_trade:
+    name: repair_Loch
+    time_ticks: 100
+    initial_state: Running
+    resulting_state: Idle
+    return_after_timer: false
+    cost:
+    - - name: SuperGlue
+        info_text: SuperGlue kann zur Reparatur der Maschinen oder Löcher verwendet werden
+        img: SuperGlue.png
+      - 2
+    - - name: Benzin
+        info_text: Benzin kann mit dem Notstromgenerator verwendet werden um Strom zu generieren
+        img: Benzin.png
+      - 0
+    - - name: 3D-gedrucktes-Teil
+        info_text: Ein 3D-gedrucktes-Teil, welches zur Reparatur des Kommunikationsmoduls verwendet werden kann
+        img: 3D-gedrucktes-Teil.png
+      - 0
+  running_resources:
+    oxygen: -15
+    energy: -5
+    life: 0
+  og_time: 100
+  time_remaining: 0
+  time_change: 0
+- name: Loch
+  state: Running
+  hitbox:
+    x: 680.0
+    y: 900.0
+    w: 32.0
+    h: 18.0
+  interaction_area:
+    x: 630.0
+    y: 850.0
+    w: 132.0
+    h: 118.0
+  trades:
+  - name: repair_Loch
+    time_ticks: 100
+    initial_state: Running
+    resulting_state: Idle
+    return_after_timer: false
+    cost:
+    - - name: SuperGlue
+        info_text: SuperGlue kann zur Reparatur der Maschinen oder Löcher verwendet werden
+        img: SuperGlue.png
+      - 2
+    - - name: Benzin
+        info_text: Benzin kann mit dem Notstromgenerator verwendet werden um Strom zu generieren
+        img: Benzin.png
+      - 0
+    - - name: 3D-gedrucktes-Teil
+        info_text: Ein 3D-gedrucktes-Teil, welches zur Reparatur des Kommunikationsmoduls verwendet werden kann
+        img: 3D-gedrucktes-Teil.png
+      - 0
+  last_trade:
+    name: repair_Loch
+    time_ticks: 100
+    initial_state: Running
+    resulting_state: Idle
+    return_after_timer: false
+    cost:
+    - - name: SuperGlue
+        info_text: SuperGlue kann zur Reparatur der Maschinen oder Löcher verwendet werden
+        img: SuperGlue.png
+      - 2
+    - - name: Benzin
+        info_text: Benzin kann mit dem Notstromgenerator verwendet werden um Strom zu generieren
+        img: Benzin.png
+      - 0
+    - - name: 3D-gedrucktes-Teil
+        info_text: Ein 3D-gedrucktes-Teil, welches zur Reparatur des Kommunikationsmoduls verwendet werden kann
+        img: 3D-gedrucktes-Teil.png
+      - 0
+  running_resources:
+    oxygen: -15
+    energy: -5
+    life: 0
+  og_time: 100
+  time_remaining: 0
+  time_change: 0
+handbook_invisible: true

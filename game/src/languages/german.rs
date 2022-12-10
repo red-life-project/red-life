@@ -53,6 +53,7 @@ pub const ENERGY_STRING: &str = "Kälte";
 pub const AIR_AND_ENERGY_STRING: &str = "Kälte und zu wenig Luft";
 pub const DEATH_REASON_STRING: &str = "Du bist gestorben an";
 pub const ADDITIONAL_INFO_STRING: &str = "Bitte drücke ESC!";
+pub const RESUME_ERROR_STRING: &str = "Du brauchst zuerst einen Spielstand";
 
 /// Constant for all strings used in `IntroScreen`
 pub const INTRO_TEXT: &str = "Du bist auf dem Mars gestrandet und musst überleben.\nDazu musst du die \
@@ -71,7 +72,10 @@ pub const KOMETENEINSCHLAG: [&str; 2] = [
     "KOMETENEINSCHLAG",
     "Ein KOMETENEINSCHLAG hat die Erde getroffen und hat ein Loch in der Wand erzeugt",
 ];
-/// Constants for the events that can occur.
+pub const SANDSTURM: [&str; 2] = [
+    "Sandsturm",
+    "Ein Sandsturm, welcher zu einer Störung des Sauerstoffgenerators führt",
+];
 pub const INFORMATIONSPOPUP_NASA: [&str; 2] = [
     "InformationspopupNASA",
     "Ein Informationspopup über die NASA, welches Fakten und Informationen über die NASA enthält",
@@ -91,8 +95,7 @@ pub const TIME_NAME: [&str; 1] = ["Zeit"];
 /// Constants for the text of the button in the main menu
 pub const BUTTON_TEXT: [&str; 3] = ["Fortsetzen", "Neues Spiel", "Beenden"];
 /// Contains all machine names as a vec of strings.
-pub(crate) const MACHINE_NAMES: [&str; 8] = [
-    "test",
+pub(crate) const MACHINE_NAMES: [&str; 7] = [
     "Sauerstoffgenerator",
     "Stromgenerator",
     "Werkermaschine",
@@ -112,7 +115,7 @@ pub(crate) const FIRST_MILESTONE_HANDBOOK_TEXT: [&str; 10] = [
     "- Denk daran sparsam mit Benzin umzugehen!",
     "- Du kannst den Generator kurz anhalten,",
     "   wenn du genug Energie hast",
-    "c:",
+    "\n\n           Drücke H zum schließen",
 ];
 
 pub(crate) const SECOND_MILESTONE_HANDBOOK_TEXT: [&str; 7] = [
@@ -122,5 +125,5 @@ pub(crate) const SECOND_MILESTONE_HANDBOOK_TEXT: [&str; 7] = [
     "   während du die Nachricht sendest!",
     "- Wenn du die Nachricht abgeschickt hast,",
     "   gewinnst du automatisch.",
-    "<*~*>",
+    "\n\n             Drücke H zum schließen",
 ];

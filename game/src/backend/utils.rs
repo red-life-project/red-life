@@ -19,7 +19,7 @@ pub fn get_scale(ctx: &Context) -> Vec2 {
 /// Returns if the player collides with an area
 /// # Arguments
 /// * `player_pos` - The position of the player
-/// * `direction` - The direction the player wants to move
+/// * `area` - The area to be collision-checked
 /// # Returns
 /// * `true` if the player collides with an area
 /// * `false` if the player does not collide with an area

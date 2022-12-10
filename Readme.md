@@ -15,5 +15,23 @@ rustup override set nightly
 cargo run --release
 ```
 
+## Pictures
+
+### Main menu
+
+![Main menu](pictures/start_menu.jpg)
+
+### Gameplay
+
+![Gameplay](pictures/ingame.png)
+
+### Death-screen
+
+![Deathscreen](pictures/death.jpg)
+
 ## License
+
 Red Life is licensed under the [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html) license.
+
+
+
