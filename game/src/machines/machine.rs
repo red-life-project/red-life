@@ -184,7 +184,14 @@ impl Machine {
     /// * `player` - of type `& Player` is a reference to the player
     pub(crate) fn interact(&mut self, player: &Player) -> RLResult {
         // Check if there is a possible trade
-        let trade = self.get_trade();
+        let trade ;
+
+        if let Some(t)= self.trades.iter().find(|t| t.initial_state == self.state){
+            trade = t.clone();
+        }else {
+            return Ok(());
+        }
+
         if trade.name == *"no_Trade" {
             return Ok(());
         }
@@ -255,18 +262,21 @@ impl Machine {
         Ok(())
     }
 
+    /// Handels the timer by being called every tick
     pub(crate) fn tick(&mut self) -> RLResult {
         self.time_remaining -= self.time_change;
+        //if the timer has run out
         if self.time_remaining < 0 {
-            //timer run out
+            //reset timer values and stop timer
             self.time_change = 0;
             self.time_remaining = 0;
 
-            if self.last_trade.return_after_timer {
-                if self.last_trade.name == "Notfall_signal_absetzen" {
-                    let _e = self.sender.as_ref().unwrap().send(GameCommand::Winning);
-                }
+            // handel edge case for wining the game
+            if self.last_trade.name == "Notfall_signal_absetzen" {
+                let _e = self.sender.as_ref().unwrap().send(GameCommand::Winning);
+            }
 
+            if self.last_trade.return_after_timer {
                 self.change_state_to(&self.last_trade.initial_state.clone());
             } else {
                 self.change_state_to(&self.last_trade.resulting_state.clone());
@@ -286,9 +296,14 @@ impl Machine {
         }
         Ok(())
     }
+
+    /// Used to change the State of the Machine gracefully
+    /// # Arguments
+    /// * `arg` -
+    /// # Returns
     pub(crate) fn change_state_to(&mut self, new_state: &State) {
         if self.state != *new_state {
-            self.check_change(&self.state, new_state);
+            self.invoke_state_change(&self.state, new_state);
             if self.state ==Running && self.time_change ==1 {
                 self.time_change = 0;
             }
@@ -303,14 +318,8 @@ impl Machine {
             }
         }
     }
-    fn get_trade(&self) -> Trade {
-        // returns the first possible trade
-        if let Some(t) = self.trades.iter().find(|t| t.initial_state == self.state) {
-            return t.clone();
-        }
-        Trade::default()
-    }
-    fn check_change(&self, before: &State, after: &State) {
+
+    fn invoke_state_change(&self, before: &State, after: &State) {
         match (before, after) {
             (Broken, Idle) => {
                 let _e = self.sender.as_ref().unwrap().send(GameCommand::Milestone);
