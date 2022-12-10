@@ -127,7 +127,6 @@ impl Event {
 
     /// Check if event is still active
     pub fn is_active(&self) -> bool {
-        // check if time since event creation is greater than the duration of the event
         self.duration != 0
     }
 
