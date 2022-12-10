@@ -55,7 +55,7 @@ pub(crate) fn gen_all_machines() -> Vec<Machine> {
     vec![
         // Oxygen machine
         Machine::new_by_const((
-            MACHINE_NAMES[1].to_string(),
+            MACHINE_NAMES[0].to_string(),
             Rect {
                 x: 280.0,
                 y: 230.0,
@@ -89,14 +89,14 @@ pub(crate) fn gen_all_machines() -> Vec<Machine> {
                 ),
             ],
             Resources {
-                oxygen: 25,
+                oxygen: 30,
                 energy: -30,
                 life: 0,
             },
         )),
         // Electricity machine
         Machine::new_by_const((
-            MACHINE_NAMES[2].to_string(),
+            MACHINE_NAMES[1].to_string(),
             Rect {
                 x: 282.0,
                 y: 752.0,
@@ -137,7 +137,7 @@ pub(crate) fn gen_all_machines() -> Vec<Machine> {
         )),
         // Worker machine
         Machine::new_by_const((
-            MACHINE_NAMES[3].to_string(),
+            MACHINE_NAMES[2].to_string(),
             Rect {
                 x: 1000.0,
                 y: 780.0,
@@ -168,9 +168,9 @@ pub(crate) fn gen_all_machines() -> Vec<Machine> {
                 life: 0,
             },
         )),
-        // Worker machine
+        // 3d Printer machine
         Machine::new_by_const((
-            MACHINE_NAMES[4].to_string(),
+            MACHINE_NAMES[3].to_string(),
             Rect {
                 x: 930.0,
                 y: 230.0,
@@ -184,7 +184,7 @@ pub(crate) fn gen_all_machines() -> Vec<Machine> {
                     State::Broken,
                     State::Idle,
                     false,
-                    gen_inventory(2, 1, 0),
+                    gen_inventory(2, 0, 0),
                 ),
                 Trade::new(
                     "produce_3d_teil".to_string(),
@@ -203,7 +203,7 @@ pub(crate) fn gen_all_machines() -> Vec<Machine> {
         )),
         // Communication module
         Machine::new_by_const((
-            MACHINE_NAMES[5].to_string(),
+            MACHINE_NAMES[4].to_string(),
             Rect {
                 x: 1640.0,
                 y: 320.0,
@@ -225,18 +225,18 @@ pub(crate) fn gen_all_machines() -> Vec<Machine> {
                     State::Idle,
                     State::Running,
                     true,
-                    gen_inventory(0, 0, 0),
+                    gen_inventory(1, 0, 1),
                 ),
             ],
             Resources {
                 oxygen: 0,
-                energy: -20,
+                energy: -30,
                 life: 0,
             },
         )),
-        // Second hole
+        // First hole
         Machine::new_by_const((
-            MACHINE_NAMES[6].to_string(),
+            MACHINE_NAMES[5]Second.to_string(),
             Rect {
                 x: 780.0,
                 y: 230.0,
@@ -252,14 +252,14 @@ pub(crate) fn gen_all_machines() -> Vec<Machine> {
                 gen_inventory(2, 0, 0),
             )],
             Resources {
-                oxygen: -20,
+                oxygen: -15,
                 energy: -5,
                 life: 0,
             },
         )),
         // Second hole
         Machine::new_by_const((
-            MACHINE_NAMES[7].to_string(),
+            MACHINE_NAMES[6].to_string(),
             Rect {
                 x: 680.0,
                 y: 900.0,
@@ -275,7 +275,7 @@ pub(crate) fn gen_all_machines() -> Vec<Machine> {
                 gen_inventory(2, 0, 0),
             )],
             Resources {
-                oxygen: -20,
+                oxygen: -15,
                 energy: -5,
                 life: 0,
             },
