@@ -299,8 +299,7 @@ impl Machine {
 
     /// Used to change the State of the Machine gracefully
     /// # Arguments
-    /// * `arg` -
-    /// # Returns
+    /// * `new_state` - the state that the machine should change to
     pub(crate) fn change_state_to(&mut self, new_state: &State) {
         if self.state != *new_state {
             self.invoke_state_change(&self.state, new_state);
@@ -310,6 +309,7 @@ impl Machine {
             self.state = new_state.clone();
         }
     }
+    /// A helper funktion to disable every funktion in case there is no energy in the system
     pub(crate) fn no_energy(&mut self) {
         if self.running_resources.energy < 0 && self.name != "Loch" {
             // If there is no energy available but this machine needs some, stop this machine.
@@ -319,6 +319,11 @@ impl Machine {
         }
     }
 
+    /// Helper funktion that sends appropriate `GameCommand`s depending on change of the state
+    /// Used to change the State of the Machine gracefully
+    /// # Arguments
+    /// * `before` - the current state of the system
+    /// * `after` - the state that it will be in after the change is complete
     fn invoke_state_change(&self, before: &State, after: &State) {
         match (before, after) {
             (Broken, Idle) => {
