@@ -94,8 +94,7 @@ pub const TIME_NAME: [&str; 1] = ["Zeit"];
 /// Constants for the text of the button in the main menu
 pub const BUTTON_TEXT: [&str; 3] = ["Fortsetzen", "Neues Spiel", "Beenden"];
 /// Contains all machine names as a vec of strings.
-pub(crate) const MACHINE_NAMES: [&str; 8] = [
-    "test",
+pub(crate) const MACHINE_NAMES: [&str; 7] = [
     "Sauerstoffgenerator",
     "Stromgenerator",
     "Werkermaschine",
@@ -115,7 +114,7 @@ pub(crate) const FIRST_MILESTONE_HANDBOOK_TEXT: [&str; 10] = [
     "- Denk daran sparsam mit Benzin umzugehen!",
     "- Du kannst den Generator kurz anhalten,",
     "   wenn du genug Energie hast",
-    "c:",
+    "\n\n           Drücke H zum schließen",
 ];
 
 pub(crate) const SECOND_MILESTONE_HANDBOOK_TEXT: [&str; 7] = [
@@ -125,5 +124,5 @@ pub(crate) const SECOND_MILESTONE_HANDBOOK_TEXT: [&str; 7] = [
     "   während du die Nachricht sendest!",
     "- Wenn du die Nachricht abgeschickt hast,",
     "   gewinnst du automatisch.",
-    "<*~*>",
+    "\n\n             Drücke H zum schließen",
 ];
