@@ -1,5 +1,5 @@
-use crate::backend::gamestate::GameState;
 use crate::backend::constants::gen_all_machines;
+use crate::backend::gamestate::GameState;
 use crate::backend::rlcolor::RLColor;
 use crate::backend::utils::get_draw_params;
 use crate::machines::machine::Machine;
