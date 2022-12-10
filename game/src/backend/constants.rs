@@ -47,10 +47,7 @@ pub(crate) const SANDSTURM_CR: Resources<i16> = Resources {
 #[allow(clippy::too_many_lines)]
 /// Generates all machines with all their name, position, trades and resources.
 /// # Returns
-/// `String` - The name of the machine.
-/// `Rect` - Returns the collision area of the machine.
-/// `Vec<Trade>` - Returns the trades of the machine.
-/// `Vec<Resources>` - Returns the resources of the machine.
+/// A Vector of `Machine`s
 pub(crate) fn gen_all_machines() -> Vec<Machine> {
     vec![
         // Oxygen machine
