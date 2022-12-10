@@ -3,7 +3,7 @@ use crate::backend::rlcolor::RLColor;
 use crate::game_core::player::gen_inventory;
 use crate::game_core::resources::Resources;
 use crate::languages::german::MACHINE_NAMES;
-use crate::machines::machine::State;
+use crate::machines::machine::{Machine, State};
 use crate::machines::trade::Trade;
 use ggez::graphics::{Color, Rect};
 use std::string::ToString;
@@ -51,10 +51,10 @@ pub(crate) const SANDSTURM_CR: Resources<i16> = Resources {
 /// `Rect` - Returns the collision area of the machine.
 /// `Vec<Trade>` - Returns the trades of the machine.
 /// `Vec<Resources>` - Returns the resources of the machine.
-pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>); 7] {
-    [
+pub(crate) fn gen_all_machines() -> Vec<Machine> {
+    vec![
         // Oxygen machine
-        (
+        Machine::new_by_const((
             MACHINE_NAMES[1].to_string(),
             Rect {
                 x: 280.0,
@@ -93,9 +93,9 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                 energy: -30,
                 life: 0,
             },
-        ),
+        )),
         // Electricity machine
-        (
+        Machine::new_by_const((
             MACHINE_NAMES[2].to_string(),
             Rect {
                 x: 282.0,
@@ -134,9 +134,9 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                 energy: 200,
                 life: 0,
             },
-        ),
-        // worker machine
-        (
+        )),
+        // Worker machine
+        Machine::new_by_const((
             MACHINE_NAMES[3].to_string(),
             Rect {
                 x: 1000.0,
@@ -167,9 +167,9 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                 energy: -15,
                 life: 0,
             },
-        ),
-        // 3d_printer machine
-        (
+        )),
+        // Worker machine
+        Machine::new_by_const((
             MACHINE_NAMES[4].to_string(),
             Rect {
                 x: 930.0,
@@ -200,9 +200,9 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                 energy: -25,
                 life: 0,
             },
-        ),
+        )),
         // Communication module
-        (
+        Machine::new_by_const((
             MACHINE_NAMES[5].to_string(),
             Rect {
                 x: 1640.0,
@@ -233,9 +233,9 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                 energy: -20,
                 life: 0,
             },
-        ),
-        // first hole
-        (
+        )),
+        // Second hole
+        Machine::new_by_const((
             MACHINE_NAMES[6].to_string(),
             Rect {
                 x: 780.0,
@@ -256,9 +256,9 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                 energy: -5,
                 life: 0,
             },
-        ),
-        // second hole
-        (
+        )),
+        // Second hole
+        Machine::new_by_const((
             MACHINE_NAMES[7].to_string(),
             Rect {
                 x: 680.0,
@@ -279,6 +279,6 @@ pub(crate) fn gen_all_machines() -> [(String, Rect, Vec<Trade>, Resources<i16>);
                 energy: -5,
                 life: 0,
             },
-        ),
+        )),
     ]
 }
