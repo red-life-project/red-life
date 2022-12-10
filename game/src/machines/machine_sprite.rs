@@ -1,3 +1,4 @@
+//! This File contains the code surrounding `MachineSprite`
 use crate::machines::machine::State;
 use ggez::graphics::Image;
 
