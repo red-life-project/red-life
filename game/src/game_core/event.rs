@@ -204,7 +204,7 @@ impl Event {
                 if event.name == "Sandsturm" {}
             });
             // restore resources of inactive events
-            for event in gamestate.events.iter() {
+            for event in &gamestate.events {
                 if !event.is_active() {
                     if let Some(resources) = event.resources {
                         gamestate.player.resources_change =

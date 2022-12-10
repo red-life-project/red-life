@@ -8,8 +8,9 @@ use crate::main_menu::button::Button;
 use crate::main_menu::mainmenu::Message::{Exit, NewGame, Resume};
 use crate::RLResult;
 
+use crate::backend::screen::Popup;
 use crate::game_core::infoscreen::InfoScreen;
-use crate::languages::german::BUTTON_TEXT;
+use crate::languages::german::{BUTTON_TEXT, RESUME_ERROR_STRING};
 use ggez::{graphics, Context};
 use std::sync::mpsc::{channel, Receiver, Sender};
 
@@ -109,6 +110,10 @@ impl Screen for MainMenu {
                             gamestate.init(ctx)?;
                             gamestate
                         })))?;
+                    } else {
+                        self.screen_sender.send(StackCommand::Popup(Popup::warning(
+                            RESUME_ERROR_STRING.to_string(),
+                        )))?;
                     }
                 }
             }

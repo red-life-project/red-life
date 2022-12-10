@@ -255,7 +255,7 @@ impl GameState {
                     &text,
                     Vec2::new(800.0, 400.0 + (i * 30) as f32),
                     scale
-                )
+                );
             });
     }
     /// Iterates trough the inventory and draws the amount of every item in the inventory.
