@@ -29,7 +29,7 @@ impl GameState {
             }
         }
         if ctx.keyboard.is_key_just_pressed(VirtualKeyCode::H) {
-            self.handbook_visible = !self.handbook_visible;
+            self.handbook_invisible = !self.handbook_invisible;
         }
         // If we are in debug mode, change the milestone by using Z
         #[cfg(debug_assertions)]

@@ -62,7 +62,7 @@ impl Event {
     /// if no Event is active it either chooses a random event of the Event enum or nothing every 60 seconds
     pub fn event_generator() -> Option<Event> {
         let rng = fastrand::Rng::new();
-        let event = rng.usize(..10);
+        let event = rng.usize(..15);
         match event {
             8 => Some(Event::new(
                 SANDSTURM,
@@ -136,7 +136,7 @@ impl Event {
     /// * `gamestate` - The gamestate which is used to access the player and the machines
     pub fn action(&self, restore: bool, gamestate: &mut GameState) -> RLResult {
         const KOMETENEINSCHLAG_NAME: &str = KOMETENEINSCHLAG[0];
-        const STROMAUSTFALL_NAME: &str = STROMAUSFALL[0];
+        const STROMAUSFALL_NAME: &str = STROMAUSFALL[0];
         let sender = gamestate.get_screen_sender()?.clone();
 
         // handle event effects
@@ -153,7 +153,7 @@ impl Event {
                     one_hole.change_state_to(&State::Running);
                 }
             }
-            STROMAUSTFALL_NAME => {
+            STROMAUSFALL_NAME => {
                 gamestate.machines.iter_mut().for_each(|machine| {
                     // if machine is running it will b use tracing::{info, Id};e stopped
                     // event not triggered if machine is broken or idling
@@ -197,7 +197,7 @@ impl Event {
     /// * `gamestate` - The gamestate which is used to access the events vector
     /// * `context` - The game context which is used to access the current tick
     pub fn update_events(ctx: &Context, gamestate: &mut GameState) -> RLResult {
-        if ctx.time.ticks() % 20 == 0 {
+        if ctx.time.ticks() % 100 == 0 {
             gamestate.events.iter_mut().for_each(|event| {
                 event.duration = event.duration.saturating_sub(20);
                 if event.name == "Sandsturm" {}
@@ -222,7 +222,7 @@ impl Event {
             });
         }
         // have a maximum of one active event
-        if ctx.time.ticks() % 200 == 0 {
+        if ctx.time.ticks() >= 400 && ctx.time.ticks() % 200 == 0 {
             // generate new event
             // might not return an event
             let gen_event = Event::event_generator();
