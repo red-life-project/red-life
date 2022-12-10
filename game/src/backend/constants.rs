@@ -236,7 +236,7 @@ pub(crate) fn gen_all_machines() -> Vec<Machine> {
         )),
         // First hole
         Machine::new_by_const((
-            MACHINE_NAMES[5]Second.to_string(),
+            MACHINE_NAMES[5].to_string(),
             Rect {
                 x: 780.0,
                 y: 230.0,
