@@ -180,29 +180,27 @@ impl Machine {
     }
 
     /// Handel's the interaction of the Maschine and the player
-    /// It gets a copy of the player and returns a modified Player
     /// # Arguments
-    /// * `player` - of type `&mut Player` is a coppy of the original player
-    /// # Returns
-    /// * `RLResult<Player>` - the Player that was passed in with modified values
+    /// * `player` - of type `& Player` is a reference to the player
     pub(crate) fn interact(&mut self, player: &Player) -> RLResult {
+        // Check if there is a possible trade
         let trade = self.get_trade();
         if trade.name == *"no_Trade" {
             return Ok(());
         }
+        // Check if the player has energy (and its needed)
         if player.resources.energy == 0 && self.running_resources.energy < 0 && self.name != "Loch"
         {
             return Ok(());
         }
-
-        // dif = items the player has - the cost of the trade
+        // dif = the different between items the player has and the cost of the trade
         let dif = trade
             .cost
             .iter()
             .map(|(item, demand)| (item, player.get_item_amount(item) - demand))
             .filter(|(_item, dif)| *dif < 0)
             .collect::<Vec<(&Item, i32)>>();
-        // If one item is not available in enough quantity
+        // If one item is not available in enough quantity inform the player and cancel the interaction
         if dif.iter().any(|(_, demand)| *demand < 0) {
             let mut missing_items = String::new();
             dif.iter()
@@ -220,7 +218,7 @@ impl Machine {
             return Ok(());
         }
 
-        // the player has enough items for the trade so we will execute on it
+        // At this point all checks have passed and continue with executing the trade
         info!("Executing trade:{} ", trade.name);
 
         // Remove the cost of the trade from the players inventory by sending the demand to the AddItem GameCommand
@@ -234,6 +232,7 @@ impl Machine {
             .as_ref()
             .unwrap()
             .send(GameCommand::AddItems(items_cost))?;
+
 
         if trade.time_ticks == 0 {
             // this trade has no timer
@@ -255,8 +254,9 @@ impl Machine {
 
         Ok(())
     }
-    pub(crate) fn tick(&mut self, delta_ticks: i16) -> RLResult {
-        self.time_remaining -= self.time_change * delta_ticks;
+
+    pub(crate) fn tick(&mut self) -> RLResult {
+        self.time_remaining -= self.time_change;
         if self.time_remaining < 0 {
             //timer run out
             self.time_change = 0;

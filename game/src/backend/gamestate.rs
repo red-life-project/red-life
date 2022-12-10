@@ -178,7 +178,7 @@ impl GameState {
         self.player
             .life_regeneration(&self.screen_sender.as_ref().unwrap().clone())?;
         for machine in &mut self.machines {
-            machine.tick(1)?;
+            machine.tick()?;
         }
 
         Ok(())
