@@ -160,7 +160,7 @@ impl Machine {
                             life: 0,
                         } - self.running_resources,
                     ));
-            }
+               }
             _ => {
                 info!(
                     "unexpected case in Match. machine state changed from {} to {}",
@@ -174,6 +174,9 @@ impl Machine {
     pub(crate) fn change_state_to(&mut self, new_state: &State) {
         if self.state != *new_state {
             self.check_change(&self.state, new_state);
+            if self.state ==Running && self.time_change ==1 {
+                self.time_change = 0;
+            }
             self.state = new_state.clone();
         }
     }
