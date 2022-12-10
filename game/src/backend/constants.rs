@@ -39,8 +39,8 @@ pub(crate) const TIME_POSITION: (f32, f32) = (1205., 960.);
 
 /// Change rate fot the event Sandsturm
 pub(crate) const SANDSTURM_CR: Resources<i16> = Resources {
-    oxygen: 0,
-    energy: 5,
+    oxygen: 10,
+    energy: 0,
     life: 0,
 };
 
