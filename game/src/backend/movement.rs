@@ -29,16 +29,16 @@ impl GameState {
             }
         }
         if ctx.keyboard.is_key_just_pressed(VirtualKeyCode::H) {
-            self.handbook_visible = !self.handbook_visible;
+            self.handbook_invisible = !self.handbook_invisible;
+        }
+        // If we are in debug mode, change the milestone by using Z
+        #[cfg(debug_assertions)]
+        if ctx.keyboard.is_key_just_pressed(VirtualKeyCode::Z) {
+            self.player.milestone += 1;
         }
         let keys = ctx.keyboard.pressed_keys();
         for key in keys.iter() {
             match key {
-                // If we are in debug mode, change the milestone by using Z
-                #[cfg(debug_assertions)]
-                VirtualKeyCode::Z => {
-                    self.player.milestone += 1;
-                }
                 VirtualKeyCode::W => {
                     if !self.collision_detection((
                         self.player.position.0,

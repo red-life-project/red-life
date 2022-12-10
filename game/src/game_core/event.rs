@@ -62,7 +62,7 @@ impl Event {
     /// if no Event is active it either chooses a random event of the Event enum or nothing every 60 seconds
     pub fn event_generator() -> Option<Event> {
         let rng = fastrand::Rng::new();
-        let event = rng.usize(..10);
+        let event = rng.usize(..15);
         match event {
             8 => Some(Event::new(
                 SANDSTURM,
@@ -127,7 +127,6 @@ impl Event {
 
     /// Check if event is still active
     pub fn is_active(&self) -> bool {
-        // check if time since event creation is greater than the duration of the event
         self.duration != 0
     }
 
@@ -137,7 +136,7 @@ impl Event {
     /// * `gamestate` - The gamestate which is used to access the player and the machines
     pub fn action(&self, restore: bool, gamestate: &mut GameState) -> RLResult {
         const KOMETENEINSCHLAG_NAME: &str = KOMETENEINSCHLAG[0];
-        const STROMAUSTFALL_NAME: &str = STROMAUSFALL[0];
+        const STROMAUSFALL_NAME: &str = STROMAUSFALL[0];
         let sender = gamestate.get_screen_sender()?.clone();
 
         // handle event effects
@@ -154,7 +153,7 @@ impl Event {
                     one_hole.change_state_to(&State::Running);
                 }
             }
-            STROMAUSTFALL_NAME => {
+            STROMAUSFALL_NAME => {
                 gamestate.machines.iter_mut().for_each(|machine| {
                     // if machine is running it will b use tracing::{info, Id};e stopped
                     // event not triggered if machine is broken or idling
@@ -204,7 +203,7 @@ impl Event {
                 if event.name == "Sandsturm" {}
             });
             // restore resources of inactive events
-            for event in gamestate.events.iter() {
+            for event in &gamestate.events {
                 if !event.is_active() {
                     if let Some(resources) = event.resources {
                         gamestate.player.resources_change =
@@ -223,7 +222,7 @@ impl Event {
             });
         }
         // have a maximum of one active event
-        if ctx.time.ticks() % 200 == 0 {
+        if ctx.time.ticks() >= 400 && ctx.time.ticks() % 200 == 0 {
             // generate new event
             // might not return an event
             let gen_event = Event::event_generator();

@@ -151,22 +151,23 @@ impl Screenstack {
     /// Possible commands are:
     /// `Push`: Pushes a new screen on the stack,
     /// `Pop`: Pops the current screen,
-    /// `None`: Does nothing
     /// `Popup`: Adds a new popup to the stack
     /// # Arguments
     /// * `command` - The command to handle
     fn process_command(&mut self, command: StackCommand) {
         // Match the command given back by the screen
         match command {
-            StackCommand::None => {}
             StackCommand::Push(mut screen) => {
                 screen.set_sender(self.sender.clone());
                 self.screens.push(screen);
             }
             StackCommand::Pop => {
-                match self.screens.len() {
-                    1 => std::process::exit(0),
-                    _ => self.screens.pop(),
+                if self.screens.len() == 1 {
+                    std::process::exit(0)
+                } else {
+                    // Clear our popups in order to not display them outside of the Gamestate
+                    self.popup.clear();
+                    self.screens.pop();
                 };
             }
             StackCommand::Popup(popup) => self.popup.push(popup),
@@ -184,7 +185,6 @@ impl Screenstack {
 /// We can tell the `Screenstack` to push the `Gamestate` screen onto the
 /// `Screenstack`
 pub enum StackCommand {
-    None,
     Push(Box<dyn Screen>),
     Popup(Popup),
     Pop,

@@ -60,7 +60,7 @@ pub struct GameState {
     /// Needed to send Messages to `machine` to make changes to the game
     pub(crate) sender: Option<Sender<GameCommand>>,
     /// Defines if the handbook is currently open
-    pub handbook_visible: bool,
+    pub handbook_invisible: bool,
 }
 
 impl PartialEq for GameState {
@@ -108,7 +108,7 @@ impl GameState {
     /// and checks if the player has died.
     /// # Returns
     /// * `RLResult`: A `RLResult` to validate the success of the tick function
-    pub fn tick(&mut self, _ctx: &mut Context) -> RLResult {
+    pub fn tick(&mut self) -> RLResult {
         // Update Resources
         self.player.resources = self
             .player
@@ -225,24 +225,32 @@ impl GameState {
     /// # Arguments
     /// * `canvas`: The canvas to draw on
     /// * `ctx`: The `Context` of the game
+    /// # Returns
+    /// * `RLResult`: A `RLResult` to validate the success of the function
     pub fn open_handbook(&self, canvas: &mut Canvas, ctx: &mut Context) -> RLResult {
         let scale = get_scale(ctx);
         let image = self.assets.get("Handbook.png").unwrap();
         draw!(canvas, image, Vec2::new(700.0, 300.0), scale);
         match self.player.milestone {
             1 => {
-                self.get_handbook_text(canvas, scale, &FIRST_MILESTONE_HANDBOOK_TEXT);
+                self.draw_handbook_text(canvas, scale, &FIRST_MILESTONE_HANDBOOK_TEXT);
             }
 
             2 => {
-                self.get_handbook_text(canvas, scale, &SECOND_MILESTONE_HANDBOOK_TEXT);
+                self.draw_handbook_text(canvas, scale, &SECOND_MILESTONE_HANDBOOK_TEXT);
             }
             _ => {}
         }
         Ok(())
     }
-
-    pub fn get_handbook_text(&self, canvas: &mut Canvas, scale: Vec2, handbook_text: &[&str]) {
+    /// Draws the text for the current milestone on the handbook on the screen.
+    /// # Arguments
+    /// * `canvas`: The canvas to draw on
+    /// * `scale`: The scale of the canvas
+    /// * `handbook_text`: The text to draw on the screen
+    /// # Returns
+    /// * `RLResult`: A `RLResult` to validate the success of the function
+    pub fn draw_handbook_text(&self, canvas: &mut Canvas, scale: Vec2, handbook_text: &[&str]) {
         handbook_text
             .iter()
             .enumerate()
@@ -255,9 +263,10 @@ impl GameState {
                     &text,
                     Vec2::new(800.0, 400.0 + (i * 30) as f32),
                     scale
-                )
+                );
             });
     }
+
     /// Iterates trough the inventory and draws the amount of every item in the inventory.
     /// # Arguments
     /// * `canvas` - The current canvas to draw on
@@ -528,7 +537,7 @@ impl Screen for GameState {
     /// Updates the game and handles input. Returns `StackCommand::Pop` when Escape is pressed.
     fn update(&mut self, ctx: &mut Context) -> RLResult {
         if ctx.time.check_update_time(DESIRED_FPS) {
-            self.tick(ctx)?;
+            self.tick()?;
             self.move_player(ctx)?;
             Event::update_events(ctx, self)?;
         }
@@ -554,7 +563,7 @@ impl Screen for GameState {
         self.draw_resources(&mut canvas, scale, ctx)?;
         self.draw_machines(&mut canvas, scale, ctx)?;
         self.draw_items(&mut canvas, ctx)?;
-        if self.handbook_visible {
+        if !self.handbook_invisible {
             self.open_handbook(&mut canvas, ctx)?;
         }
         #[cfg(debug_assertions)]
