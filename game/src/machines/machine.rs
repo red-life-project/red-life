@@ -185,12 +185,10 @@ impl Machine {
     /// * `player` - of type `& Player` is a reference to the player
     pub(crate) fn interact(&mut self, player: &Player) -> RLResult {
         // Check if there is a possible trade
-        let trade;
-        if let Some(t) = self.trades.iter().find(|t| t.initial_state == self.state) {
-            trade = t.clone();
-        } else {
-            return Ok(());
-        }
+        let trade = match self.trades.iter().find(|t| t.initial_state == self.state) {
+            Some(t) => t.clone(),
+            None => return Ok(()),
+        };
 
         if trade.name == *"no_Trade" {
             return Ok(());
