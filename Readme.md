@@ -15,8 +15,6 @@ rustup override set nightly
 cargo run --release
 ```
 
-## License
-Red Life is licensed under the [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html) license.
 ## Pictures
 
 ### Main menu
@@ -31,6 +29,9 @@ Red Life is licensed under the [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.h
 
 ![Deathscreen](pictures/death.jpg)
 
+## License
+
+Red Life is licensed under the [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html) license.
 
 
 
