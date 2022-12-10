@@ -1,8 +1,6 @@
 //!DIESE DATEI IST ZUM TESTEN VON SANDER
 use crate::backend::gamestate::GameState;
 
-use crate::machines::machine::Machine;
-
 use crate::backend::constants::gen_all_machines;
 use crate::backend::rlcolor::RLColor;
 use crate::backend::utils::get_draw_params;
@@ -15,11 +13,7 @@ use tracing::info;
 impl GameState {
     pub fn create_machine(&mut self) {
         info!("Generating all Machines");
-        let all = gen_all_machines();
-        for m in &all {
-            let new_ms = Machine::new_by_const(m.clone());
-            self.machines.push(new_ms);
-        }
+        self.machines = gen_all_machines();
     }
 
     pub fn draw_machines(&self, canvas: &mut Canvas, scale: Vec2, ctx: &mut Context) -> RLResult {

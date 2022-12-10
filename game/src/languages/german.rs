@@ -53,6 +53,7 @@ pub const ENERGY_STRING: &str = "Kälte";
 pub const AIR_AND_ENERGY_STRING: &str = "Kälte und zu wenig Luft";
 pub const DEATH_REASON_STRING: &str = "Du bist gestorben an";
 pub const ADDITIONAL_INFO_STRING: &str = "Bitte drücke ESC!";
+pub const RESUME_ERROR_STRING: &str = "Du brauchst zuerst einen Spielstand";
 
 /// Constant for all strings used in `IntroScreen`
 pub const INTRO_TEXT: &str = "Du bist auf dem Mars gestrandet und musst überleben.\nDazu musst du die \

@@ -108,7 +108,7 @@ impl GameState {
     /// and checks if the player has died.
     /// # Returns
     /// * `RLResult`: A `RLResult` to validate the success of the tick function
-    pub fn tick(&mut self, _ctx: &mut Context) -> RLResult {
+    pub fn tick(&mut self) -> RLResult {
         // Update Resources
         self.player.resources = self
             .player
@@ -263,7 +263,7 @@ impl GameState {
                     &text,
                     Vec2::new(800.0, 400.0 + (i * 30) as f32),
                     scale
-                )
+                );
             });
     }
 
@@ -537,7 +537,7 @@ impl Screen for GameState {
     /// Updates the game and handles input. Returns `StackCommand::Pop` when Escape is pressed.
     fn update(&mut self, ctx: &mut Context) -> RLResult {
         if ctx.time.check_update_time(DESIRED_FPS) {
-            self.tick(ctx)?;
+            self.tick()?;
             self.move_player(ctx)?;
             Event::update_events(ctx, self)?;
         }
