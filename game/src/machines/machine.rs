@@ -184,11 +184,11 @@ impl Machine {
     /// * `player` - of type `& Player` is a reference to the player
     pub(crate) fn interact(&mut self, player: &Player) -> RLResult {
         // Check if there is a possible trade
-        let trade ;
+        let trade;
 
-        if let Some(t)= self.trades.iter().find(|t| t.initial_state == self.state){
+        if let Some(t) = self.trades.iter().find(|t| t.initial_state == self.state) {
             trade = t.clone();
-        }else {
+        } else {
             return Ok(());
         }
 
@@ -239,7 +239,6 @@ impl Machine {
             .as_ref()
             .unwrap()
             .send(GameCommand::AddItems(items_cost))?;
-
 
         if trade.time_ticks == 0 {
             // this trade has no timer
@@ -303,7 +302,7 @@ impl Machine {
     pub(crate) fn change_state_to(&mut self, new_state: &State) {
         if self.state != *new_state {
             self.invoke_state_change(&self.state, new_state);
-            if self.state ==Running && self.time_change ==1 {
+            if self.state == Running && self.time_change == 1 {
                 self.time_change = 0;
             }
             self.state = new_state.clone();

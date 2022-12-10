@@ -1,8 +1,8 @@
-use crate::backend::gamestate::GameState;
-use crate::machines::machine::Machine;
 use crate::backend::constants::gen_all_machines;
+use crate::backend::gamestate::GameState;
 use crate::backend::rlcolor::RLColor;
 use crate::backend::utils::get_draw_params;
+use crate::machines::machine::Machine;
 use crate::{draw, RLResult};
 use ggez::glam::Vec2;
 use ggez::graphics::{Canvas, Mesh, Rect};
@@ -19,8 +19,6 @@ impl GameState {
             self.machines.push(new_ms);
         }
     }
-
-
 
     /// Paints the machine sprites and if applicable it shows the state or time remaining
     /// # Arguments

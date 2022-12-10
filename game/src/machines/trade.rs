@@ -27,7 +27,6 @@ pub struct Trade {
 }
 
 impl Default for Trade {
-
     /// Initialises a trade with some  default values
     /// default values have no meaning and should never be checked on
     fn default() -> Self {
@@ -43,7 +42,6 @@ impl Default for Trade {
 }
 
 impl Trade {
-
     ///initialises a new Trade using values passed in
     pub fn new(
         name: String,
