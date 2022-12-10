@@ -61,58 +61,37 @@ pub struct Machine {
     pub trades: Vec<Trade>,
     /// Contains the last trade with a timer, Is uses to get information about the trade after the timer runs out
     last_trade: Trade,
-    /// denotes what amount of Resources is consumed and or produced as long as the Machine is in state running
+    /// Denotes what amount of Resources is consumed and or produced as long as the Machine is in state running
     running_resources: Resources<i16>,
+    /// Contains the amount of tics until the timer rus out
     time_remaining: i16,
+    /// Denotes weather the timer is running or not via 0 or 1 also used for calculations
     time_change: i16,
     #[serde(skip)]
+    /// Contains all the Sprites for this one Machine
     sprite: Option<MachineSprite>,
     #[serde(skip)]
+    /// Needed to send Messages to the `GameState` to make changes to the screen
     sender: Option<Sender<GameCommand>>,
     #[serde(skip)]
+    /// Needed to send Messages to the `Screenstack` to make changes to the screen
     screen_sender: Option<Sender<StackCommand>>,
 }
 
 impl Machine {
-    pub(crate) fn is_interactable(&self, pos: (usize, usize)) -> bool {
-        is_colliding(pos, &self.interaction_area)
-    }
-    pub fn new_by_const(
-        (name, hit_box, trades, running_resources): (String, Rect, Vec<Trade>, Resources<i16>),
-    ) -> Self {
-        Machine::new(name, hit_box, trades, running_resources)
-    }
-
-    /// Loads the Machine Sprites. Has to be called before drawing.
-    pub(crate) fn init(
-        &mut self,
-        images: &[Image],
-        sender: Sender<GameCommand>,
-        screen_sender: Sender<StackCommand>,
-    ) {
-        self.sprite = Some(images.into());
-        self.sender = Some(sender);
-        self.screen_sender = Some(screen_sender);
-        if self.name == "Loch" {
-            // Constant (pos of hole)
-            if self.hitbox.x == 780. {
-                self.change_state_to(&Running);
-            } else {
-                self.change_state_to(&Idle);
-            }
-        }
-    }
-
+    /// Creates a new Machine with all non Optional parameters
+    /// # Arguments
+    /// * `name` - Name of this Machine and asset group
+    /// * `hitbox` - A rect containing position and size of the Machine
+    /// * `trades` - A list of Trades
+    /// * `running_resources` - Amount of recourse consumed and or produced while running
     fn new(
-        // this function is supposed to be private
         name: String,
         hitbox: Rect,
         trades: Vec<Trade>,
         running_resources: Resources<i16>,
     ) -> Self {
         info!("Creating new machine: name: {}", name);
-
-        //let sprite = MachineSprite::new(gs, name.as_str())?;
         Self {
             name,
             hitbox,
@@ -133,61 +112,52 @@ impl Machine {
             screen_sender: None,
         }
     }
-    fn get_trade(&self) -> Trade {
-        // returns the first possible trade
-        if let Some(t) = self.trades.iter().find(|t| t.initial_state == self.state) {
-            return t.clone();
-        }
-        Trade::default()
+
+    pub(crate) fn new_by_const(
+        (name, hit_box, trades, running_resources): (String, Rect, Vec<Trade>, Resources<i16>),
+    ) -> Self {
+        Machine::new(name, hit_box, trades, running_resources)
     }
 
-    fn check_change(&self, before: &State, after: &State) {
-        match (before, after) {
-            (Broken, Idle) => {
-                let _e = self.sender.as_ref().unwrap().send(GameCommand::Milestone);
-            }
-            (Idle, Broken) => {}
-            (Broken | Idle, Running) => {
-                let _e = self
-                    .sender
-                    .as_ref()
-                    .unwrap()
-                    .send(GameCommand::ResourceChange(self.running_resources));
-                let _e = self.sender.as_ref().unwrap().send(GameCommand::Milestone);
-            }
-            (Running, Broken | Idle) => {
-                let _e = self
-                    .sender
-                    .as_ref()
-                    .unwrap()
-                    .send(GameCommand::ResourceChange(
-                        Resources {
-                            oxygen: 0,
-                            energy: 0,
-                            life: 0,
-                        } - self.running_resources,
-                    ));
-               }
-            _ => {
-                info!(
-                    "unexpected case in Match. machine state changed from {} to {}",
-                    before.clone(),
-                    after.clone()
-                );
+    pub(crate) fn init(
+        &mut self,
+        images: &[Image],
+        sender: Sender<GameCommand>,
+        screen_sender: Sender<StackCommand>,
+    ) {
+        self.sprite = Some(images.into());
+        self.sender = Some(sender);
+        self.screen_sender = Some(screen_sender);
+        if self.name == "Loch" {
+            // Constant (pos of hole)
+            if self.hitbox.x == 780. {
+                self.change_state_to(&Running);
+            } else {
+                self.change_state_to(&Idle);
             }
         }
     }
 
-    pub(crate) fn change_state_to(&mut self, new_state: &State) {
-        if self.state != *new_state {
-            self.check_change(&self.state, new_state);
-            if self.state ==Running && self.time_change ==1 {
-                self.time_change = 0;
-            }
-            self.state = new_state.clone();
+    pub(crate) fn get_graphic(&self) -> &Image {
+        self.sprite.as_ref().unwrap().get(self.state.clone())
+    }
+    pub(crate) fn get_time_percentage(&self) -> f32 {
+        if self.last_trade.time_ticks == 0 {
+            -1.0
+        } else {
+            f32::from(self.time_remaining) / f32::from(self.last_trade.time_ticks)
         }
     }
 
+    /// Determines if the Player can interact with this Machine
+    /// # Arguments
+    /// * `pos` - a tuples of x and y containing the player position
+    /// # Returns
+    /// * `true` if the player collides with this Machine
+    /// * `false` if the player does not collide with this Machine
+    pub(crate) fn is_interactable(&self, pos: (usize, usize)) -> bool {
+        is_colliding(pos, &self.interaction_area)
+    }
     pub(crate) fn interact(&mut self, player: &mut Player) -> RLResult<Player> {
         let trade = self.get_trade();
         if trade.name == *"no_Trade" {
@@ -258,11 +228,6 @@ impl Machine {
 
         Ok(player.clone())
     }
-
-    pub(crate) fn get_graphic(&self) -> &Image {
-        self.sprite.as_ref().unwrap().get(self.state.clone())
-    }
-
     pub(crate) fn tick(&mut self, delta_ticks: i16) -> RLResult {
         self.time_remaining -= self.time_change * delta_ticks;
         if self.time_remaining < 0 {
@@ -294,19 +259,65 @@ impl Machine {
         }
         Ok(())
     }
-    pub(crate) fn get_time_percentage(&self) -> f32 {
-        if self.last_trade.time_ticks == 0 {
-            -1.0
-        } else {
-            f32::from(self.time_remaining) / f32::from(self.last_trade.time_ticks)
+
+    pub(crate) fn change_state_to(&mut self, new_state: &State) {
+        if self.state != *new_state {
+            self.check_change(&self.state, new_state);
+            if self.state ==Running && self.time_change ==1 {
+                self.time_change = 0;
+            }
+            self.state = new_state.clone();
         }
     }
-    pub fn no_energy(&mut self) {
+    pub(crate) fn no_energy(&mut self) {
         if self.running_resources.energy < 0 && self.name != "Loch" {
             // If we have no energy available and the machine needs some, we stop it.
             if self.state == Running {
                 self.change_state_to(&Idle);
                 self.time_change = 0;
+            }
+        }
+    }
+    fn get_trade(&self) -> Trade {
+        // returns the first possible trade
+        if let Some(t) = self.trades.iter().find(|t| t.initial_state == self.state) {
+            return t.clone();
+        }
+        Trade::default()
+    }
+    fn check_change(&self, before: &State, after: &State) {
+        match (before, after) {
+            (Broken, Idle) => {
+                let _e = self.sender.as_ref().unwrap().send(GameCommand::Milestone);
+            }
+            (Idle, Broken) => {}
+            (Broken | Idle, Running) => {
+                let _e = self
+                    .sender
+                    .as_ref()
+                    .unwrap()
+                    .send(GameCommand::ResourceChange(self.running_resources));
+                let _e = self.sender.as_ref().unwrap().send(GameCommand::Milestone);
+            }
+            (Running, Broken | Idle) => {
+                let _e = self
+                    .sender
+                    .as_ref()
+                    .unwrap()
+                    .send(GameCommand::ResourceChange(
+                        Resources {
+                            oxygen: 0,
+                            energy: 0,
+                            life: 0,
+                        } - self.running_resources,
+                    ));
+            }
+            _ => {
+                info!(
+                    "unexpected case in Match. machine state changed from {} to {}",
+                    before.clone(),
+                    after.clone()
+                );
             }
         }
     }
