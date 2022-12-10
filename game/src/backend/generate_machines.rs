@@ -1,5 +1,5 @@
-use crate::backend::constants::gen_all_machines;
 use crate::backend::gamestate::GameState;
+use crate::backend::constants::gen_all_machines;
 use crate::backend::rlcolor::RLColor;
 use crate::backend::utils::get_draw_params;
 use crate::machines::machine::Machine;
@@ -13,11 +13,7 @@ impl GameState {
     /// Creates all Machines for initial creation and pushes them into a list
     pub fn create_machine(&mut self) {
         info!("Generating all Machines");
-        let all = gen_all_machines();
-        for m in &all {
-            let new_ms = Machine::new_by_const(m.clone());
-            self.machines.push(new_ms);
-        }
+        self.machines = gen_all_machines();
     }
 
     /// Paints the machine sprites and if applicable it shows the state or time remaining

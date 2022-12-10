@@ -5,11 +5,12 @@ use crate::backend::{
     utils::get_scale,
 };
 use crate::main_menu::button::Button;
-use crate::main_menu::mainmenu::Message::{Exit, NewGame, Start};
+use crate::main_menu::mainmenu::Message::{Exit, NewGame, Resume};
 use crate::RLResult;
 
+use crate::backend::screen::Popup;
 use crate::game_core::infoscreen::InfoScreen;
-use crate::languages::german::BUTTON_TEXT;
+use crate::languages::german::{BUTTON_TEXT, RESUME_ERROR_STRING};
 use ggez::{graphics, Context};
 use std::sync::mpsc::{channel, Receiver, Sender};
 
@@ -18,7 +19,7 @@ use std::sync::mpsc::{channel, Receiver, Sender};
 pub enum Message {
     Exit,
     NewGame,
-    Start,
+    Resume,
 }
 
 /// Main menu screen of the game with buttons to start a new game, load a game or exit the game.
@@ -26,7 +27,6 @@ pub enum Message {
 pub struct MainMenu {
     buttons: Vec<Button>,
     receiver: Receiver<Message>,
-    _sender: Sender<Message>,
     screen_sender: Sender<StackCommand>,
     background_image: Option<graphics::Image>,
 }
@@ -42,7 +42,7 @@ impl MainMenu {
 
         let start_button = Button::new(
             BUTTON_TEXT[0].to_string(),
-            Start,
+            Resume,
             sender.clone(),
             graphics::Rect::new(1322., 350., 450., 120.),
             RLColor::GREY,
@@ -61,7 +61,7 @@ impl MainMenu {
         let exit_button = Button::new(
             BUTTON_TEXT[2].to_string(),
             Exit,
-            sender.clone(),
+            sender,
             graphics::Rect::new(1322., 630., 450., 120.),
             RLColor::GREY,
             RLColor::DARK_GREY,
@@ -70,7 +70,6 @@ impl MainMenu {
         Self {
             buttons: vec![start_button, new_game_button, exit_button],
             receiver,
-            _sender: sender,
             screen_sender,
             background_image: None,
         }
@@ -105,11 +104,18 @@ impl Screen for MainMenu {
                         InfoScreen::new_introscreen(cloned_sender),
                     )))?;
                 }
-                Start => self.screen_sender.send(StackCommand::Push(Box::new({
-                    let mut gamestate = GameState::load(false).unwrap_or_default();
-                    gamestate.init(ctx)?;
-                    gamestate
-                })))?,
+                Resume => {
+                    if let Ok(mut gamestate) = GameState::load(false) {
+                        self.screen_sender.send(StackCommand::Push(Box::new({
+                            gamestate.init(ctx)?;
+                            gamestate
+                        })))?;
+                    } else {
+                        self.screen_sender.send(StackCommand::Popup(Popup::warning(
+                            RESUME_ERROR_STRING.to_string(),
+                        )))?;
+                    }
+                }
             }
         }
         Ok(())
