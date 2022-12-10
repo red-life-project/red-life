@@ -85,6 +85,8 @@ impl Machine {
     /// * `hitbox` - A rect containing position and size of the Machine
     /// * `trades` - A list of Trades
     /// * `running_resources` - Amount of recourse consumed and or produced while running
+    /// # Returns
+    /// + 'Machine'
     fn new(
         name: String,
         hitbox: Rect,
@@ -113,12 +115,23 @@ impl Machine {
         }
     }
 
+    /// Alternative new constructor for the machine using one parameter Tupel
+    /// # Arguments
+    /// * `(name, hit_box, trades, running_resources)` - Tupel containing the same arguments as `new()`
+    /// # Returns
+    /// + 'Machine'
     pub(crate) fn new_by_const(
         (name, hit_box, trades, running_resources): (String, Rect, Vec<Trade>, Resources<i16>),
     ) -> Self {
         Machine::new(name, hit_box, trades, running_resources)
     }
 
+    /// initialises the Maschine with the data that is not Serialize
+    /// This funktion is required to be called before the firs draw call
+    /// # Arguments
+    /// * `images` - A Slice of Images containing the sprites for this Machine
+    /// * `sender` - A sender of type `Sender<GameCommand>`
+    /// * `screen_sender` - A sender of type `Sender<StackCommand>`
     pub(crate) fn init(
         &mut self,
         images: &[Image],
@@ -138,9 +151,16 @@ impl Machine {
         }
     }
 
+    /// Fetches the correct sprite depending on the current sate
+    /// # Returns
+    /// * `&Image` - a reference to the graphic
     pub(crate) fn get_graphic(&self) -> &Image {
         self.sprite.as_ref().unwrap().get(self.state.clone())
     }
+
+    /// Calculates the Percentage of time remaining on the timer
+    /// # Returns
+    /// * `0...1` - '1' being timer just started equal to 100%
     pub(crate) fn get_time_percentage(&self) -> f32 {
         if self.last_trade.time_ticks == 0 {
             -1.0
@@ -158,14 +178,21 @@ impl Machine {
     pub(crate) fn is_interactable(&self, pos: (usize, usize)) -> bool {
         is_colliding(pos, &self.interaction_area)
     }
-    pub(crate) fn interact(&mut self, player: &mut Player) -> RLResult<Player> {
+
+    /// Handel's the interaction of the Maschine and the player
+    /// It gets a copy of the player and returns a modified Player
+    /// # Arguments
+    /// * `player` - of type `&mut Player` is a coppy of the original player
+    /// # Returns
+    /// * `RLResult<Player>` - the Player that was passed in with modified values
+    pub(crate) fn interact(&mut self, player: &Player) -> RLResult {
         let trade = self.get_trade();
         if trade.name == *"no_Trade" {
-            return Ok(player.clone());
+            return Ok(());
         }
         if player.resources.energy == 0 && self.running_resources.energy < 0 && self.name != "Loch"
         {
-            return Ok(player.clone());
+            return Ok(());
         }
 
         // dif = items the player has - the cost of the trade
@@ -190,7 +217,7 @@ impl Machine {
                 .as_ref()
                 .unwrap()
                 .send(StackCommand::Popup(popup))?;
-            return Ok(player.clone());
+            return Ok(());
         }
 
         // the player has enough items for the trade so we will execute on it
@@ -226,7 +253,7 @@ impl Machine {
             self.change_state_to(&trade.resulting_state);
         }
 
-        Ok(player.clone())
+        Ok(())
     }
     pub(crate) fn tick(&mut self, delta_ticks: i16) -> RLResult {
         self.time_remaining -= self.time_change * delta_ticks;
@@ -259,7 +286,6 @@ impl Machine {
         }
         Ok(())
     }
-
     pub(crate) fn change_state_to(&mut self, new_state: &State) {
         if self.state != *new_state {
             self.check_change(&self.state, new_state);
@@ -271,10 +297,9 @@ impl Machine {
     }
     pub(crate) fn no_energy(&mut self) {
         if self.running_resources.energy < 0 && self.name != "Loch" {
-            // If we have no energy available and the machine needs some, we stop it.
+            // If there is no energy available but this machine needs some, stop this machine.
             if self.state == Running {
                 self.change_state_to(&Idle);
-                self.time_change = 0;
             }
         }
     }
