@@ -24,7 +24,7 @@ pub enum State {
     Idle,
     Running,
 }
-
+/// only used for logging purposes
 impl Display for State {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match *self {
@@ -44,17 +44,25 @@ impl From<State> for Color {
         }
     }
 }
-
+/// The Machine Class handels any internal logik surrounding intractable objects
+/// This includes objects that arnt classic Machines per se but since they do behave so similarity
+/// we can reuse the same code for it
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Machine {
+    /// The name of the machine is used as a reference on which assets to load
     pub name: String,
+    /// Contains the current state
     pub state: State,
+    /// The hitbox is the area the player is prevented from walking into
     pub hitbox: Rect,
+    /// The interaction_area is the area the player has to be inside to interact with this Machine
     pub interaction_area: Rect,
+    /// Contains a defined list of Trades, things the player can do with the Machine
     pub trades: Vec<Trade>,
+    /// Contains the last trade with a timer, Is uses to get information about the trade after the timer runs out
     last_trade: Trade,
+    /// denotes what amount of Resources is consumed and or produced as long as the Machine is in state running
     running_resources: Resources<i16>,
-    og_time: i16,
     time_remaining: i16,
     time_change: i16,
     #[serde(skip)]
@@ -119,7 +127,6 @@ impl Machine {
             trades,
             last_trade: Trade::default(),
             running_resources,
-            og_time: 0,
             time_remaining: 0,
             time_change: 0,
             sender: None,
@@ -240,7 +247,6 @@ impl Machine {
                 //if no timer is running set timer up
                 self.last_trade = trade.clone();
                 self.time_remaining = trade.time_ticks;
-                self.og_time = trade.time_ticks;
             }
             //start the timer
             self.time_change = 1;
@@ -289,10 +295,10 @@ impl Machine {
         Ok(())
     }
     pub(crate) fn get_time_percentage(&self) -> f32 {
-        if self.og_time == 0 {
+        if self.last_trade.time_ticks == 0 {
             -1.0
         } else {
-            f32::from(self.time_remaining) / f32::from(self.og_time)
+            f32::from(self.time_remaining) / f32::from(self.last_trade.time_ticks)
         }
     }
     pub fn no_energy(&mut self) {
