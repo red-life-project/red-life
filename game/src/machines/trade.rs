@@ -18,7 +18,7 @@ pub struct Trade {
     pub resulting_state: State,
     /// determines whether the `resulting_state` is temporary or permanent
     /// * true = temporary, meaning the state returns to `initial_state` after the timer
-    /// + false = permanent, meaning the state is set to `resulting_state` after the timer
+    /// * false = permanent, meaning the state is set to `resulting_state` after the timer
     pub return_after_timer: bool, // how the ms behaves after the timer run out
     /// Contains the cost associated with this trade.
     /// This stores the amount of item the player loses and or gain.

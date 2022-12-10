@@ -87,7 +87,7 @@ impl Machine {
     /// * `trades` - A list of Trades
     /// * `running_resources` - Amount of recourse consumed and or produced while running
     /// # Returns
-    /// + 'Machine'
+    /// * 'Machine'
     fn new(
         name: String,
         hitbox: Rect,
@@ -120,7 +120,7 @@ impl Machine {
     /// # Arguments
     /// * `(name, hit_box, trades, running_resources)` - Tupel containing the same arguments as `new()`
     /// # Returns
-    /// + 'Machine'
+    /// * 'Machine'
     pub(crate) fn new_by_const(
         (name, hit_box, trades, running_resources): (String, Rect, Vec<Trade>, Resources<i16>),
     ) -> Self {
@@ -161,7 +161,7 @@ impl Machine {
 
     /// Calculates the Percentage of time remaining on the timer
     /// # Returns
-    /// * `0...1` - '1' being timer just started equal to 100%
+    /// * `0...1` - '1' being timer just started equal to 100% and -1 for no Timer
     pub(crate) fn get_time_percentage(&self) -> f32 {
         if self.last_trade.time_ticks == 0 {
             -1.0
@@ -186,7 +186,6 @@ impl Machine {
     pub(crate) fn interact(&mut self, player: &Player) -> RLResult {
         // Check if there is a possible trade
         let trade;
-
         if let Some(t) = self.trades.iter().find(|t| t.initial_state == self.state) {
             trade = t.clone();
         } else {
@@ -271,11 +270,6 @@ impl Machine {
             self.time_change = 0;
             self.time_remaining = 0;
 
-            // handel edge case for wining the game
-            if self.last_trade.name == "Notfall_signal_absetzen" {
-                let _e = self.sender.as_ref().unwrap().send(GameCommand::Winning);
-            }
-
             if self.last_trade.return_after_timer {
                 self.change_state_to(&self.last_trade.initial_state.clone());
             } else {
@@ -293,6 +287,10 @@ impl Machine {
                 .as_ref()
                 .unwrap()
                 .send(GameCommand::AddItems(items))?;
+        }
+        // handel edge case for wining the game
+        if self.last_trade.name == "Notfall_signal_absetzen" {
+            return Ok(self.sender.as_ref().unwrap().send(GameCommand::Winning)?);
         }
         Ok(())
     }
