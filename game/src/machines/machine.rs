@@ -269,6 +269,10 @@ impl Machine {
             self.time_remaining = 0;
 
             if self.last_trade.return_after_timer {
+                // handel edge case for wining the game
+                if self.last_trade.name == "Notfall_signal_absetzen" {
+                    return Ok(self.sender.as_ref().unwrap().send(GameCommand::Winning)?);
+                }
                 self.change_state_to(&self.last_trade.initial_state.clone());
             } else {
                 self.change_state_to(&self.last_trade.resulting_state.clone());
@@ -285,10 +289,6 @@ impl Machine {
                 .as_ref()
                 .unwrap()
                 .send(GameCommand::AddItems(items))?;
-        }
-        // handel edge case for wining the game
-        if self.last_trade.name == "Notfall_signal_absetzen" {
-            return Ok(self.sender.as_ref().unwrap().send(GameCommand::Winning)?);
         }
         Ok(())
     }
