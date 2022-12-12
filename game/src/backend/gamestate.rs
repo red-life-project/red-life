@@ -498,8 +498,8 @@ impl GameState {
             }
             1 => {
                 if self.check_on_milestone_machines(&[
+                    MACHINE_NAMES[0].to_string(),
                     MACHINE_NAMES[1].to_string(),
-                    MACHINE_NAMES[2].to_string(),
                 ]) {
                     self.increase_milestone()?;
                 }
