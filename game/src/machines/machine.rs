@@ -16,7 +16,7 @@ use std::fmt::{Display, Formatter};
 use std::sync::mpsc::Sender;
 
 use crate::RLResult;
-use ggez::graphics::{Color, Image, Rect};
+use good_web_game::graphics::{Color, Image, Rect};
 use tracing::info;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

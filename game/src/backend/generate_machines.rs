@@ -4,9 +4,8 @@ use crate::backend::gamestate::GameState;
 use crate::backend::rlcolor::RLColor;
 use crate::backend::utils::get_draw_params;
 use crate::{draw, RLResult};
-use ggez::glam::Vec2;
-use ggez::graphics::{Canvas, Mesh, Rect};
-use ggez::Context;
+use good_web_game::graphics::{Canvas, Mesh, Rect, Vector2};
+use good_web_game::Context;
 use tracing::info;
 
 impl GameState {
@@ -23,10 +22,10 @@ impl GameState {
     /// * `ctx`: The `Context` of the game
     /// # Returns
     /// * `RLResult`: A `RLResult` to validate the success of the paint function
-    pub fn draw_machines(&self, canvas: &mut Canvas, scale: Vec2, ctx: &mut Context) -> RLResult {
+    pub fn draw_machines(&self, canvas: &mut Canvas, scale: Vector2, ctx: &mut Context) -> RLResult {
         for machine in &self.machines {
             let image = machine.get_graphic();
-            let mut pos = Vec2 {
+            let mut pos = Vector2 {
                 x: machine.hitbox.x,
                 y: machine.hitbox.y,
             };
@@ -35,8 +34,8 @@ impl GameState {
                 // Draws the machine status on top of the machine
                 let status = Mesh::new_circle(
                     ctx,
-                    ggez::graphics::DrawMode::fill(),
-                    Vec2::new(0., 0.),
+                    good_web_game::graphics::DrawMode::fill(),
+                    Vector2::new(0., 0.),
                     15.0,
                     0.1,
                     machine.state.clone().into(),
@@ -53,7 +52,7 @@ impl GameState {
                 pos.y -= 30.;
                 let rect1 = Mesh::new_rounded_rectangle(
                     ctx,
-                    ggez::graphics::DrawMode::fill(),
+                    good_web_game::graphics::DrawMode::fill(),
                     Rect::new(0.0, 0.0, 100.0, 10.0),
                     15.,
                     RLColor::DARK_GREY,
@@ -62,7 +61,7 @@ impl GameState {
                 // Bar of current time
                 let rect2 = Mesh::new_rounded_rectangle(
                     ctx,
-                    ggez::graphics::DrawMode::fill(),
+                    good_web_game::graphics::DrawMode::fill(),
                     Rect::new(0.0, 0.0, 100.0 * time, 10.0),
                     15.,
                     RLColor::BLACK,

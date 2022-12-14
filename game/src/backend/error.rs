@@ -1,54 +1,32 @@
 use crate::backend::gamestate::GameCommand;
 use crate::backend::screen::StackCommand;
-use ggez::GameError;
+use good_web_game::GameError;
 use std::io;
 use std::sync::mpsc::SendError;
 use tracing::error;
+use thiserror::Error;
 
 /// All Red Life errors
 #[warn(clippy::enum_variant_names)]
-#[derive(Debug)]
+#[derive(Debug, Error)]
 pub enum RLError {
     /// All Errors caused by Drawing
-    Ui(GameError),
+    #[error("Drawing Error: {0}")]
+    Ui(#[from] GameError),
     /// Errors caused by loading the assets
+    #[error("Error loading asset: {0}")]
     AssetError(String),
     /// Errors caused by loading the Gamestate from a file
-    Deserialization(serde_yaml::Error),
+    #[error("Error loading Gamestate: {0}")]
+    Deserialization(#[from] serde_yaml::Error),
     /// FileSystem and other errors
-    IO(io::Error),
-    /// Errors where senders/receivers were not intialized properly
+    #[error("IO Error: {0}")]
+    IO(#[from] io::Error),
+    /// Errors where senders/receivers were not initialized properly
+    #[error("Error with Sender/Receiver: {0}")]
     InitError(String),
 }
 
-impl From<GameError> for RLError {
-    fn from(e: GameError) -> Self {
-        error!("GameError: {}", e);
-        RLError::Ui(e)
-    }
-}
-
-impl From<serde_yaml::Error> for RLError {
-    fn from(e: serde_yaml::Error) -> Self {
-        error!("Deserialization Error: {}", e);
-        RLError::Deserialization(e)
-    }
-}
-
-impl From<io::Error> for RLError {
-    fn from(e: io::Error) -> Self {
-        error!("IO Error: {}", e);
-        RLError::IO(e)
-    }
-}
-/// Creates an Io Error
-fn create_io_error(message: &str, value: impl std::fmt::Display) -> RLError {
-    error!("{}: {}", message, value);
-    RLError::IO(io::Error::new(
-        io::ErrorKind::Other,
-        format!("{message}: {value}"),
-    ))
-}
 /// Macro for converting a `SendError` to an `RLError`
 #[macro_export]
 macro_rules! convert_senderror {

@@ -1,10 +1,9 @@
 use crate::backend::utils::{get_draw_params, get_scale};
 use crate::main_menu::mainmenu::Message;
 use crate::{draw, RLResult};
-use ggez::glam::f32::Vec2;
-use ggez::graphics::{Canvas, Color, Text, TextFragment};
-use ggez::mint::Point2;
-use ggez::{graphics, Context};
+use good_web_game::graphics::{Canvas, Color, Text, TextFragment, Vector2};
+use good_web_game::mint::Point2;
+use good_web_game::{graphics, Context};
 use std::sync::mpsc::Sender;
 use tracing::info;
 
@@ -43,12 +42,12 @@ impl Button {
 
     // processing button interaction: click, hover
     // determines if button is clicked
-    pub(crate) fn action(&mut self, ctx: &Context, scale: Vec2) {
+    pub(crate) fn action(&mut self, ctx: &Context, scale: Vector2) {
         if self.in_area(ctx.mouse.position(), scale) {
             self.current_color = self.hover_color;
             if ctx
                 .mouse
-                .button_just_pressed(ggez::event::MouseButton::Left)
+                .button_just_pressed(good_web_game::event::MouseButton::Left)
             {
                 info!("User clicked: mouse position: {:?}", ctx.mouse.position());
                 self.click();
@@ -59,7 +58,7 @@ impl Button {
     }
 
     // determines if mouse is hovering over button
-    fn in_area(&self, mouse_pos: Point2<f32>, scale: Vec2) -> bool {
+    fn in_area(&self, mouse_pos: Point2<f32>, scale: Vector2) -> bool {
         let mut button_rect = self.rect;
         button_rect.x *= scale.x;
         button_rect.y *= scale.y;
@@ -95,18 +94,16 @@ impl Button {
         draw!(
             canvas,
             &graphics::Mesh::from_data(ctx, mb.build()),
-            Vec2::new(0., 0.),
+            Vector2::new(0., 0.),
             scale
         );
 
         let text = &mut self.text.clone();
-        text.set_scale(70.);
-
         //Draw text
         draw!(
             canvas,
             text,
-            Vec2::new(self.rect.x + 20., self.rect.y + 25.),
+            Vector2::new(self.rect.x + 20., self.rect.y + 25.),
             scale
         );
 

@@ -11,7 +11,7 @@ use crate::RLResult;
 use crate::backend::screen::Popup;
 use crate::game_core::infoscreen::InfoScreen;
 use crate::languages::german::{BUTTON_TEXT, RESUME_ERROR_STRING};
-use ggez::{graphics, Context};
+use good_web_game::{graphics, Context};
 use std::sync::mpsc::{channel, Receiver, Sender};
 
 /// is used to define what every button does

@@ -28,25 +28,18 @@ use crate::backend::{error, screen::Screenstack};
 use chrono::Local;
 
 #[cfg_attr(debug_assertions, allow(unused_imports))]
-use ggez::conf::FullscreenType;
-use ggez::{event, Context};
+use good_web_game::conf::Conf;
+use good_web_game::{event, Context};
 use std::fs::File;
 use std::sync::Mutex;
 use tracing::{info, Level};
+use crate::game_core::infoscreen::ScreenType;
 
 /// Our own Result Type for custom Error handling.
 pub type RLResult<T = ()> = Result<T, error::RLError>;
 /// The main function, which is the entry point of our program
 /// builds the game and sets window configuration, icon and title
 pub fn main() -> RLResult {
-    let cb = ggez::ContextBuilder::new("red-life", "red-life-project")
-        .resources_dir_name("assets")
-        .window_setup(
-            ggez::conf::WindowSetup::default()
-                .icon("/icon.png")
-                .title("Red Life")
-                .vsync(true),
-        );
     // Start logging
     // Check if log folder exists
     if !std::path::Path::new("logs").exists() {
@@ -62,19 +55,10 @@ pub fn main() -> RLResult {
     tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
     // End logging
     info!("Starting Red Life");
-    let (mut ctx, event_loop) = cb.build()?;
     info!("New Event Loop created");
-    window_setup(&mut ctx)?;
-    let screen_stack = Screenstack::default();
-    event::run(ctx, event_loop, screen_stack);
-}
-/// Sets the window size to resizeable in debug mode and fullscreen mode for release mode
-fn window_setup(ctx: &mut Context) -> RLResult {
-    ctx.gfx.set_resizable(true)?;
-    ctx.gfx
-        .set_drawable_size(SCREEN_RESOLUTION.0, SCREEN_RESOLUTION.1)?;
-    // If we're in a release build set fullscreen to true
-    #[cfg(not(debug_assertions))]
-    ctx.gfx.set_fullscreen(FullscreenType::Desktop)?;
+    good_web_game::start(
+    good_web_game::conf::Conf::default().cache(Some(include_bytes!("assets.tar"))),
+    |mut context, quad_ctx| Box::new(Screenstack::default()),
+    );
     Ok(())
 }

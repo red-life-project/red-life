@@ -1,8 +1,7 @@
 //! Miscellaneous utilities used by the backend.
 use crate::backend::constants::{PLAYER_ICON_SIZE, SCREEN_RESOLUTION};
-use ggez::glam::Vec2;
-use ggez::graphics::{Color, Rect};
-use ggez::Context;
+use good_web_game::graphics::{Color, Rect, Vector2};
+use good_web_game::Context;
 
 /// This returns the scale so we can have resolution-agnostic scaling
 /// Use it in your drawing calls like this:
@@ -11,9 +10,9 @@ use ggez::Context;
 /// graphics::draw(ctx, &self.img, graphics::DrawParam::default().scale(scale))?;
 /// ```
 #[inline(always)]
-pub fn get_scale(ctx: &Context) -> Vec2 {
+pub fn get_scale(ctx: &Context) -> Vector2 {
     let (width, height) = ctx.gfx.drawable_size();
-    Vec2::new(width / SCREEN_RESOLUTION.0, height / SCREEN_RESOLUTION.1)
+    Vector2::new(width / SCREEN_RESOLUTION.0, height / SCREEN_RESOLUTION.1)
 }
 
 /// Returns if the player collides with an area
@@ -32,7 +31,7 @@ pub fn is_colliding(player_pos: (usize, usize), area: &Rect) -> bool {
 }
 
 /// This macro is used for simplifying drawing with scaling.
-/// It takes a canvas, a `Drawable`, an (optional) position(as `Vec2` for example) and a scale as `Vec2`.
+/// It takes a canvas, a `Drawable`, an (optional) position(as `Vector2` for example) and a scale as `Vector2`.
 #[macro_export]
 macro_rules! draw {
     ($canvas: expr, $asset: expr, $position: expr, $scale: expr) => {
@@ -53,11 +52,11 @@ macro_rules! draw {
 /// # Returns
 /// The draw parameters
 pub fn get_draw_params(
-    position: Option<Vec2>,
-    scale: Vec2,
+    position: Option<Vector2>,
+    scale: Vector2,
     color: Option<Color>,
-) -> ggez::graphics::DrawParam {
-    let mut param = ggez::graphics::DrawParam::new().scale(scale);
+) -> good_web_game::graphics::DrawParam {
+    let mut param = good_web_game::graphics::DrawParam::new().scale(scale);
     if let Some(pos) = position {
         param = param.dest(pos * scale);
     }

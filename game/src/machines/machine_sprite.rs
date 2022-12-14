@@ -1,6 +1,6 @@
 //! This File contains the code surrounding `MachineSprite`
 use crate::machines::machine::State;
-use ggez::graphics::Image;
+use good_web_game::graphics::Image;
 
 #[derive(Debug, Clone)]
 /// Contains all the sprites associated with one Machine

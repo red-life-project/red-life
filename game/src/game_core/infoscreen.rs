@@ -8,12 +8,12 @@ use crate::languages::german::{
 
 use crate::main_menu::mainmenu::MainMenu;
 use crate::{draw, RLResult};
-use ggez::glam::Vec2;
-use ggez::winit::event::VirtualKeyCode;
-use ggez::{graphics, Context};
+use good_web_game::{graphics, Context};
 use std::fmt::{Display, Formatter};
 use std::fs;
 use std::sync::mpsc::Sender;
+use good_web_game::event::KeyCode;
+use good_web_game::graphics::Vector2;
 use tracing::info;
 
 /// Defines the reason for the death of the player and is used to display the reason on the screen
@@ -60,9 +60,7 @@ impl InfoScreen {
         info!("The player died due to a lack of : {:?}", death_reason);
 
         let mut main_message = graphics::Text::new(format!("{DEATH_REASON_STRING} {death_reason}"));
-        main_message.set_scale(70.);
         let mut additional_text = graphics::Text::new(ADDITIONAL_INFO_STRING);
-        additional_text.set_scale(70.);
         let background = "deathscreen".to_string();
         let screentype = ScreenType::Death;
         Self {
@@ -79,9 +77,7 @@ impl InfoScreen {
     /// * `sender` - The sender to send the command to the `ScreenStack`
     pub fn new_introscreen(sender: Sender<StackCommand>) -> Self {
         let mut main_message = graphics::Text::new(format!("{INTRO_TEXT} \n{TUTORIAL_TEXT}"));
-        main_message.set_scale(50.);
         let mut additional_text = graphics::Text::new(BUTTON_INFO);
-        additional_text.set_scale(50.);
         let background = "Introscreen".to_string();
         let screentype = ScreenType::Intro;
         Self {
@@ -130,7 +126,7 @@ impl Screen for InfoScreen {
         let keys = ctx.keyboard.pressed_keys();
         // Here we only use the first pressed key, but in the infoscreen this is fine
         match (self.screentype, keys.iter().next()) {
-            (ScreenType::Intro, Some(&VirtualKeyCode::Space)) => {
+            (ScreenType::Intro, Some(&KeyCode::Space)) => {
                 self.sender.send(StackCommand::Pop)?;
                 self.sender.send(StackCommand::Push(Box::new({
                     let mut gamestate = GameState::new(ctx)?;
@@ -144,7 +140,7 @@ impl Screen for InfoScreen {
                     gamestate
                 })))?;
             }
-            (ScreenType::Death | ScreenType::Winning, Some(&VirtualKeyCode::Escape)) => {
+            (ScreenType::Death | ScreenType::Winning, Some(&KeyCode::Escape)) => {
                 if self.screentype == ScreenType::Winning {
                     GameState::delete_saves()?;
                 }
@@ -170,12 +166,12 @@ impl Screen for InfoScreen {
             canvas.draw(background, graphics::DrawParam::default().scale(scale));
         }
         if self.screentype == ScreenType::Intro {
-            draw!(canvas, &self.main_message, Vec2::new(300., 300.), scale);
+            draw!(canvas, &self.main_message, Vector2::new(300., 300.), scale);
         } else {
-            draw!(canvas, &self.main_message, Vec2::new(220., 500.), scale);
+            draw!(canvas, &self.main_message, Vector2::new(220., 500.), scale);
         }
 
-        draw!(canvas, &self.additional_text, Vec2::new(646., 740.), scale);
+        draw!(canvas, &self.additional_text, Vector2::new(646., 740.), scale);
 
         canvas.finish(ctx)?;
 

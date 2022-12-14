@@ -5,7 +5,7 @@ use crate::game_core::resources::Resources;
 use crate::languages::german::MACHINE_NAMES;
 use crate::machines::machine::{Machine, State};
 use crate::machines::trade::Trade;
-use ggez::graphics::{Color, Rect};
+use good_web_game::graphics::{Color, Rect};
 use std::string::ToString;
 
 /// Contains the screen resolution of the game.

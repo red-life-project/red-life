@@ -8,8 +8,8 @@ use crate::languages::german::{
 use crate::languages::german::{MARS_INFO, NASA_INFO, WARNINGS};
 use crate::machines::machine::State;
 use crate::RLResult;
-use ggez::graphics::Color;
-use ggez::Context;
+use good_web_game::graphics::Color;
+use good_web_game::Context;
 use serde::{Deserialize, Serialize};
 use std::sync::mpsc::Sender;
 use tracing::info;

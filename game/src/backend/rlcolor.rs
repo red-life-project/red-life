@@ -1,5 +1,5 @@
 //! Contains the color definitions for the game. Every color is defined as a constant.
-use ggez::graphics::Color;
+use good_web_game::graphics::Color;
 /// Storing colors used in the game as constants
 pub struct RLColor {}
 

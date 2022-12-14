@@ -5,9 +5,9 @@ use crate::error::RLError;
 use crate::main_menu::mainmenu::MainMenu;
 use crate::{draw, RLResult};
 
-use ggez::glam::vec2;
-use ggez::graphics::Color;
-use ggez::{event, graphics, Context};
+use good_web_game::graphics::{Color, Vector2};
+use good_web_game::{event, graphics, Context};
+use good_web_game::event::GraphicsContext;
 use std::fmt::Debug;
 use std::sync::mpsc::{channel, Receiver, Sender};
 use std::time::Instant;
@@ -21,13 +21,13 @@ pub trait Screen: Debug {
     /// * `ctx` - The ggez context
     /// # Returns
     /// `RLResult` - Returns an `RlResult`.
-    fn update(&mut self, ctx: &mut Context) -> RLResult;
+    fn update(&mut self, ctx: &mut Context, _gfx: &mut GraphicsContext) -> RLResult;
     /// Used for drawing the screen.
     /// # Arguments
     /// * `ctx` - The ggez context
     /// # Returns
     /// `RLResult` - Returns an `RlResult`.
-    fn draw(&self, ctx: &mut Context) -> RLResult;
+    fn draw(&self, ctx: &mut Context, _gfx: &mut GraphicsContext) -> RLResult;
     /// Set the sender of the screen.
     /// # Arguments
     /// * `sender` - The sender of the screen.
@@ -133,12 +133,12 @@ impl Screenstack {
                 graphics::Rect::new(0., 0., x, y),
                 RLColor::BLACK,
             )?;
-            draw!(canvas, &rect, vec2(0., new_y), scale);
-            draw!(canvas, &outer, vec2(0., new_y), scale);
+            draw!(canvas, &rect, Vector2::new(0., new_y), scale);
+            draw!(canvas, &outer, Vector2::new(0., new_y), scale);
             draw!(
                 canvas,
                 &text,
-                Some(vec2(0., new_y)),
+                Some(Vector2::new(0., new_y)),
                 scale,
                 Some(popup.color)
             );
@@ -196,7 +196,7 @@ impl event::EventHandler<RLError> for Screenstack {
     /// * `ctx` - The ggez game context
     /// # Returns
     /// `RLResult` - Returns an `RlResult`
-    fn update(&mut self, ctx: &mut Context) -> RLResult {
+    fn update(&mut self, ctx: &mut Context, _gfx: &mut GraphicsContext) -> RLResult {
         self.remove_popups();
         self.screens
             .last_mut()
@@ -212,21 +212,13 @@ impl event::EventHandler<RLError> for Screenstack {
     /// * `ctx` - The ggez game context
     /// # Returns
     /// `RLResult` - Returns an `RlResult`
-    fn draw(&mut self, ctx: &mut Context) -> RLResult {
+    fn draw(&mut self, ctx: &mut Context, gfx: &mut GraphicsContext) -> RLResult {
         self.screens
             .last()
             .expect("Failed to get a screen")
-            .draw(ctx)?;
-        self.draw_popups(ctx)?;
+            .draw(gfx)?;
+        self.draw_popups(gfx)?;
         Ok(())
-    }
-    /// Overrides the quit event so we do nothing instead of quitting the game.
-    /// # Arguments
-    /// * `ctx` - The ggez game context
-    /// # Returns
-    /// `RLResult` - Returns an `RlResult`
-    fn quit_event(&mut self, _ctx: &mut Context) -> RLResult<bool> {
-        Ok(true)
     }
 }
 
