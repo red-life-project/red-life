@@ -11,6 +11,7 @@ use crate::RLResult;
 use crate::backend::screen::Popup;
 use crate::game_core::infoscreen::InfoScreen;
 use crate::languages::german::{BUTTON_TEXT, RESUME_ERROR_STRING};
+use good_web_game::event::GraphicsContext;
 use good_web_game::{graphics, Context};
 use std::sync::mpsc::{channel, Receiver, Sender};
 
@@ -83,8 +84,8 @@ impl Screen for MainMenu {
     /// * `ctx` - The ggez context
     /// # Returns
     /// `RLResult` - Returns an `RLResult`.
-    fn update(&mut self, ctx: &mut Context) -> RLResult {
-        let scale = get_scale(ctx);
+    fn update(&mut self, ctx: &mut Context, gfx: &mut GraphicsContext) -> RLResult {
+        let scale = get_scale(gfx);
         self.buttons.iter_mut().for_each(|btn| {
             btn.action(ctx, scale);
         });
@@ -125,8 +126,8 @@ impl Screen for MainMenu {
     /// * `ctx` - The ggez context
     /// # Returns
     /// `RLResult` - Returns an `RLResult`.
-    fn draw(&self, ctx: &mut Context) -> RLResult {
-        let scale = get_scale(ctx);
+    fn draw(&self, ctx: &mut Context, gfx: &mut GraphicsContext) -> RLResult {
+        let scale = get_scale(gfx);
         let mut canvas = graphics::Canvas::from_frame(ctx, RLColor::DARK_BLUE);
         if let Some(background) = &self.background_image {
             canvas.draw(background, graphics::DrawParam::default().scale(scale));

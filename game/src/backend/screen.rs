@@ -5,9 +5,9 @@ use crate::error::RLError;
 use crate::main_menu::mainmenu::MainMenu;
 use crate::{draw, RLResult};
 
+use good_web_game::event::GraphicsContext;
 use good_web_game::graphics::{Color, Vector2};
 use good_web_game::{event, graphics, Context};
-use good_web_game::event::GraphicsContext;
 use std::fmt::Debug;
 use std::sync::mpsc::{channel, Receiver, Sender};
 use std::time::Instant;
@@ -111,7 +111,7 @@ impl Screenstack {
     /// * `ctx` - The ggez game context
     /// # Returns
     /// `RLResult` - Returns an `RlResult`.
-    fn draw_popups(&mut self, ctx: &mut Context) -> RLResult {
+    fn draw_popups(&mut self, ctx: &mut GraphicsContext) -> RLResult {
         let mut canvas = graphics::Canvas::from_frame(ctx, None);
         let scale = get_scale(ctx);
         let mut new_y = 0.0;
@@ -216,7 +216,7 @@ impl event::EventHandler<RLError> for Screenstack {
         self.screens
             .last()
             .expect("Failed to get a screen")
-            .draw(gfx)?;
+            .draw(ctx, gfx)?;
         self.draw_popups(gfx)?;
         Ok(())
     }

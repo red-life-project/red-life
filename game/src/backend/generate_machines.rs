@@ -22,7 +22,12 @@ impl GameState {
     /// * `ctx`: The `Context` of the game
     /// # Returns
     /// * `RLResult`: A `RLResult` to validate the success of the paint function
-    pub fn draw_machines(&self, canvas: &mut Canvas, scale: Vector2, ctx: &mut Context) -> RLResult {
+    pub fn draw_machines(
+        &self,
+        canvas: &mut Canvas,
+        scale: Vector2,
+        ctx: &mut Context,
+    ) -> RLResult {
         for machine in &self.machines {
             let image = machine.get_graphic();
             let mut pos = Vector2 {

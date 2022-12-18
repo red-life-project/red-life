@@ -8,12 +8,12 @@ use crate::languages::german::{
 
 use crate::main_menu::mainmenu::MainMenu;
 use crate::{draw, RLResult};
+use good_web_game::event::{GraphicsContext, KeyCode};
+use good_web_game::graphics::Vector2;
 use good_web_game::{graphics, Context};
 use std::fmt::{Display, Formatter};
 use std::fs;
 use std::sync::mpsc::Sender;
-use good_web_game::event::KeyCode;
-use good_web_game::graphics::Vector2;
 use tracing::info;
 
 /// Defines the reason for the death of the player and is used to display the reason on the screen
@@ -94,9 +94,9 @@ impl InfoScreen {
     /// * `sender` - The sender to send the command to the `ScreenStack`
     pub fn new_winningscreen(sender: Sender<StackCommand>) -> Self {
         let mut main_message = graphics::Text::new(WINNING_TEXT);
-        main_message.set_scale(70.);
+        // TODO: main_message.set_scale(70.);
         let mut additional_text = graphics::Text::new(ADDITIONAL_INFO_STRING);
-        additional_text.set_scale(70.);
+        // TODO: additional_text.set_scale(70.);
         let background = "Winningscreen".to_string();
         let screentype = ScreenType::Winning;
         Self {
@@ -116,14 +116,14 @@ impl Screen for InfoScreen {
     /// * `ctx` - The ggez context
     /// # Returns
     /// `RLResult` - Returns an `RLResult`.
-    fn update(&mut self, ctx: &mut Context) -> RLResult {
+    fn update(&mut self, ctx: &mut Context, _: &mut GraphicsContext) -> RLResult {
         if self.background_image.is_none() {
             self.background_image = Some(graphics::Image::from_bytes(
                 ctx,
                 fs::read(format!("assets/{}.png", self.background).as_str())?.as_slice(),
             )?);
         }
-        let keys = ctx.keyboard.pressed_keys();
+        let keys = ctx.keyboard_context;
         // Here we only use the first pressed key, but in the infoscreen this is fine
         match (self.screentype, keys.iter().next()) {
             (ScreenType::Intro, Some(&KeyCode::Space)) => {
@@ -158,8 +158,8 @@ impl Screen for InfoScreen {
     /// * `ctx` - The ggez context
     /// # Returns
     /// `RLResult` - Returns an `RLResult`.
-    fn draw(&self, ctx: &mut Context) -> RLResult {
-        let scale = get_scale(ctx);
+    fn draw(&self, ctx: &mut Context, gfx: &mut GraphicsContext) -> RLResult {
+        let scale = get_scale(gfx);
         let mut canvas = graphics::Canvas::from_frame(ctx, graphics::Color::RED);
 
         if let Some(background) = &self.background_image {
@@ -171,7 +171,12 @@ impl Screen for InfoScreen {
             draw!(canvas, &self.main_message, Vector2::new(220., 500.), scale);
         }
 
-        draw!(canvas, &self.additional_text, Vector2::new(646., 740.), scale);
+        draw!(
+            canvas,
+            &self.additional_text,
+            Vector2::new(646., 740.),
+            scale
+        );
 
         canvas.finish(ctx)?;
 

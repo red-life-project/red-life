@@ -3,8 +3,8 @@ use crate::backend::constants::MOVEMENT_SPEED;
 use crate::backend::gamestate::GameState;
 use crate::backend::screen::StackCommand;
 use crate::RLResult;
-use good_web_game::Context;
 use good_web_game::event::KeyCode;
+use good_web_game::Context;
 use tracing::info;
 
 impl GameState {
@@ -36,7 +36,7 @@ impl GameState {
         if ctx.keyboard_context.is_key_just_pressed(KeyCode::Z) {
             self.player.milestone += 1;
         }
-        let keys = ctx.keyboard_context.;
+        let keys = ctx.keyboard_context;
         for key in keys.iter() {
             match key {
                 KeyCode::W => {

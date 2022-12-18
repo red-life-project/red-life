@@ -1,6 +1,7 @@
 //! Miscellaneous utilities used by the backend.
 use crate::backend::constants::{PLAYER_ICON_SIZE, SCREEN_RESOLUTION};
-use good_web_game::graphics::{Color, Rect, Vector2};
+use good_web_game::event::GraphicsContext;
+use good_web_game::graphics::{drawable_size, Color, Rect, Vector2};
 use good_web_game::Context;
 
 /// This returns the scale so we can have resolution-agnostic scaling
@@ -10,8 +11,8 @@ use good_web_game::Context;
 /// graphics::draw(ctx, &self.img, graphics::DrawParam::default().scale(scale))?;
 /// ```
 #[inline(always)]
-pub fn get_scale(ctx: &Context) -> Vector2 {
-    let (width, height) = ctx.gfx.drawable_size();
+pub fn get_scale(gtx: &GraphicsContext) -> Vector2 {
+    let (width, height) = drawable_size(gtx);
     Vector2::new(width / SCREEN_RESOLUTION.0, height / SCREEN_RESOLUTION.1)
 }
 
@@ -58,7 +59,7 @@ pub fn get_draw_params(
 ) -> good_web_game::graphics::DrawParam {
     let mut param = good_web_game::graphics::DrawParam::new().scale(scale);
     if let Some(pos) = position {
-        param = param.dest(pos * scale);
+        param = param.dest(pos * scale.x);
     }
     if let Some(col) = color {
         param = param.color(col);

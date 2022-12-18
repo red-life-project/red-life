@@ -27,13 +27,13 @@ use crate::backend::constants::SCREEN_RESOLUTION;
 use crate::backend::{error, screen::Screenstack};
 use chrono::Local;
 
+use crate::game_core::infoscreen::ScreenType;
 #[cfg_attr(debug_assertions, allow(unused_imports))]
 use good_web_game::conf::Conf;
 use good_web_game::{event, Context};
 use std::fs::File;
 use std::sync::Mutex;
 use tracing::{info, Level};
-use crate::game_core::infoscreen::ScreenType;
 
 /// Our own Result Type for custom Error handling.
 pub type RLResult<T = ()> = Result<T, error::RLError>;
@@ -57,8 +57,10 @@ pub fn main() -> RLResult {
     info!("Starting Red Life");
     info!("New Event Loop created");
     good_web_game::start(
-    good_web_game::conf::Conf::default().cache(Some(include_bytes!("assets.tar"))),
-    |mut context, quad_ctx| Box::new(Screenstack::default()),
+        good_web_game::conf::Conf::default().cache(Some(include_bytes!(
+            "/mnt/SSD/ClionProjects/red-life/assets.tar"
+        ))),
+        |mut context, quad_ctx| Box::new(Screenstack::default()),
     );
     Ok(())
 }

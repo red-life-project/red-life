@@ -20,7 +20,8 @@ use crate::languages::german::{
 use crate::machines::machine::Machine;
 use crate::machines::machine::State::Broken;
 use crate::{draw, RLResult};
-use good_web_game::graphics::{Canvas, Image, TextFragment, Vector2};
+use good_web_game::event::GraphicsContext;
+use good_web_game::graphics::{Canvas, Drawable, Image, TextFragment, Vector2};
 use good_web_game::graphics::{DrawMode, Mesh, Rect};
 use good_web_game::{graphics, Context};
 use serde::{Deserialize, Serialize};
@@ -28,7 +29,6 @@ use std::collections::HashMap;
 use std::fs;
 use std::fs::read_dir;
 use std::sync::mpsc::{channel, Receiver, Sender};
-use good_web_game::event::GraphicsContext;
 use tracing::info;
 
 pub enum GameCommand {
@@ -92,7 +92,7 @@ impl GameState {
     /// It loads all the assets and creates the areas of the machines.
     /// # Returns
     /// * `RLResult<GameState>`: The new game state initialized in a `RLResult` to handle setup errors
-    pub fn new(ctx: &mut Context) -> RLResult<Self> {
+    pub fn new(ctx: &mut Context, gfx: &mut GraphicsContext) -> RLResult<Self> {
         info!("Creating new gamestate");
         let (sender, receiver) = channel();
         let mut result = GameState {
@@ -100,7 +100,7 @@ impl GameState {
             receiver: Some(receiver),
             ..Default::default()
         };
-        result.init(ctx)?;
+        result.init(ctx, gfx)?;
         Ok(result)
     }
     /// Gets called every tick in the update fn to update the internal game logic.
@@ -192,7 +192,13 @@ impl GameState {
     /// * `ctx`: The `Context` of the game
     /// # Returns
     /// * `RLResult`: A `RLResult` to validate the success of the paint function
-    fn draw_resources(&self, canvas: &mut Canvas, scale: Vector2, ctx: &mut Context) -> RLResult {
+    fn draw_resources(
+        &self,
+        canvas: &mut Canvas,
+        scale: Vector2,
+        ctx: &mut Context,
+        gfx: &mut GraphicsContext,
+    ) -> RLResult {
         self.player
             .resources
             .into_iter()
@@ -203,19 +209,25 @@ impl GameState {
                     color = RLColor::GREEN;
                 };
                 let rect = Rect::new(RESOURCE_POSITION[i], 961.0, resource as f32 * 0.00435, 12.6);
-                let mesh = Mesh::new_rounded_rectangle(ctx, DrawMode::fill(), rect, 3.0, color)?;
-                draw!(canvas, &mesh, scale);
+                let mut mesh =
+                    Mesh::new_rounded_rectangle(ctx, gfx, DrawMode::fill(), rect, 3.0, color)?;
+                graphics::draw(ctx, gfx, &mesh, get_draw_params(None, scale, None)).unwrap();
                 let text = graphics::Text::new(format!(
                     "{}: {:.1}",
                     RESOURCE_NAME[i],
                     (resource as f32 / u16::MAX as f32) * 100.0
                 ));
-                draw!(
-                    canvas,
+                graphics::draw(
+                    ctx,
+                    gfx,
                     &text,
-                    Vector2::new(RESOURCE_POSITION[i] + 20.0, 961.0),
-                    scale
-                );
+                    get_draw_params(
+                        Some(Vector2::new(RESOURCE_POSITION[i] + 20.0, 961.0)),
+                        scale,
+                        None,
+                    ),
+                )
+                .unwrap();
                 Ok(())
             })
             .for_each(drop);
@@ -227,17 +239,22 @@ impl GameState {
     /// * `ctx`: The `Context` of the game
     /// # Returns
     /// * `RLResult`: A `RLResult` to validate the success of the function
-    pub fn open_handbook(&self, canvas: &mut Canvas, ctx: &mut Context) -> RLResult {
-        let scale = get_scale(ctx);
+    pub fn open_handbook(
+        &self,
+        ctx: &mut Context,
+        canvas: &mut Canvas,
+        gfx: &mut GraphicsContext,
+    ) -> RLResult {
+        let scale = get_scale(gfx);
         let image = self.assets.get("Handbook.png").unwrap();
-        draw!(canvas, image, Vector2::new(700.0, 300.0), scale);
+        graphics::draw(ctx, gfx, image, get_draw_params(None, scale, None)).unwrap();
         match self.player.milestone {
             1 => {
-                self.draw_handbook_text(canvas, scale, &FIRST_MILESTONE_HANDBOOK_TEXT);
+                self.draw_handbook_text(ctx, canvas, scale, &FIRST_MILESTONE_HANDBOOK_TEXT, gfx);
             }
 
             2 => {
-                self.draw_handbook_text(canvas, scale, &SECOND_MILESTONE_HANDBOOK_TEXT);
+                self.draw_handbook_text(ctx, canvas, scale, &SECOND_MILESTONE_HANDBOOK_TEXT, gfx);
             }
             _ => {}
         }
@@ -250,18 +267,29 @@ impl GameState {
     /// * `handbook_text`: The text to draw on the screen
     /// # Returns
     /// * `RLResult`: A `RLResult` to validate the success of the function
-    pub fn draw_handbook_text(&self, canvas: &mut Canvas, scale: Vector2, handbook_text: &[&str]) {
+    pub fn draw_handbook_text(
+        &self,
+        ctx: &mut Context,
+        canvas: &mut Canvas,
+        scale: Vector2,
+        handbook_text: &[&str],
+        gfx: &mut GraphicsContext,
+    ) {
         handbook_text
             .iter()
             .enumerate()
             .for_each(|(i, const_text)| {
                 let mut text =
                     graphics::Text::new(TextFragment::new(*const_text).color(RLColor::BLACK));
-                draw!(
-                    canvas,
-                    &text,
-                    Vector2::new(800.0, 400.0 + (i * 30) as f32),
-                    scale
+                graphics::draw(
+                    ctx,
+                    gfx,
+                    (&text),
+                    get_draw_params(
+                        Some((Vector2::new(800.0, 400.0 + (i * 30) as f32))),
+                        scale,
+                        None,
+                    ),
                 );
             });
     }
@@ -272,7 +300,12 @@ impl GameState {
     /// * `ctx` - The current game context
     /// # Returns
     /// * `RLResult` - validates if the drawing was successful
-    fn draw_items(&self, canvas: &mut Canvas, ctx: &mut Context) -> RLResult {
+    fn draw_items(
+        &self,
+        canvas: &mut Canvas,
+        ctx: &mut Context,
+        gfx: &mut GraphicsContext,
+    ) -> RLResult {
         self.player
             .inventory
             .clone()
@@ -281,19 +314,29 @@ impl GameState {
             .map(|(i, (item, amount))| {
                 let img = self.assets.get(item.img.as_str()).unwrap();
                 let position = (990., 955.);
-                let scale = get_scale(ctx);
-                draw!(
-                    canvas,
+                let scale = get_scale(gfx);
+                graphics::draw(
+                    ctx,
+                    gfx,
                     img,
-                    Vector2::new(position.0 + (i * 65) as f32, position.1),
-                    scale
-                );
-                draw!(
-                    canvas,
+                    get_draw_params(
+                        Some((Vector2::new(position.0 + (i * 65) as f32, position.1))),
+                        scale,
+                        None,
+                    ),
+                )
+                .unwrap();
+                graphics::draw(
+                    ctx,
+                    gfx,
                     &graphics::Text::new(format!("{amount}")),
-                    Vector2::new(position.0 + (i * 63) as f32, position.1),
-                    scale
-                );
+                    get_draw_params(
+                        Some((Vector2::new(position.0 + (i * 63) as f32, position.1))),
+                        scale,
+                        None,
+                    ),
+                )
+                .unwrap();
             })
             .for_each(drop);
         Ok(())
@@ -303,7 +346,13 @@ impl GameState {
     /// # Arguments
     /// * `canvas` - The current canvas to draw on
     /// * `scale` - The current scale of the canvas
-    pub(crate) fn draw_time(&self, canvas: &mut Canvas, scale: Vector2) {
+    pub(crate) fn draw_time(
+        &self,
+        ctx: &mut Context,
+        canvas: &mut Canvas,
+        scale: Vector2,
+        gfx: &mut GraphicsContext,
+    ) -> RLResult {
         let time = self.player.time / DESIRED_FPS;
         let time_text = format!(
             "{}: {}h {}m {}s",
@@ -313,25 +362,32 @@ impl GameState {
             time % 60
         );
         let mut text = graphics::Text::new(TextFragment::new(time_text).color(RLColor::BLACK));
-        text.set_scale(18.0);
-        draw!(
-            canvas,
+        // TODO: text.set_scale(18.0);
+        graphics::draw(
+            ctx,
+            gfx,
             &text,
-            Vector2::new(TIME_POSITION.0, TIME_POSITION.1),
-            scale
-        );
+            get_draw_params(
+                Some((Vector2::new(TIME_POSITION.0, TIME_POSITION.1))),
+                scale,
+                None,
+            ),
+        )?;
+        Ok(())
     }
     /// Loads the assets. Has to be called before drawing the game.
     /// # Returns
     /// * `RLResult` - Returns an error if the assets could not be loaded.
-    pub(crate) fn init(&mut self, ctx: &mut Context) -> RLResult {
+    pub(crate) fn init(&mut self, ctx: &mut Context, gfx: &mut GraphicsContext) -> RLResult {
         info!("Loading assets");
         read_dir("assets")?.for_each(|file| {
             let file = file.unwrap();
             let bytes = fs::read(file.path()).unwrap();
             let name = file.file_name().into_string().unwrap();
-            self.assets
-                .insert(name, Image::from_bytes(ctx, bytes.as_slice()).unwrap());
+            self.assets.insert(
+                name,
+                Image::from_png_bytes(ctx, gfx, bytes.as_slice()).unwrap(),
+            );
         });
 
         if self.assets.is_empty() {
@@ -535,7 +591,7 @@ impl GameState {
 impl Screen for GameState {
     /// Updates the game and handles input. Returns `StackCommand::Pop` when Escape is pressed.
     fn update(&mut self, ctx: &mut Context, _: &mut GraphicsContext) -> RLResult {
-        if ctx.time.check_update_time(DESIRED_FPS) {
+        if ctx.timer_context.check_update_time(DESIRED_FPS) {
             self.tick()?;
             self.move_player(ctx)?;
             Event::update_events(ctx, self)?;
@@ -548,7 +604,7 @@ impl Screen for GameState {
     /// # Returns
     /// `RLResult` validates the success of the drawing process
     fn draw(&self, ctx: &mut Context, gfx: &mut GraphicsContext) -> RLResult {
-        let scale = get_scale(ctx);
+        let scale = get_scale(gfx);
         let mut canvas = Canvas::from_frame(ctx, graphics::Color::from([0.1, 0.2, 0.3, 1.0]));
         let background = self.get_asset("basis.png")?;
         canvas.draw(background, graphics::DrawParam::default().scale(scale));
@@ -559,38 +615,13 @@ impl Screen for GameState {
             Vector2::from([self.player.position.0 as f32, self.player.position.1 as f32]),
             scale
         );
-        self.draw_resources(&mut canvas, scale, ctx)?;
+        self.draw_resources(&mut canvas, scale, ctx, gfx)?;
         self.draw_machines(&mut canvas, scale, ctx)?;
-        self.draw_items(&mut canvas, ctx)?;
+        self.draw_items(&mut canvas, ctx, gfx)?;
         if !self.handbook_invisible {
-            self.open_handbook(&mut canvas, ctx)?;
+            self.open_handbook(ctx, &mut canvas, gfx)?;
         }
-        #[cfg(debug_assertions)]
-        {
-            let fps = graphics::Text::new(format!("FPS: {}", ctx.time.fps()));
-            draw!(canvas, &fps, Vector2::new(1400.0, 0.0), scale);
-            let milestone = graphics::Text::new(format!("Milestone: {}", self.player.milestone));
-            draw!(canvas, &milestone, Vector2::new(1400.0, 20.0), scale);
-            let events = graphics::Text::new(format!("Events: {:?}", self.events));
-            draw!(canvas, &events, Vector2::new(1400.0, 40.0), scale);
-            let last_damage =
-                graphics::Text::new(format!("Last Damage: {}", self.player.last_damage));
-            draw!(canvas, &last_damage, Vector2::new(1400.0, 60.0), scale);
-            let oxygen_cr = graphics::Text::new(format!(
-                "Oxygen CR: {}",
-                self.player.resources_change.oxygen
-            ));
-            draw!(canvas, &oxygen_cr, Vector2::new(1400.0, 80.0), scale);
-            let energy_cr = graphics::Text::new(format!(
-                "Energy CR: {}",
-                self.player.resources_change.energy
-            ));
-            draw!(canvas, &energy_cr, Vector2::new(1400.0, 100.0), scale);
-            let life_cr =
-                graphics::Text::new(format!("Life CR: {}", self.player.resources_change.life));
-            draw!(canvas, &life_cr, Vector2::new(1400.0, 120.0), scale);
-        }
-        self.draw_time(&mut canvas, scale);
+        self.draw_time(ctx, &mut canvas, scale, gfx)?;
         canvas.finish(ctx)?;
         Ok(())
     }

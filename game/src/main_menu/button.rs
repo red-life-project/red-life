@@ -1,7 +1,7 @@
 use crate::backend::utils::{get_draw_params, get_scale};
 use crate::main_menu::mainmenu::Message;
 use crate::{draw, RLResult};
-use good_web_game::graphics::{Canvas, Color, Text, TextFragment, Vector2};
+use good_web_game::graphics::{Canvas, Color, Drawable, Text, TextFragment, Vector2};
 use good_web_game::mint::Point2;
 use good_web_game::{graphics, Context};
 use std::sync::mpsc::Sender;
