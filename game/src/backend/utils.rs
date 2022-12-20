@@ -2,6 +2,7 @@
 use crate::backend::constants::{PLAYER_ICON_SIZE, SCREEN_RESOLUTION};
 use good_web_game::event::GraphicsContext;
 use good_web_game::graphics::{drawable_size, Color, Rect, Vector2};
+use good_web_game::mint::Point2;
 use good_web_game::Context;
 
 /// This returns the scale so we can have resolution-agnostic scaling
@@ -59,7 +60,10 @@ pub fn get_draw_params(
 ) -> good_web_game::graphics::DrawParam {
     let mut param = good_web_game::graphics::DrawParam::new().scale(scale);
     if let Some(pos) = position {
-        param = param.dest(pos * scale.x);
+        param = param.dest(Point2 {
+            x: pos.x * scale.x,
+            y: pos.y * scale.y,
+        });
     }
     if let Some(col) = color {
         param = param.color(col);

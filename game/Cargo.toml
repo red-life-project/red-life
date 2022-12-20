@@ -9,7 +9,7 @@ edition = "2021"
 thiserror = "1.0"
 serde = {version = "1.0.145", features = ["derive"]}
 serde_yaml = "0.9.13"
-good-web-game = "0.6.0"
+good-web-game = {git = "https://github.com/red-life-project/good-web-game/"}
 tracing = "0.1.37"
 tracing-subscriber = "0.3.16"
 fastrand = "1.8.0"

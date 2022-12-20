@@ -5,7 +5,7 @@ use crate::error::RLError;
 use crate::main_menu::mainmenu::MainMenu;
 use crate::{draw, RLResult};
 
-use good_web_game::event::GraphicsContext;
+use good_web_game::event::{GraphicsContext, KeyCode, KeyMods};
 use good_web_game::graphics::{Color, Vector2};
 use good_web_game::{event, graphics, Context};
 use std::fmt::Debug;
@@ -111,40 +111,49 @@ impl Screenstack {
     /// * `ctx` - The ggez game context
     /// # Returns
     /// `RLResult` - Returns an `RlResult`.
-    fn draw_popups(&mut self, ctx: &mut GraphicsContext) -> RLResult {
-        let mut canvas = graphics::Canvas::from_frame(ctx, None);
-        let scale = get_scale(ctx);
+    fn draw_popups(&mut self, ctx: &mut Context, gfx: &mut GraphicsContext) -> RLResult {
+        let scale = get_scale(gfx);
         let mut new_y = 0.0;
         for popup in &self.popup {
             let mut text = graphics::Text::new(popup.text.clone());
-            text.set_scale(25.);
-            let dimensions = text.measure(ctx)?;
+            // TODO text.set_scale(25.);
+            let dimensions = text.dimensions(ctx);
             let x = dimensions.x;
             let y = dimensions.y;
             let rect = graphics::Mesh::new_rectangle(
                 ctx,
+                gfx,
                 graphics::DrawMode::fill(),
                 graphics::Rect::new(0., 0., x, y),
                 RLColor::LIGHT_GREY,
             )?;
             let outer = graphics::Mesh::new_rectangle(
                 ctx,
+                gfx,
                 graphics::DrawMode::stroke(3.),
                 graphics::Rect::new(0., 0., x, y),
                 RLColor::BLACK,
             )?;
-            draw!(canvas, &rect, Vector2::new(0., new_y), scale);
-            draw!(canvas, &outer, Vector2::new(0., new_y), scale);
-            draw!(
-                canvas,
+            graphics::draw(
+                ctx,
+                gfx,
+                &rect,
+                get_draw_params(Some(Vector2::new(0., new_y)), scale, None),
+            )?;
+            graphics::draw(
+                ctx,
+                gfx,
+                &outer,
+                get_draw_params(Some(Vector2::new(0., new_y)), scale, None),
+            )?;
+            graphics::draw(
+                ctx,
+                gfx,
                 &text,
-                Some(Vector2::new(0., new_y)),
-                scale,
-                Some(popup.color)
-            );
+                get_draw_params(Some(Vector2::new(0., new_y)), scale, None),
+            )?;
             new_y += y;
         }
-        canvas.finish(ctx)?;
         Ok(())
     }
     /// Handles what to do with the given commands.
@@ -196,12 +205,12 @@ impl event::EventHandler<RLError> for Screenstack {
     /// * `ctx` - The ggez game context
     /// # Returns
     /// `RLResult` - Returns an `RlResult`
-    fn update(&mut self, ctx: &mut Context, _gfx: &mut GraphicsContext) -> RLResult {
+    fn update(&mut self, ctx: &mut Context, gfx: &mut GraphicsContext) -> RLResult {
         self.remove_popups();
         self.screens
             .last_mut()
             .expect("Failed to get a screen")
-            .update(ctx)?;
+            .update(ctx, gfx)?;
         if let Ok(message) = self.receiver.try_recv() {
             self.process_command(message);
         }
@@ -217,7 +226,7 @@ impl event::EventHandler<RLError> for Screenstack {
             .last()
             .expect("Failed to get a screen")
             .draw(ctx, gfx)?;
-        self.draw_popups(gfx)?;
+        self.draw_popups(ctx, gfx)?;
         Ok(())
     }
 }

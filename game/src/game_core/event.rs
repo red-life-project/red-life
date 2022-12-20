@@ -9,6 +9,7 @@ use crate::languages::german::{MARS_INFO, NASA_INFO, WARNINGS};
 use crate::machines::machine::State;
 use crate::RLResult;
 use good_web_game::graphics::Color;
+use good_web_game::timer::ticks;
 use good_web_game::Context;
 use serde::{Deserialize, Serialize};
 use std::sync::mpsc::Sender;
@@ -197,7 +198,7 @@ impl Event {
     /// * `gamestate` - The gamestate which is used to access the events vector
     /// * `context` - The game context which is used to access the current tick
     pub fn update_events(ctx: &Context, gamestate: &mut GameState) -> RLResult {
-        if ctx.time.ticks() % 20 == 0 {
+        if ticks(ctx) % 20 == 0 {
             gamestate.events.iter_mut().for_each(|event| {
                 event.duration = event.duration.saturating_sub(20);
                 if event.name == "Sandsturm" {}
@@ -222,7 +223,7 @@ impl Event {
             });
         }
         // have a maximum of one active event
-        if ctx.time.ticks() >= 400 && ctx.time.ticks() % 200 == 0 {
+        if ticks(ctx) >= 400 && ticks(ctx) % 200 == 0 {
             // generate new event
             // might not return an event
             let gen_event = Event::event_generator();

@@ -9,7 +9,8 @@ use crate::languages::german::{
 use crate::main_menu::mainmenu::MainMenu;
 use crate::{draw, RLResult};
 use good_web_game::event::{GraphicsContext, KeyCode};
-use good_web_game::graphics::Vector2;
+use good_web_game::graphics::{Point2, Vector2};
+use good_web_game::input::keyboard::pressed_keys;
 use good_web_game::{graphics, Context};
 use std::fmt::{Display, Formatter};
 use std::fs;
@@ -116,21 +117,22 @@ impl Screen for InfoScreen {
     /// * `ctx` - The ggez context
     /// # Returns
     /// `RLResult` - Returns an `RLResult`.
-    fn update(&mut self, ctx: &mut Context, _: &mut GraphicsContext) -> RLResult {
+    fn update(&mut self, ctx: &mut Context, gfx: &mut GraphicsContext) -> RLResult {
         if self.background_image.is_none() {
-            self.background_image = Some(graphics::Image::from_bytes(
+            self.background_image = Some(graphics::Image::from_png_bytes(
                 ctx,
+                gfx,
                 fs::read(format!("assets/{}.png", self.background).as_str())?.as_slice(),
             )?);
         }
-        let keys = ctx.keyboard_context;
+        let keys = pressed_keys(ctx);
         // Here we only use the first pressed key, but in the infoscreen this is fine
         match (self.screentype, keys.iter().next()) {
             (ScreenType::Intro, Some(&KeyCode::Space)) => {
                 self.sender.send(StackCommand::Pop)?;
                 self.sender.send(StackCommand::Push(Box::new({
-                    let mut gamestate = GameState::new(ctx)?;
-                    gamestate.init(ctx)?;
+                    let mut gamestate = GameState::new(ctx, gfx)?;
+                    gamestate.init(ctx, gfx)?;
                     gamestate.create_machine();
                     gamestate
                         .sender
@@ -160,25 +162,42 @@ impl Screen for InfoScreen {
     /// `RLResult` - Returns an `RLResult`.
     fn draw(&self, ctx: &mut Context, gfx: &mut GraphicsContext) -> RLResult {
         let scale = get_scale(gfx);
-        let mut canvas = graphics::Canvas::from_frame(ctx, graphics::Color::RED);
-
         if let Some(background) = &self.background_image {
-            canvas.draw(background, graphics::DrawParam::default().scale(scale));
+            graphics::draw(
+                ctx,
+                gfx,
+                background,
+                graphics::DrawParam::default().scale(scale),
+            )?;
         }
         if self.screentype == ScreenType::Intro {
-            draw!(canvas, &self.main_message, Vector2::new(300., 300.), scale);
+            graphics::draw(
+                ctx,
+                gfx,
+                &self.main_message,
+                graphics::DrawParam::default()
+                    .scale(scale)
+                    .dest(Point2::new(300., 300.)),
+            )?;
         } else {
-            draw!(canvas, &self.main_message, Vector2::new(220., 500.), scale);
+            graphics::draw(
+                ctx,
+                gfx,
+                &self.main_message,
+                graphics::DrawParam::default()
+                    .scale(scale)
+                    .dest(Point2::new(220., 500.)),
+            )?;
         }
 
-        draw!(
-            canvas,
+        graphics::draw(
+            ctx,
+            gfx,
             &self.additional_text,
-            Vector2::new(646., 740.),
-            scale
-        );
-
-        canvas.finish(ctx)?;
+            graphics::DrawParam::default()
+                .scale(scale)
+                .dest(Point2::new(646., 740.)),
+        )?;
 
         Ok(())
     }

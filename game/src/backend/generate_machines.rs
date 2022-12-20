@@ -4,8 +4,10 @@ use crate::backend::gamestate::GameState;
 use crate::backend::rlcolor::RLColor;
 use crate::backend::utils::get_draw_params;
 use crate::{draw, RLResult};
+use good_web_game::event::GraphicsContext;
 use good_web_game::graphics::{Canvas, Mesh, Rect, Vector2};
-use good_web_game::Context;
+use good_web_game::mint::Point2;
+use good_web_game::{graphics, Context};
 use tracing::info;
 
 impl GameState {
@@ -27,6 +29,7 @@ impl GameState {
         canvas: &mut Canvas,
         scale: Vector2,
         ctx: &mut Context,
+        gfx: &mut GraphicsContext,
     ) -> RLResult {
         for machine in &self.machines {
             let image = machine.get_graphic();
@@ -34,20 +37,21 @@ impl GameState {
                 x: machine.hitbox.x,
                 y: machine.hitbox.y,
             };
-            draw!(canvas, image, pos, scale);
+            graphics::draw(ctx, gfx, image, get_draw_params(Some(pos), scale, None))?;
             if !machine.name.contains("Loch") {
                 // Draws the machine status on top of the machine
                 let status = Mesh::new_circle(
                     ctx,
+                    gfx,
                     good_web_game::graphics::DrawMode::fill(),
-                    Vector2::new(0., 0.),
+                    Point2 { x: 0., y: 0. },
                     15.0,
                     0.1,
                     machine.state.clone().into(),
                 )?;
                 pos.x += 20.;
                 pos.y += 20.;
-                draw!(canvas, &status, pos, scale);
+                graphics::draw(ctx, gfx, &status, get_draw_params(Some(pos), scale, None))?;
             };
             // Draws the machine timer on top of the machine
             let time = machine.get_time_percentage();
@@ -57,21 +61,23 @@ impl GameState {
                 pos.y -= 30.;
                 let rect1 = Mesh::new_rounded_rectangle(
                     ctx,
+                    gfx,
                     good_web_game::graphics::DrawMode::fill(),
                     Rect::new(0.0, 0.0, 100.0, 10.0),
                     15.,
                     RLColor::DARK_GREY,
                 )?;
-                draw!(canvas, &rect1, pos, scale);
+                graphics::draw(ctx, gfx, &rect1, get_draw_params(Some(pos), scale, None))?;
                 // Bar of current time
                 let rect2 = Mesh::new_rounded_rectangle(
                     ctx,
+                    gfx,
                     good_web_game::graphics::DrawMode::fill(),
                     Rect::new(0.0, 0.0, 100.0 * time, 10.0),
                     15.,
                     RLColor::BLACK,
                 )?;
-                draw!(canvas, &rect2, pos, scale);
+                graphics::draw(ctx, gfx, &rect2, get_draw_params(Some(pos), scale, None))?;
             }
         }
         Ok(())

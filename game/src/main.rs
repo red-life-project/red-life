@@ -53,14 +53,13 @@ pub fn main() -> RLResult {
         .with_ansi(false)
         .finish();
     tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
-    // End logging
     info!("Starting Red Life");
-    info!("New Event Loop created");
     good_web_game::start(
-        good_web_game::conf::Conf::default().cache(Some(include_bytes!(
-            "/mnt/SSD/ClionProjects/red-life/assets.tar"
-        ))),
-        |mut context, quad_ctx| Box::new(Screenstack::default()),
-    );
+        good_web_game::conf::Conf::default()
+            .cache(Some(include_bytes!("../../assets.tar")))
+            .window_title("Red Life".to_string())
+            .window_resizable(true),
+        |mut context, quad_ctx| Box::<Screenstack>::default(),
+    )?;
     Ok(())
 }

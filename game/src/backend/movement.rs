@@ -4,6 +4,7 @@ use crate::backend::gamestate::GameState;
 use crate::backend::screen::StackCommand;
 use crate::RLResult;
 use good_web_game::event::KeyCode;
+use good_web_game::input::keyboard::{is_key_pressed, pressed_keys};
 use good_web_game::Context;
 use tracing::info;
 
@@ -16,27 +17,27 @@ impl GameState {
     /// # Returns
     /// * `RLResult<()>` - Returns okay, if no Error occurred
     pub fn move_player(&mut self, ctx: &mut Context) -> RLResult {
-        if ctx.keyboard.is_key_just_pressed(KeyCode::Escape) {
+        if is_key_pressed(ctx, KeyCode::Escape) {
             info!("Exiting...");
             self.save(false)?;
             self.get_screen_sender()?.send(StackCommand::Pop)?;
         }
-        if ctx.keyboard_context.is_key_just_pressed(KeyCode::E) {
+        if is_key_pressed(ctx, KeyCode::E) {
             info!("Interacting with Area: {:?}", self.get_interactable());
             let player_ref = &self.player.clone();
             if let Some(interactable) = self.get_interactable() {
                 interactable.interact(player_ref)?;
             }
         }
-        if ctx.keyboard_context.is_key_just_pressed(KeyCode::H) {
+        if is_key_pressed(ctx, KeyCode::H) {
             self.handbook_invisible = !self.handbook_invisible;
         }
         // If we are in debug mode, change the milestone by using Z
         #[cfg(debug_assertions)]
-        if ctx.keyboard_context.is_key_just_pressed(KeyCode::Z) {
+        if is_key_pressed(ctx, KeyCode::Z) {
             self.player.milestone += 1;
         }
-        let keys = ctx.keyboard_context;
+        let keys = pressed_keys(ctx);
         for key in keys.iter() {
             match key {
                 KeyCode::W => {

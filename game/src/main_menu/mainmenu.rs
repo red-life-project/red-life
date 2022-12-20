@@ -90,8 +90,9 @@ impl Screen for MainMenu {
             btn.action(ctx, scale);
         });
         if self.background_image.is_none() {
-            self.background_image = Some(graphics::Image::from_bytes(
+            self.background_image = Some(graphics::Image::from_png_bytes(
                 ctx,
+                gfx,
                 include_bytes!("../../../assets/mainmenu.png"),
             )?);
         }
@@ -108,7 +109,7 @@ impl Screen for MainMenu {
                 Resume => {
                     if let Ok(mut gamestate) = GameState::load(false) {
                         self.screen_sender.send(StackCommand::Push(Box::new({
-                            gamestate.init(ctx)?;
+                            gamestate.init(ctx, gfx)?;
                             gamestate
                         })))?;
                     } else {
@@ -128,14 +129,17 @@ impl Screen for MainMenu {
     /// `RLResult` - Returns an `RLResult`.
     fn draw(&self, ctx: &mut Context, gfx: &mut GraphicsContext) -> RLResult {
         let scale = get_scale(gfx);
-        let mut canvas = graphics::Canvas::from_frame(ctx, RLColor::DARK_BLUE);
         if let Some(background) = &self.background_image {
-            canvas.draw(background, graphics::DrawParam::default().scale(scale));
+            graphics::draw(
+                ctx,
+                gfx,
+                background,
+                graphics::DrawParam::default().scale(scale),
+            )?;
         }
         for btn in &self.buttons {
-            btn.draw_button(ctx, &mut canvas)?;
+            btn.draw_button(ctx, gfx)?;
         }
-        canvas.finish(ctx)?;
 
         Ok(())
     }

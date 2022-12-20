@@ -290,7 +290,8 @@ impl GameState {
                         scale,
                         None,
                     ),
-                );
+                )
+                .unwrap();
             });
     }
 
@@ -591,11 +592,10 @@ impl GameState {
 impl Screen for GameState {
     /// Updates the game and handles input. Returns `StackCommand::Pop` when Escape is pressed.
     fn update(&mut self, ctx: &mut Context, _: &mut GraphicsContext) -> RLResult {
-        if ctx.timer_context.check_update_time(DESIRED_FPS) {
-            self.tick()?;
-            self.move_player(ctx)?;
-            Event::update_events(ctx, self)?;
-        }
+        // TODO: Ensure we only update 60 times per second
+        self.tick()?;
+        self.move_player(ctx)?;
+        Event::update_events(ctx, self)?;
         Ok(())
     }
     /// Draws the game state to the screen.
@@ -605,24 +605,36 @@ impl Screen for GameState {
     /// `RLResult` validates the success of the drawing process
     fn draw(&self, ctx: &mut Context, gfx: &mut GraphicsContext) -> RLResult {
         let scale = get_scale(gfx);
-        let mut canvas = Canvas::from_frame(ctx, graphics::Color::from([0.1, 0.2, 0.3, 1.0]));
+        let (width, height) = gfx.screen_size();
+        let mut canvas = graphics::Canvas::new(ctx, gfx, width as u16, height as u16)?;
+        graphics::clear(ctx, gfx, [0.0, 0.0, 0.0, 1.0].into());
         let background = self.get_asset("basis.png")?;
-        canvas.draw(background, graphics::DrawParam::default().scale(scale));
+        graphics::draw(
+            ctx,
+            gfx,
+            background,
+            graphics::DrawParam::default().scale(scale),
+        )?;
         let player = self.get_asset("player.png")?;
-        draw!(
-            canvas,
+        graphics::draw(
+            ctx,
+            gfx,
             player,
-            Vector2::from([self.player.position.0 as f32, self.player.position.1 as f32]),
-            scale
-        );
+            get_draw_params(
+                Some(
+                    (Vector2::from([self.player.position.0 as f32, self.player.position.1 as f32])),
+                ),
+                scale,
+                None,
+            ),
+        )?;
         self.draw_resources(&mut canvas, scale, ctx, gfx)?;
-        self.draw_machines(&mut canvas, scale, ctx)?;
+        self.draw_machines(&mut canvas, scale, ctx, gfx)?;
         self.draw_items(&mut canvas, ctx, gfx)?;
         if !self.handbook_invisible {
             self.open_handbook(ctx, &mut canvas, gfx)?;
         }
         self.draw_time(ctx, &mut canvas, scale, gfx)?;
-        canvas.finish(ctx)?;
         Ok(())
     }
     /// Sets the screen sender to the given sender.

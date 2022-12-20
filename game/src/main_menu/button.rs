@@ -1,7 +1,9 @@
 use crate::backend::utils::{get_draw_params, get_scale};
 use crate::main_menu::mainmenu::Message;
 use crate::{draw, RLResult};
+use good_web_game::event::GraphicsContext;
 use good_web_game::graphics::{Canvas, Color, Drawable, Text, TextFragment, Vector2};
+use good_web_game::input::mouse::{button_pressed, position};
 use good_web_game::mint::Point2;
 use good_web_game::{graphics, Context};
 use std::sync::mpsc::Sender;
@@ -43,13 +45,10 @@ impl Button {
     // processing button interaction: click, hover
     // determines if button is clicked
     pub(crate) fn action(&mut self, ctx: &Context, scale: Vector2) {
-        if self.in_area(ctx.mouse.position(), scale) {
+        if self.in_area(position(ctx), scale) {
             self.current_color = self.hover_color;
-            if ctx
-                .mouse
-                .button_just_pressed(good_web_game::event::MouseButton::Left)
-            {
-                info!("User clicked: mouse position: {:?}", ctx.mouse.position());
+            if button_pressed(ctx, good_web_game::event::MouseButton::Left) {
+                info!("User clicked: mouse position: {:?}", position(ctx));
                 self.click();
             }
         } else {
@@ -71,9 +70,9 @@ impl Button {
         self.sender.send(self.message).unwrap();
     }
 
-    pub(crate) fn draw_button(&self, ctx: &mut Context, canvas: &mut Canvas) -> RLResult {
+    pub(crate) fn draw_button(&self, ctx: &mut Context, gfx: &mut GraphicsContext) -> RLResult {
         let mb = &mut graphics::MeshBuilder::new();
-        let scale = get_scale(ctx);
+        let scale = get_scale(gfx);
 
         // Background
         mb.rounded_rectangle(
@@ -89,23 +88,37 @@ impl Button {
             10.0,
             Color::BLACK,
         )?;
-
+        let mesh = mb.build(ctx, gfx)?;
         // Draw button
-        draw!(
-            canvas,
-            &graphics::Mesh::from_data(ctx, mb.build()),
-            Vector2::new(0., 0.),
-            scale
-        );
+        graphics::draw(
+            ctx,
+            gfx,
+            &mesh,
+            get_draw_params(
+                Some(Vector2 {
+                    x: self.rect.x + self.rect.w / 2.0,
+                    y: self.rect.y + self.rect.h / 2.0,
+                }),
+                scale,
+                None,
+            ),
+        )?;
 
         let text = &mut self.text.clone();
         //Draw text
-        draw!(
-            canvas,
+        graphics::draw(
+            ctx,
+            gfx,
             text,
-            Vector2::new(self.rect.x + 20., self.rect.y + 25.),
-            scale
-        );
+            get_draw_params(
+                Some(Vector2 {
+                    x: self.rect.x + self.rect.w / 2.0,
+                    y: self.rect.y + self.rect.h / 2.0,
+                }),
+                scale,
+                None,
+            ),
+        )?;
 
         Ok(())
     }
