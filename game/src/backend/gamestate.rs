@@ -13,10 +13,7 @@ use crate::game_core::infoscreen::InfoScreen;
 use crate::game_core::item::Item;
 use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
-use crate::languages::german::{
-    FIRST_MILESTONE_HANDBOOK_TEXT, MACHINE_NAMES, RESOURCE_NAME, SECOND_MILESTONE_HANDBOOK_TEXT,
-    TIME_NAME,
-};
+use crate::languages::*;
 use crate::machines::machine::Machine;
 use crate::machines::machine::State::Broken;
 use crate::{draw, RLResult};
@@ -39,7 +36,7 @@ pub enum GameCommand {
 }
 
 /// This is the game state. It contains all the data that is needed to run the game.
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct GameState {
     /// Contains the current player position, resources(air, energy, life) and the inventory and their change rates
     pub player: Player,
@@ -51,7 +48,7 @@ pub struct GameState {
     /// Contains all the images that are needed to draw the game on the canvas
     assets: HashMap<String, Image>,
     #[serde(skip)]
-    /// Needed to send Messages to the `Screenstack` to make changes to the screen
+    /// Needed to send Messages to the `Screen stack` to make changes to the screen
     pub(crate) screen_sender: Option<Sender<StackCommand>>,
     #[serde(skip)]
     /// Needed to receive Messages from `machine` to make changes to the game
@@ -61,6 +58,8 @@ pub struct GameState {
     pub(crate) sender: Option<Sender<GameCommand>>,
     /// Defines if the handbook is currently open
     pub handbook_invisible: bool,
+    #[serde(default)]
+    pub lng: Lang,
 }
 
 impl PartialEq for GameState {
@@ -71,6 +70,21 @@ impl PartialEq for GameState {
 }
 
 impl GameState {
+    pub fn new_with_lang(lng: Lang) -> Self {
+        let state = Self {
+            player: Player::new(lng),
+            events: vec![],
+            machines: vec![],
+            assets: Default::default(),
+            screen_sender: None,
+            receiver: None,
+            sender: None,
+            handbook_invisible: false,
+            lng,
+        };
+        state
+    }
+
     /// Gets the screen sender
     /// # Returns
     /// * `RLResult<Sender<StackCommand>>`: The screen sender in a `RLResult` to handle Initialization errors
@@ -92,13 +106,19 @@ impl GameState {
     /// It loads all the assets and creates the areas of the machines.
     /// # Returns
     /// * `RLResult<GameState>`: The new game state initialized in a `RLResult` to handle setup errors
-    pub fn new(ctx: &mut Context) -> RLResult<Self> {
-        info!("Creating new gamestate");
+    pub fn new(ctx: &mut Context, lng: Lang) -> RLResult<Self> {
+        info!("Creating new game state");
         let (sender, receiver) = channel();
         let mut result = GameState {
+            player: Player::new(lng),
+            events: vec![],
+            machines: vec![],
+            assets: Default::default(),
             sender: Some(sender),
             receiver: Some(receiver),
-            ..Default::default()
+            lng,
+            screen_sender: None,
+            handbook_invisible: false,
         };
         result.init(ctx)?;
         Ok(result)
@@ -109,6 +129,8 @@ impl GameState {
     /// # Returns
     /// * `RLResult`: A `RLResult` to validate the success of the tick function
     pub fn tick(&mut self) -> RLResult {
+        let lng = self.lng;
+
         // Update Resources
         self.player.resources = self
             .player
@@ -134,11 +156,12 @@ impl GameState {
                 }
             };
             if self.player.resources.life == 0 {
-                let gamestate = GameState::load(true).unwrap_or_default();
-                gamestate.save(false)?;
+                let game_state =
+                    GameState::load(true).unwrap_or_else(|_| GameState::new_with_lang(lng));
+                game_state.save(false)?;
                 let cloned_sender = self.get_screen_sender()?.clone();
                 self.get_screen_sender()?.send(StackCommand::Push(Box::new(
-                    InfoScreen::new_deathscreen(empty_resource, cloned_sender),
+                    InfoScreen::new_death_screen(empty_resource, cloned_sender, game_state.lng),
                 )))?;
             };
         } else if self.player.resources_change.life < 0 {
@@ -162,7 +185,8 @@ impl GameState {
                 GameCommand::Winning => match self.player.milestone {
                     1 => {
                         let sender = self.get_screen_sender()?;
-                        let popup = Popup::new(RLColor::GREEN, "Die Nachricht kann nicht gesendet werden solange das System nicht wiederhergestellt ist".to_string(), 5);
+                        let popup =
+                            Popup::new(RLColor::GREEN, send_msg_failure(lng).to_string(), 5);
                         sender.send(StackCommand::Popup(popup))?;
                     }
                     2 => {
@@ -176,7 +200,7 @@ impl GameState {
 
         // Regenerate life if applicable
         self.player
-            .life_regeneration(&self.screen_sender.as_ref().unwrap().clone())?;
+            .life_regeneration(&self.screen_sender.as_ref().unwrap().clone(), lng)?;
         for machine in &mut self.machines {
             machine.tick()?;
         }
@@ -207,7 +231,7 @@ impl GameState {
                 draw!(canvas, &mesh, scale);
                 let text = graphics::Text::new(format!(
                     "{}: {:.1}",
-                    RESOURCE_NAME[i],
+                    resource_name(self.lng)[i],
                     (resource as f32 / u16::MAX as f32) * 100.0
                 ));
                 draw!(
@@ -233,11 +257,11 @@ impl GameState {
         draw!(canvas, image, Vec2::new(700.0, 300.0), scale);
         match self.player.milestone {
             1 => {
-                self.draw_handbook_text(canvas, scale, &FIRST_MILESTONE_HANDBOOK_TEXT);
+                self.draw_handbook_text(canvas, scale, first_milestone_handbook_text(self.lng));
             }
 
             2 => {
-                self.draw_handbook_text(canvas, scale, &SECOND_MILESTONE_HANDBOOK_TEXT);
+                self.draw_handbook_text(canvas, scale, second_milestone_handbook_text(self.lng));
             }
             _ => {}
         }
@@ -308,7 +332,7 @@ impl GameState {
         let time = self.player.time / DESIRED_FPS;
         let time_text = format!(
             "{}: {}h {}m {}s",
-            TIME_NAME[0],
+            time_name(self.lng)[0],
             time / 3600,
             time / 60,
             time % 60
@@ -349,7 +373,7 @@ impl GameState {
         let machine_assets: Vec<Vec<Image>> = self
             .machines
             .iter()
-            .map(|m| m.name.clone())
+            .map(|m| m.asset_name())
             .map(|name| {
                 info!("Loading assets for {}", name);
                 if self.assets.contains_key(&format!("{name}.png")) {
@@ -489,6 +513,8 @@ impl GameState {
     /// Decides what happens if a certain milestone is reached
     /// divided into 3 milestones
     fn get_current_milestone(&mut self) -> RLResult {
+        let lng = self.lang();
+
         match self.player.milestone {
             0 => {
                 self.player.resources_change.oxygen = -1;
@@ -498,8 +524,8 @@ impl GameState {
             }
             1 => {
                 if self.check_on_milestone_machines(&[
-                    MACHINE_NAMES[0].to_string(),
-                    MACHINE_NAMES[1].to_string(),
+                    machine_names(self.lng)[0].to_string(),
+                    machine_names(self.lng)[1].to_string(),
                 ]) {
                     self.increase_milestone()?;
                 }
@@ -509,7 +535,7 @@ impl GameState {
                 self.player.milestone += 1;
                 let cloned_sender = self.get_screen_sender()?.clone();
                 self.get_screen_sender()?.send(StackCommand::Push(Box::new(
-                    InfoScreen::new_winningscreen(cloned_sender),
+                    InfoScreen::new_winning_screen(cloned_sender, lng),
                 )))?;
             }
             _ => {}
@@ -535,7 +561,7 @@ impl GameState {
 
 impl Screen for GameState {
     /// Updates the game and handles input. Returns `StackCommand::Pop` when Escape is pressed.
-    fn update(&mut self, ctx: &mut Context) -> RLResult {
+    fn update(&mut self, ctx: &mut Context, _lng: Lang) -> RLResult {
         if ctx.time.check_update_time(DESIRED_FPS) {
             self.tick()?;
             self.move_player(ctx)?;
@@ -601,6 +627,10 @@ impl Screen for GameState {
     fn set_sender(&mut self, sender: Sender<StackCommand>) {
         self.screen_sender = Some(sender);
         self.init_all_machines();
+    }
+
+    fn lang(&self) -> Lang {
+        self.lng
     }
 }
 

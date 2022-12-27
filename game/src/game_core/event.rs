@@ -2,10 +2,7 @@ use crate::backend::constants::{DESIRED_FPS, SANDSTURM_CR};
 use crate::backend::gamestate::GameState;
 use crate::backend::screen::{Popup, StackCommand};
 use crate::game_core::resources::Resources;
-use crate::languages::german::{
-    INFORMATIONSPOPUP_MARS, INFORMATIONSPOPUP_NASA, KOMETENEINSCHLAG, SANDSTURM, STROMAUSFALL,
-};
-use crate::languages::german::{MARS_INFO, NASA_INFO, WARNINGS};
+use crate::languages::*;
 use crate::machines::machine::State;
 use crate::RLResult;
 use ggez::graphics::Color;
@@ -60,35 +57,41 @@ impl Event {
     }
 
     /// if no Event is active it either chooses a random event of the Event enum or nothing every 60 seconds
-    pub fn event_generator() -> Option<Event> {
+    pub fn event_generator(lng: Lang) -> Option<Event> {
         let rng = fastrand::Rng::new();
         let event = rng.usize(..15);
         match event {
             8 => Some(Event::new(
-                SANDSTURM,
-                WARNINGS[2],
+                *sandstorm(lng),
+                warnings(lng)[2],
                 "warning",
                 Some(SANDSTURM_CR),
                 5,
             )),
             0 | 3 => Some(Event::new(
-                KOMETENEINSCHLAG,
-                WARNINGS[0],
+                *cometa_strike(lng),
+                warnings(lng)[0],
                 "warning",
                 None,
                 0,
             )),
             1 => Some(Event::new(
-                INFORMATIONSPOPUP_NASA,
-                NASA_INFO[rng.usize(..4)],
+                *informations_popup_nasa(lng),
+                nasa_info(lng)[rng.usize(..4)],
                 "nasa",
                 None,
                 0,
             )),
-            2 | 9 | 7 => Some(Event::new(STROMAUSFALL, WARNINGS[1], "warning", None, 0)),
+            2 | 9 | 7 => Some(Event::new(
+                *power_failure(lng),
+                warnings(lng)[1],
+                "warning",
+                None,
+                0,
+            )),
             4 => Some(Event::new(
-                INFORMATIONSPOPUP_MARS,
-                MARS_INFO[rng.usize(..5)],
+                *informations_popup_mars(lng),
+                mars_info(lng)[rng.usize(..5)],
                 "mars",
                 None,
                 0,
@@ -135,13 +138,14 @@ impl Event {
     /// * `restore` - If true the event will be deactivated and the resources will be restored
     /// * `gamestate` - The gamestate which is used to access the player and the machines
     pub fn action(&self, restore: bool, gamestate: &mut GameState) -> RLResult {
-        const KOMETENEINSCHLAG_NAME: &str = KOMETENEINSCHLAG[0];
-        const STROMAUSFALL_NAME: &str = STROMAUSFALL[0];
+        let lng = gamestate.lng;
+        let cometa_strike: &str = cometa_strike(lng)[0];
+        let power_failure: &str = power_failure(lng)[0];
         let sender = gamestate.get_screen_sender()?.clone();
 
         // handle event effects
         match self.name.as_str() {
-            KOMETENEINSCHLAG_NAME => {
+            s if cometa_strike == s => {
                 if let Some(one_hole) = gamestate
                     .machines
                     .iter_mut()
@@ -153,7 +157,7 @@ impl Event {
                     one_hole.change_state_to(&State::Running);
                 }
             }
-            STROMAUSFALL_NAME => {
+            s if s == power_failure => {
                 gamestate.machines.iter_mut().for_each(|machine| {
                     // if machine is running it will b use tracing::{info, Id};e stopped
                     // event not triggered if machine is broken or idling
@@ -197,6 +201,7 @@ impl Event {
     /// * `gamestate` - The gamestate which is used to access the events vector
     /// * `context` - The game context which is used to access the current tick
     pub fn update_events(ctx: &Context, gamestate: &mut GameState) -> RLResult {
+        let lng = gamestate.lng;
         if ctx.time.ticks() % 20 == 0 {
             gamestate.events.iter_mut().for_each(|event| {
                 event.duration = event.duration.saturating_sub(20);
@@ -225,7 +230,7 @@ impl Event {
         if ctx.time.ticks() >= 400 && ctx.time.ticks() % 200 == 0 {
             // generate new event
             // might not return an event
-            let gen_event = Event::event_generator();
+            let gen_event = Event::event_generator(lng);
             // if event is not none, add it to the gamestates events vector and activate apply its effect
             if let Some(event) = gen_event {
                 event.action(false, gamestate)?;

@@ -7,7 +7,7 @@ use crate::backend::utils::is_colliding;
 use crate::game_core::item::Item;
 use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
-use crate::languages::german::TRADE_CONFLICT_POPUP;
+use crate::languages::*;
 use crate::machines::machine::State::{Broken, Idle, Running};
 use crate::machines::machine_sprite::MachineSprite;
 use crate::machines::trade::Trade;
@@ -77,6 +77,7 @@ pub struct Machine {
     #[serde(skip)]
     /// Needed to send Messages to the `Screenstack` to make changes to the screen
     screen_sender: Option<Sender<StackCommand>>,
+    asset_name: String,
 }
 
 impl Machine {
@@ -90,19 +91,20 @@ impl Machine {
     /// * 'Machine'
     fn new(
         name: String,
-        hitbox: Rect,
+        asset_name: String,
+        hit_box: Rect,
         trades: Vec<Trade>,
         running_resources: Resources<i16>,
     ) -> Self {
         info!("Creating new machine: name: {}", name);
         Self {
             name,
-            hitbox,
+            hitbox: hit_box,
             interaction_area: Rect {
-                x: hitbox.x - PLAYER_INTERACTION_RADIUS,
-                y: hitbox.y - PLAYER_INTERACTION_RADIUS,
-                w: hitbox.w + (PLAYER_INTERACTION_RADIUS * 2.),
-                h: hitbox.h + (PLAYER_INTERACTION_RADIUS * 2.),
+                x: hit_box.x - PLAYER_INTERACTION_RADIUS,
+                y: hit_box.y - PLAYER_INTERACTION_RADIUS,
+                w: hit_box.w + (PLAYER_INTERACTION_RADIUS * 2.),
+                h: hit_box.h + (PLAYER_INTERACTION_RADIUS * 2.),
             },
             state: Broken,
             sprite: None,
@@ -113,7 +115,12 @@ impl Machine {
             time_change: 0,
             sender: None,
             screen_sender: None,
+            asset_name,
         }
+    }
+
+    pub fn asset_name(&self) -> &str {
+        &self.asset_name
     }
 
     /// Alternative new constructor for the machine using one parameter Tupel
@@ -122,9 +129,15 @@ impl Machine {
     /// # Returns
     /// * 'Machine'
     pub(crate) fn new_by_const(
-        (name, hit_box, trades, running_resources): (String, Rect, Vec<Trade>, Resources<i16>),
+        (name, asset_name, hit_box, trades, running_resources): (
+            String,
+            String,
+            Rect,
+            Vec<Trade>,
+            Resources<i16>,
+        ),
     ) -> Self {
-        Machine::new(name, hit_box, trades, running_resources)
+        Self::new(name, asset_name, hit_box, trades, running_resources)
     }
 
     /// initialises the Maschine with the data that is not Serialize
@@ -183,7 +196,7 @@ impl Machine {
     /// Handel's the interaction of the Maschine and the player
     /// # Arguments
     /// * `player` - of type `& Player` is a reference to the player
-    pub(crate) fn interact(&mut self, player: &Player) -> RLResult {
+    pub(crate) fn interact(&mut self, player: &Player, lng: Lang) -> RLResult {
         // Check if there is a possible trade
         let trade = match self.trades.iter().find(|t| t.initial_state == self.state) {
             Some(t) => t.clone(),
@@ -211,7 +224,7 @@ impl Machine {
             dif.iter()
                 .map(|(item, amount)| format!("*{} {}\n", amount * -1, item.name))
                 .for_each(|x| missing_items.push_str(&x));
-            let popup = Popup::info(format!("{}\n{missing_items}", TRADE_CONFLICT_POPUP[0]));
+            let popup = Popup::info(format!("{}\n{missing_items}", trade_conflict_popup(lng)[0]));
             info!(
                 "Popup for Trade conflict sent: Missing Items: {}",
                 missing_items

@@ -24,15 +24,18 @@ mod machines;
 mod main_menu;
 
 use crate::backend::constants::SCREEN_RESOLUTION;
-use crate::backend::{error, screen::Screenstack};
+use crate::backend::{error, screen::ScreenStack};
 use chrono::Local;
 
+use crate::languages::Lang;
 #[cfg_attr(debug_assertions, allow(unused_imports))]
 use ggez::conf::FullscreenType;
 use ggez::{event, Context};
 use std::fs::File;
 use std::sync::Mutex;
-use tracing::{info, Level};
+use tracing::info;
+use tracing_subscriber::layer::SubscriberExt;
+use tracing_subscriber::util::SubscriberInitExt;
 
 /// Our own Result Type for custom Error handling.
 pub type RLResult<T = ()> = Result<T, error::RLError>;
@@ -54,18 +57,24 @@ pub fn main() -> RLResult {
     }
     let filename = format!("logs/RL-{}.log", Local::now().format("%Y-%m-%d_%H-%M-%S"));
     let log_file = File::create(filename)?;
-    let subscriber = tracing_subscriber::fmt()
-        .with_max_level(Level::TRACE)
+    let log_file = tracing_subscriber::fmt::layer()
         .with_writer(Mutex::new(log_file))
-        .with_ansi(false)
-        .finish();
-    tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
+        .with_ansi(false);
+
+    tracing_subscriber::registry()
+        .with(tracing_subscriber::EnvFilter::from_default_env())
+        .with(log_file)
+        .with(tracing_subscriber::fmt::layer())
+        .init();
+
+    // tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
     // End logging
     info!("Starting Red Life");
     let (mut ctx, event_loop) = cb.build()?;
     info!("New Event Loop created");
     window_setup(&mut ctx)?;
-    let screen_stack = Screenstack::default();
+    let lng = Lang::En;
+    let screen_stack = ScreenStack::new_with_lang(lng);
     event::run(ctx, event_loop, screen_stack);
 }
 /// Sets the window size to resizeable in debug mode and fullscreen mode for release mode

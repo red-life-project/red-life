@@ -5,12 +5,11 @@ use crate::backend::{
     utils::get_scale,
 };
 use crate::main_menu::button::Button;
-use crate::main_menu::mainmenu::Message::{Exit, NewGame, Resume};
 use crate::RLResult;
 
 use crate::backend::screen::Popup;
 use crate::game_core::infoscreen::InfoScreen;
-use crate::languages::german::{BUTTON_TEXT, RESUME_ERROR_STRING};
+use crate::languages::*;
 use ggez::{graphics, Context};
 use std::sync::mpsc::{channel, Receiver, Sender};
 
@@ -20,6 +19,7 @@ pub enum Message {
     Exit,
     NewGame,
     Resume,
+    ChangeLanguage,
 }
 
 /// Main menu screen of the game with buttons to start a new game, load a game or exit the game.
@@ -27,8 +27,10 @@ pub enum Message {
 pub struct MainMenu {
     buttons: Vec<Button>,
     receiver: Receiver<Message>,
+    sender: Sender<Message>,
     screen_sender: Sender<StackCommand>,
     background_image: Option<graphics::Image>,
+    lng: Lang,
 }
 
 impl MainMenu {
@@ -37,12 +39,30 @@ impl MainMenu {
     /// * `screen_sender` - The sender of the `MainMenu` used to send messages to the `ScreenStack`.
     /// # Returns
     /// `MainMenu` - Returns a new `MainMenu`.
-    pub(crate) fn new(screen_sender: Sender<StackCommand>) -> MainMenu {
+    pub(crate) fn new(screen_sender: Sender<StackCommand>, lng: Lang) -> MainMenu {
         let (sender, receiver) = channel();
 
+        let mut menu = Self {
+            buttons: vec![],
+            receiver,
+            sender,
+            screen_sender,
+            background_image: None,
+            lng,
+        };
+        menu.load_buttons();
+        menu
+    }
+}
+
+impl MainMenu {
+    fn load_buttons(&mut self) {
+        let lng = self.lng;
+        let sender = self.sender.clone();
+
         let start_button = Button::new(
-            BUTTON_TEXT[0].to_string(),
-            Resume,
+            button_text(lng)[0].to_string(),
+            Message::Resume,
             sender.clone(),
             graphics::Rect::new(1322., 350., 450., 120.),
             RLColor::GREY,
@@ -50,8 +70,8 @@ impl MainMenu {
         );
 
         let new_game_button = Button::new(
-            BUTTON_TEXT[1].to_string(),
-            NewGame,
+            button_text(lng)[1].to_string(),
+            Message::NewGame,
             sender.clone(),
             graphics::Rect::new(1322., 490., 450., 120.),
             RLColor::GREY,
@@ -59,20 +79,23 @@ impl MainMenu {
         );
 
         let exit_button = Button::new(
-            BUTTON_TEXT[2].to_string(),
-            Exit,
-            sender,
+            button_text(lng)[2].to_string(),
+            Message::Exit,
+            sender.clone(),
             graphics::Rect::new(1322., 630., 450., 120.),
             RLColor::GREY,
             RLColor::DARK_GREY,
         );
 
-        Self {
-            buttons: vec![start_button, new_game_button, exit_button],
-            receiver,
-            screen_sender,
-            background_image: None,
-        }
+        let lang_button = Button::new(
+            button_text(lng)[3].to_string(),
+            Message::ChangeLanguage,
+            sender,
+            graphics::Rect::new(1322., 140. + 630., 450., 120.),
+            RLColor::GREY,
+            RLColor::DARK_GREY,
+        );
+        self.buttons = vec![start_button, new_game_button, exit_button, lang_button];
     }
 }
 
@@ -83,7 +106,7 @@ impl Screen for MainMenu {
     /// * `ctx` - The ggez context
     /// # Returns
     /// `RLResult` - Returns an `RLResult`.
-    fn update(&mut self, ctx: &mut Context) -> RLResult {
+    fn update(&mut self, ctx: &mut Context, lng: Lang) -> RLResult {
         let scale = get_scale(ctx);
         self.buttons.iter_mut().for_each(|btn| {
             btn.action(ctx, scale);
@@ -91,20 +114,20 @@ impl Screen for MainMenu {
         if self.background_image.is_none() {
             self.background_image = Some(graphics::Image::from_bytes(
                 ctx,
-                include_bytes!("../../../assets/mainmenu.png"),
+                include_bytes!("../../../assets/main_menu.png"),
             )?);
         }
         if let Ok(msg) = self.receiver.try_recv() {
             match msg {
-                Exit => std::process::exit(0),
-                NewGame => {
+                Message::Exit => std::process::exit(0),
+                Message::NewGame => {
                     GameState::delete_saves()?;
                     let cloned_sender = self.screen_sender.clone();
                     self.screen_sender.send(StackCommand::Push(Box::new(
-                        InfoScreen::new_introscreen(cloned_sender),
+                        InfoScreen::new_intro_screen(cloned_sender, lng),
                     )))?;
                 }
-                Resume => {
+                Message::Resume => {
                     if let Ok(mut gamestate) = GameState::load(false) {
                         self.screen_sender.send(StackCommand::Push(Box::new({
                             gamestate.init(ctx)?;
@@ -112,9 +135,21 @@ impl Screen for MainMenu {
                         })))?;
                     } else {
                         self.screen_sender.send(StackCommand::Popup(Popup::warning(
-                            RESUME_ERROR_STRING.to_string(),
+                            resume_error_string(lng).to_string(),
                         )))?;
                     }
+                }
+                Message::ChangeLanguage => {
+                    let current = self.lng;
+                    match current {
+                        Lang::De => {
+                            self.lng = Lang::En;
+                        }
+                        Lang::En => {
+                            self.lng = Lang::De;
+                        }
+                    }
+                    self.load_buttons();
                 }
             }
         }
@@ -140,4 +175,8 @@ impl Screen for MainMenu {
     }
 
     fn set_sender(&mut self, _sender: Sender<StackCommand>) {}
+
+    fn lang(&self) -> Lang {
+        self.lng
+    }
 }

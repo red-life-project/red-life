@@ -2,7 +2,7 @@
 use crate::backend::rlcolor::RLColor;
 use crate::game_core::player::gen_inventory;
 use crate::game_core::resources::Resources;
-use crate::languages::german::MACHINE_NAMES;
+use crate::languages::{machine_names, Lang};
 use crate::machines::machine::{Machine, State};
 use crate::machines::trade::Trade;
 use ggez::graphics::{Color, Rect};
@@ -48,11 +48,12 @@ pub(crate) const SANDSTURM_CR: Resources<i16> = Resources {
 /// Generates all machines with all their name, position, trades and resources.
 /// # Returns
 /// A Vector of `Machine`s
-pub(crate) fn gen_all_machines() -> Vec<Machine> {
+pub(crate) fn gen_all_machines(lng: Lang) -> Vec<Machine> {
     vec![
         // Oxygen machine
         Machine::new_by_const((
-            MACHINE_NAMES[0].to_string(),
+            machine_names(lng)[0].to_string(),
+            machine_names(Lang::De)[0].to_string(),
             Rect {
                 x: 280.0,
                 y: 230.0,
@@ -66,7 +67,7 @@ pub(crate) fn gen_all_machines() -> Vec<Machine> {
                     State::Broken,
                     State::Idle,
                     false,
-                    gen_inventory(2, 0, 0),
+                    gen_inventory(2, 0, 0, lng),
                 ),
                 Trade::new(
                     "start_Oxygen".to_string(),
@@ -74,7 +75,7 @@ pub(crate) fn gen_all_machines() -> Vec<Machine> {
                     State::Idle,
                     State::Running,
                     true,
-                    gen_inventory(0, 0, 0),
+                    gen_inventory(0, 0, 0, lng),
                 ),
                 Trade::new(
                     "stop_Oxygen".to_string(),
@@ -82,7 +83,7 @@ pub(crate) fn gen_all_machines() -> Vec<Machine> {
                     State::Running,
                     State::Idle,
                     true,
-                    gen_inventory(0, 0, 0),
+                    gen_inventory(0, 0, 0, lng),
                 ),
             ],
             Resources {
@@ -93,7 +94,8 @@ pub(crate) fn gen_all_machines() -> Vec<Machine> {
         )),
         // Electricity machine
         Machine::new_by_const((
-            MACHINE_NAMES[1].to_string(),
+            machine_names(lng)[1].to_string(),
+            machine_names(Lang::De)[1].to_string(),
             Rect {
                 x: 282.0,
                 y: 752.0,
@@ -107,7 +109,7 @@ pub(crate) fn gen_all_machines() -> Vec<Machine> {
                     State::Broken,
                     State::Running,
                     true,
-                    gen_inventory(0, 1, 0),
+                    gen_inventory(0, 1, 0, lng),
                 ),
                 Trade::new(
                     "start_Stromgenerator".to_string(),
@@ -115,7 +117,7 @@ pub(crate) fn gen_all_machines() -> Vec<Machine> {
                     State::Idle,
                     State::Running,
                     true,
-                    gen_inventory(0, 0, 0),
+                    gen_inventory(0, 0, 0, lng),
                 ),
                 Trade::new(
                     "stop_Stromgenerator".to_string(),
@@ -123,7 +125,7 @@ pub(crate) fn gen_all_machines() -> Vec<Machine> {
                     State::Running,
                     State::Idle,
                     true,
-                    gen_inventory(0, 0, 0),
+                    gen_inventory(0, 0, 0, lng),
                 ),
             ],
             Resources {
@@ -134,7 +136,8 @@ pub(crate) fn gen_all_machines() -> Vec<Machine> {
         )),
         // Worker machine
         Machine::new_by_const((
-            MACHINE_NAMES[2].to_string(),
+            machine_names(lng)[2].to_string(),
+            machine_names(Lang::De)[2].to_string(),
             Rect {
                 x: 1000.0,
                 y: 780.0,
@@ -148,7 +151,7 @@ pub(crate) fn gen_all_machines() -> Vec<Machine> {
                     State::Broken,
                     State::Idle,
                     false,
-                    gen_inventory(0, 0, 1),
+                    gen_inventory(0, 0, 1, lng),
                 ),
                 Trade::new(
                     "produce_superglue".to_string(),
@@ -156,7 +159,7 @@ pub(crate) fn gen_all_machines() -> Vec<Machine> {
                     State::Idle,
                     State::Running,
                     true,
-                    gen_inventory(-1, 0, 0),
+                    gen_inventory(-1, 0, 0, lng),
                 ),
             ],
             Resources {
@@ -167,7 +170,8 @@ pub(crate) fn gen_all_machines() -> Vec<Machine> {
         )),
         // 3d Printer machine
         Machine::new_by_const((
-            MACHINE_NAMES[3].to_string(),
+            machine_names(lng)[3].to_string(),
+            machine_names(Lang::De)[3].to_string(),
             Rect {
                 x: 930.0,
                 y: 230.0,
@@ -181,7 +185,7 @@ pub(crate) fn gen_all_machines() -> Vec<Machine> {
                     State::Broken,
                     State::Idle,
                     false,
-                    gen_inventory(2, 0, 0),
+                    gen_inventory(2, 0, 0, lng),
                 ),
                 Trade::new(
                     "produce_3d_teil".to_string(),
@@ -189,7 +193,7 @@ pub(crate) fn gen_all_machines() -> Vec<Machine> {
                     State::Idle,
                     State::Running,
                     true,
-                    gen_inventory(2, 0, -1),
+                    gen_inventory(2, 0, -1, lng),
                 ),
             ],
             Resources {
@@ -200,7 +204,8 @@ pub(crate) fn gen_all_machines() -> Vec<Machine> {
         )),
         // Communication module
         Machine::new_by_const((
-            MACHINE_NAMES[4].to_string(),
+            machine_names(lng)[4].to_string(),
+            machine_names(Lang::De)[4].to_string(),
             Rect {
                 x: 1640.0,
                 y: 320.0,
@@ -214,7 +219,7 @@ pub(crate) fn gen_all_machines() -> Vec<Machine> {
                     State::Broken,
                     State::Idle,
                     false,
-                    gen_inventory(5, 0, 3),
+                    gen_inventory(5, 0, 3, lng),
                 ),
                 Trade::new(
                     "Notfall_signal_absetzen".to_string(),
@@ -222,7 +227,7 @@ pub(crate) fn gen_all_machines() -> Vec<Machine> {
                     State::Idle,
                     State::Running,
                     true,
-                    gen_inventory(1, 0, 1),
+                    gen_inventory(1, 0, 1, lng),
                 ),
             ],
             Resources {
@@ -233,7 +238,8 @@ pub(crate) fn gen_all_machines() -> Vec<Machine> {
         )),
         // First hole
         Machine::new_by_const((
-            MACHINE_NAMES[5].to_string(),
+            machine_names(lng)[5].to_string(),
+            machine_names(Lang::De)[5].to_string(),
             Rect {
                 x: 780.0,
                 y: 230.0,
@@ -246,7 +252,7 @@ pub(crate) fn gen_all_machines() -> Vec<Machine> {
                 State::Running,
                 State::Idle,
                 false,
-                gen_inventory(2, 0, 0),
+                gen_inventory(2, 0, 0, lng),
             )],
             Resources {
                 oxygen: -15,
@@ -256,7 +262,8 @@ pub(crate) fn gen_all_machines() -> Vec<Machine> {
         )),
         // Second hole
         Machine::new_by_const((
-            MACHINE_NAMES[6].to_string(),
+            machine_names(lng)[6].to_string(),
+            machine_names(Lang::De)[6].to_string(),
             Rect {
                 x: 680.0,
                 y: 900.0,
@@ -269,7 +276,7 @@ pub(crate) fn gen_all_machines() -> Vec<Machine> {
                 State::Running,
                 State::Idle,
                 false,
-                gen_inventory(2, 0, 0),
+                gen_inventory(2, 0, 0, lng),
             )],
             Resources {
                 oxygen: -15,

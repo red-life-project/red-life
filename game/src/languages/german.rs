@@ -13,7 +13,7 @@ pub const SUPER_GLUE: [&str; 3] = [
     "SuperGlue.png",
 ];
 /// Constant for the item `Benzin`
-pub const BENZIN: [&str; 3] = [
+pub const PETROL: [&str; 3] = [
     "Benzin",
     "Benzin kann mit dem Notstromgenerator verwendet werden um Strom zu generieren",
     "Benzin.png",
@@ -68,23 +68,23 @@ pub const BUTTON_INFO: &str = "Bitte drücke die Leertaste!";
 pub const WINNING_TEXT: &str = "Du wurdest gerettet!";
 
 /// Constants for the events that can occur.
-pub const KOMETENEINSCHLAG: [&str; 2] = [
+pub const COMETA_STRIKE: [&str; 2] = [
     "KOMETENEINSCHLAG",
     "Ein KOMETENEINSCHLAG hat die Erde getroffen und hat ein Loch in der Wand erzeugt",
 ];
-pub const SANDSTURM: [&str; 2] = [
+pub const SANDSTORM: [&str; 2] = [
     "Sandsturm",
     "Ein Sandsturm, welcher zu einer Störung des Sauerstoffgenerators führt",
 ];
-pub const INFORMATIONSPOPUP_NASA: [&str; 2] = [
+pub const INFORMATIONS_POPUP_NASA: [&str; 2] = [
     "InformationspopupNASA",
     "Ein Informationspopup über die NASA, welches Fakten und Informationen über die NASA enthält",
 ];
-pub const STROMAUSFALL: [&str; 2] = [
+pub const POWER_FAILURE: [&str; 2] = [
     "Stromausfall",
     "Ein Stromausfall, welcher zu einer Störung des Sauerstoffgenerators führt",
 ];
-pub const INFORMATIONSPOPUP_MARS: [&str; 2] = [
+pub const INFORMATIONS_POPUP_MARS: [&str; 2] = [
     "InformationspopupMars",
     "Ein Informationspopup über Mars, welches Fakten und Informationen über den Mars enthält",
 ];
@@ -93,7 +93,7 @@ pub const TRADE_CONFLICT_POPUP: [&str; 1] = ["Es fehlen folgende Items, um den T
 /// Constants for the `time_name`.
 pub const TIME_NAME: [&str; 1] = ["Zeit"];
 /// Constants for the text of the button in the main menu
-pub const BUTTON_TEXT: [&str; 3] = ["Fortsetzen", "Neues Spiel", "Beenden"];
+pub const BUTTON_TEXT: [&str; 4] = ["Fortsetzen", "Neues Spiel", "Beenden", "English"];
 /// Contains all machine names as a vec of strings.
 pub(crate) const MACHINE_NAMES: [&str; 7] = [
     "Sauerstoffgenerator",
@@ -127,3 +127,5 @@ pub(crate) const SECOND_MILESTONE_HANDBOOK_TEXT: [&str; 7] = [
     "   gewinnst du automatisch.",
     "\n\n             Drücke H zum schließen",
 ];
+pub(crate) const SEND_MSG_FAILURE: &str =
+    "Die Nachricht kann nicht gesendet werden solange das System nicht wiederhergestellt ist";

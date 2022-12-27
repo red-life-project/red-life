@@ -1,17 +1,12 @@
 use crate::backend::gamestate::{GameCommand, GameState};
 use crate::backend::screen::{Screen, StackCommand};
 use crate::backend::utils::{get_draw_params, get_scale};
-use crate::languages::german::{
-    ADDITIONAL_INFO_STRING, AIR_AND_ENERGY_STRING, AIR_STRING, BUTTON_INFO, DEATH_REASON_STRING,
-    ENERGY_STRING, INTRO_TEXT, TUTORIAL_TEXT, WINNING_TEXT,
-};
-
-use crate::main_menu::mainmenu::MainMenu;
+use crate::languages::*;
+use crate::main_menu::main_menu::MainMenu;
 use crate::{draw, RLResult};
 use ggez::glam::Vec2;
 use ggez::winit::event::VirtualKeyCode;
 use ggez::{graphics, Context};
-use std::fmt::{Display, Formatter};
 use std::fs;
 use std::sync::mpsc::Sender;
 use tracing::info;
@@ -23,16 +18,17 @@ pub enum DeathReason {
     Energy,
     Both,
 }
-impl Display for DeathReason {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+
+impl DeathReason {
+    fn t(&self, lng: Lang) -> &'static str {
         match self {
-            DeathReason::Oxygen => write!(f, "{AIR_STRING}"),
-            DeathReason::Energy => write!(f, "{ENERGY_STRING}"),
-            DeathReason::Both => write!(f, "{AIR_AND_ENERGY_STRING}"),
+            DeathReason::Oxygen => air_string(lng),
+            DeathReason::Energy => energy_string(lng),
+            DeathReason::Both => air_and_energy_string(lng),
         }
     }
 }
-/// Defines the type of Screen which is Infoscreen currently showing
+/// Defines the type of Screen which is Info screen currently showing
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum ScreenType {
     Death,
@@ -40,76 +36,92 @@ pub enum ScreenType {
     Winning,
 }
 
-/// Create `DeathScreen`, `IntroScreen` or `WinningSreen`. `DeathScreen` needs the reason of death from `DeathReason` enum.
+/// Create `DeathScreen`, `IntroScreen` or `WinningScreen`. `DeathScreen` needs the reason of death from `DeathReason` enum.
 #[derive(Debug)]
 pub struct InfoScreen {
-    background: String,
+    background: &'static str,
     main_message: graphics::Text,
     additional_text: graphics::Text,
     sender: Sender<StackCommand>,
-    screentype: ScreenType,
+    screen_type: ScreenType,
     background_image: Option<graphics::Image>,
+    lng: Lang,
 }
 
 impl InfoScreen {
-    /// Creates a new `DeathScreen` using `InfoScreen` with a `Deathreason`
+    /// Creates a new `DeathScreen` using `InfoScreen` with a `Death reason`
     /// # Arguments
     /// * `death_reason` - The reason for the death of the player
     /// * `sender` - The sender to send the command to the `ScreenStack`
-    pub fn new_deathscreen(death_reason: DeathReason, sender: Sender<StackCommand>) -> Self {
-        info!("The player died due to a lack of : {:?}", death_reason);
+    pub fn new_death_screen(
+        death_reason: DeathReason,
+        sender: Sender<StackCommand>,
+        lng: Lang,
+    ) -> Self {
+        info!(
+            "The player died due to a lack of : {:?}",
+            death_reason.t(lng)
+        );
 
-        let mut main_message = graphics::Text::new(format!("{DEATH_REASON_STRING} {death_reason}"));
+        let mut main_message = graphics::Text::new(format!(
+            "{} {}",
+            death_reason_string(lng),
+            death_reason.t(lng)
+        ));
         main_message.set_scale(70.);
-        let mut additional_text = graphics::Text::new(ADDITIONAL_INFO_STRING);
+        let mut additional_text = graphics::Text::new(additional_info_string(lng));
         additional_text.set_scale(70.);
-        let background = "deathscreen".to_string();
+        let background = "deathscreen";
         let screentype = ScreenType::Death;
         Self {
             background,
             main_message,
             additional_text,
             sender,
-            screentype,
+            screen_type: screentype,
             background_image: None,
+            lng,
         }
     }
     /// Creates a new `IntroScreen` using `InfoScreen`
     /// # Arguments
     /// * `sender` - The sender to send the command to the `ScreenStack`
-    pub fn new_introscreen(sender: Sender<StackCommand>) -> Self {
-        let mut main_message = graphics::Text::new(format!("{INTRO_TEXT} \n{TUTORIAL_TEXT}"));
+    pub fn new_intro_screen(sender: Sender<StackCommand>, lng: Lang) -> Self {
+        let mut main_message =
+            graphics::Text::new(format!("{} \n{}", intro_text(lng), tutorial_text(lng)));
         main_message.set_scale(50.);
-        let mut additional_text = graphics::Text::new(BUTTON_INFO);
+        let mut additional_text = graphics::Text::new(button_info(lng));
         additional_text.set_scale(50.);
-        let background = "Introscreen".to_string();
-        let screentype = ScreenType::Intro;
+        let background = "Introscreen";
+        let screen_type = ScreenType::Intro;
         Self {
             background,
             main_message,
             additional_text,
             sender,
-            screentype,
+            screen_type,
             background_image: None,
+            lng,
         }
     }
     /// Creates a new Winning using `InfoScreen`
     /// # Arguments
     /// * `sender` - The sender to send the command to the `ScreenStack`
-    pub fn new_winningscreen(sender: Sender<StackCommand>) -> Self {
-        let mut main_message = graphics::Text::new(WINNING_TEXT);
+    pub fn new_winning_screen(sender: Sender<StackCommand>, lng: Lang) -> Self {
+        let mut main_message = graphics::Text::new(winning_text(lng));
         main_message.set_scale(70.);
-        let mut additional_text = graphics::Text::new(ADDITIONAL_INFO_STRING);
+        let mut additional_text = graphics::Text::new(additional_info_string(lng));
         additional_text.set_scale(70.);
-        let background = "Winningscreen".to_string();
-        let screentype = ScreenType::Winning;
+        let background = "Winningscreen";
+        let screen_type = ScreenType::Winning;
         Self {
             background,
             main_message,
             additional_text,
             sender,
-            screentype,
+            screen_type,
             background_image: None,
+            lng,
         }
     }
 }
@@ -120,7 +132,7 @@ impl Screen for InfoScreen {
     /// * `ctx` - The ggez context
     /// # Returns
     /// `RLResult` - Returns an `RLResult`.
-    fn update(&mut self, ctx: &mut Context) -> RLResult {
+    fn update(&mut self, ctx: &mut Context, lng: Lang) -> RLResult {
         if self.background_image.is_none() {
             self.background_image = Some(graphics::Image::from_bytes(
                 ctx,
@@ -129,11 +141,11 @@ impl Screen for InfoScreen {
         }
         let keys = ctx.keyboard.pressed_keys();
         // Here we only use the first pressed key, but in the infoscreen this is fine
-        match (self.screentype, keys.iter().next()) {
+        match (self.screen_type, keys.iter().next()) {
             (ScreenType::Intro, Some(&VirtualKeyCode::Space)) => {
                 self.sender.send(StackCommand::Pop)?;
                 self.sender.send(StackCommand::Push(Box::new({
-                    let mut gamestate = GameState::new(ctx)?;
+                    let mut gamestate = GameState::new(ctx, lng)?;
                     gamestate.init(ctx)?;
                     gamestate.create_machine();
                     gamestate
@@ -145,12 +157,13 @@ impl Screen for InfoScreen {
                 })))?;
             }
             (ScreenType::Death | ScreenType::Winning, Some(&VirtualKeyCode::Escape)) => {
-                if self.screentype == ScreenType::Winning {
+                if self.screen_type == ScreenType::Winning {
                     GameState::delete_saves()?;
                 }
                 self.sender.send(StackCommand::Pop)?;
                 self.sender.send(StackCommand::Push(Box::new(MainMenu::new(
                     self.sender.clone(),
+                    lng,
                 ))))?;
             }
             _ => {}
@@ -169,7 +182,7 @@ impl Screen for InfoScreen {
         if let Some(background) = &self.background_image {
             canvas.draw(background, graphics::DrawParam::default().scale(scale));
         }
-        if self.screentype == ScreenType::Intro {
+        if self.screen_type == ScreenType::Intro {
             draw!(canvas, &self.main_message, Vec2::new(300., 300.), scale);
         } else {
             draw!(canvas, &self.main_message, Vec2::new(220., 500.), scale);
@@ -184,5 +197,9 @@ impl Screen for InfoScreen {
 
     fn set_sender(&mut self, sender: Sender<StackCommand>) {
         self.sender = sender;
+    }
+
+    fn lang(&self) -> Lang {
+        self.lng
     }
 }
