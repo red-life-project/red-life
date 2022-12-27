@@ -22,7 +22,7 @@ pub trait Screen: Debug {
     /// * `ctx` - The ggez context
     /// # Returns
     /// `RLResult` - Returns an `RlResult`.
-    fn update(&mut self, ctx: &mut Context, lng: Lang) -> RLResult;
+    fn update(&mut self, ctx: &mut Context) -> RLResult;
     /// Used for drawing the screen.
     /// # Arguments
     /// * `ctx` - The ggez context
@@ -202,8 +202,7 @@ impl event::EventHandler<RLError> for ScreenStack {
     fn update(&mut self, ctx: &mut Context) -> RLResult {
         self.remove_popups();
         let screen = self.screens.last_mut().expect("Failed to get a screen");
-        let lng = screen.lang();
-        screen.update(ctx, lng)?;
+        screen.update(ctx)?;
         if let Ok(message) = self.receiver.try_recv() {
             self.process_command(message);
         }
@@ -237,7 +236,7 @@ impl ScreenStack {
     /// # Returns
     /// `Screen stack` - Returns a new `Screen stack`.
     pub fn new_with_lang(lng: Lang) -> Self {
-        info!("Default Screenstack created");
+        info!("Default Screen stack created");
         let (sender, receiver) = channel();
         Self {
             screens: vec![Box::new(MainMenu::new(sender.clone(), lng))],

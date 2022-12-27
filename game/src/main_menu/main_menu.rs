@@ -106,7 +106,8 @@ impl Screen for MainMenu {
     /// * `ctx` - The ggez context
     /// # Returns
     /// `RLResult` - Returns an `RLResult`.
-    fn update(&mut self, ctx: &mut Context, lng: Lang) -> RLResult {
+    fn update(&mut self, ctx: &mut Context) -> RLResult {
+        let lng = self.lng;
         let scale = get_scale(ctx);
         self.buttons.iter_mut().for_each(|btn| {
             btn.action(ctx, scale);

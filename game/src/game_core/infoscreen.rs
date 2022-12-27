@@ -132,7 +132,8 @@ impl Screen for InfoScreen {
     /// * `ctx` - The ggez context
     /// # Returns
     /// `RLResult` - Returns an `RLResult`.
-    fn update(&mut self, ctx: &mut Context, lng: Lang) -> RLResult {
+    fn update(&mut self, ctx: &mut Context) -> RLResult {
+        let lng = self.lng;
         if self.background_image.is_none() {
             self.background_image = Some(graphics::Image::from_bytes(
                 ctx,
@@ -140,7 +141,7 @@ impl Screen for InfoScreen {
             )?);
         }
         let keys = ctx.keyboard.pressed_keys();
-        // Here we only use the first pressed key, but in the infoscreen this is fine
+        // Here we only use the first pressed key, but in the info screen this is fine
         match (self.screen_type, keys.iter().next()) {
             (ScreenType::Intro, Some(&VirtualKeyCode::Space)) => {
                 self.sender.send(StackCommand::Pop)?;

@@ -561,7 +561,7 @@ impl GameState {
 
 impl Screen for GameState {
     /// Updates the game and handles input. Returns `StackCommand::Pop` when Escape is pressed.
-    fn update(&mut self, ctx: &mut Context, _lng: Lang) -> RLResult {
+    fn update(&mut self, ctx: &mut Context) -> RLResult {
         if ctx.time.check_update_time(DESIRED_FPS) {
             self.tick()?;
             self.move_player(ctx)?;
