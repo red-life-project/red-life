@@ -8,7 +8,7 @@ jobs:
   release:
     strategy:
       matrix:
-        os: [ windows-2019, ubuntu-latest ]
+        os: [ windows-2019, ubuntu-latest, macos-latest ]
         toolchain: [ nightly ]
     runs-on: ${{ matrix.os }}
     steps:
@@ -41,8 +41,8 @@ jobs:
         if : ${{ runner.os == 'Linux' }}
         run: strip target/release/game
 
-      - name: Copy binary Linux
-        if: ${{ runner.os == 'Linux' }}
+      - name: Copy binary Linux/MacOS
+        if: ${{ runner.os == 'Linux' || runner.os == 'macOS' }}
         run: cp target/release/game redlife
 
       - name: Copy binary Windows
@@ -65,11 +65,20 @@ jobs:
           recursive: false
           dest: game_linux.zip
 
+      - name: Zip Release MacOS
+        if: ${{ runner.os == 'MacOS' }}
+        uses: vimtor/action-zip@v1
+        with:
+          files: assets redlife
+          recursive: false
+          dest: game_mac.zip
+
       - name: Upload Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
             game_windows.zip
             game_linux.zip
+            game_mac.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
