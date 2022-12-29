@@ -136,7 +136,7 @@ impl Screen for MainMenu {
                         })))?;
                     } else {
                         self.screen_sender.send(StackCommand::Popup(Popup::warning(
-                            resume_error_string(lng).to_string(),
+                            resume_error_string(lng).into(),
                         )))?;
                     }
                 }

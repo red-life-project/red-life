@@ -6,7 +6,6 @@ use crate::languages::{machine_names, Lang};
 use crate::machines::machine::{Machine, State};
 use crate::machines::trade::Trade;
 use ggez::graphics::{Color, Rect};
-use std::string::ToString;
 
 /// Contains the screen resolution of the game.
 /// The game is designed to be played in 1920x1080.
@@ -52,8 +51,8 @@ pub(crate) fn gen_all_machines(lng: Lang) -> Vec<Machine> {
     vec![
         // Oxygen machine
         Machine::new_by_const((
-            machine_names(lng)[0].to_string(),
-            machine_names(Lang::De)[0].to_string(),
+            machine_names(lng)[0].into(),
+            machine_names(Lang::De)[0].into(),
             Rect {
                 x: 280.0,
                 y: 230.0,
@@ -62,7 +61,7 @@ pub(crate) fn gen_all_machines(lng: Lang) -> Vec<Machine> {
             },
             vec![
                 Trade::new(
-                    "repair_Oxygen".to_string(),
+                    "repair_Oxygen".into(),
                     100,
                     State::Broken,
                     State::Idle,
@@ -70,7 +69,7 @@ pub(crate) fn gen_all_machines(lng: Lang) -> Vec<Machine> {
                     gen_inventory(2, 0, 0, lng),
                 ),
                 Trade::new(
-                    "start_Oxygen".to_string(),
+                    "start_Oxygen".into(),
                     0,
                     State::Idle,
                     State::Running,
@@ -78,7 +77,7 @@ pub(crate) fn gen_all_machines(lng: Lang) -> Vec<Machine> {
                     gen_inventory(0, 0, 0, lng),
                 ),
                 Trade::new(
-                    "stop_Oxygen".to_string(),
+                    "stop_Oxygen".into(),
                     0,
                     State::Running,
                     State::Idle,
@@ -94,8 +93,8 @@ pub(crate) fn gen_all_machines(lng: Lang) -> Vec<Machine> {
         )),
         // Electricity machine
         Machine::new_by_const((
-            machine_names(lng)[1].to_string(),
-            machine_names(Lang::De)[1].to_string(),
+            machine_names(lng)[1].into(),
+            machine_names(Lang::De)[1].into(),
             Rect {
                 x: 282.0,
                 y: 752.0,
@@ -104,7 +103,7 @@ pub(crate) fn gen_all_machines(lng: Lang) -> Vec<Machine> {
             },
             vec![
                 Trade::new(
-                    "fueling_Stromgenerator".to_string(),
+                    "fueling_Stromgenerator".into(),
                     700,
                     State::Broken,
                     State::Running,
@@ -112,7 +111,7 @@ pub(crate) fn gen_all_machines(lng: Lang) -> Vec<Machine> {
                     gen_inventory(0, 1, 0, lng),
                 ),
                 Trade::new(
-                    "start_Stromgenerator".to_string(),
+                    "start_Stromgenerator".into(),
                     1,
                     State::Idle,
                     State::Running,
@@ -120,7 +119,7 @@ pub(crate) fn gen_all_machines(lng: Lang) -> Vec<Machine> {
                     gen_inventory(0, 0, 0, lng),
                 ),
                 Trade::new(
-                    "stop_Stromgenerator".to_string(),
+                    "stop_Stromgenerator".into(),
                     0,
                     State::Running,
                     State::Idle,
@@ -136,8 +135,8 @@ pub(crate) fn gen_all_machines(lng: Lang) -> Vec<Machine> {
         )),
         // Worker machine
         Machine::new_by_const((
-            machine_names(lng)[2].to_string(),
-            machine_names(Lang::De)[2].to_string(),
+            machine_names(lng)[2].into(),
+            machine_names(Lang::De)[2].into(),
             Rect {
                 x: 1000.0,
                 y: 780.0,
@@ -146,7 +145,7 @@ pub(crate) fn gen_all_machines(lng: Lang) -> Vec<Machine> {
             },
             vec![
                 Trade::new(
-                    "repair_werkermaschine".to_string(),
+                    "repair_werkermaschine".into(),
                     100,
                     State::Broken,
                     State::Idle,
@@ -154,7 +153,7 @@ pub(crate) fn gen_all_machines(lng: Lang) -> Vec<Machine> {
                     gen_inventory(0, 0, 1, lng),
                 ),
                 Trade::new(
-                    "produce_superglue".to_string(),
+                    "produce_superglue".into(),
                     120,
                     State::Idle,
                     State::Running,
@@ -170,8 +169,8 @@ pub(crate) fn gen_all_machines(lng: Lang) -> Vec<Machine> {
         )),
         // 3d Printer machine
         Machine::new_by_const((
-            machine_names(lng)[3].to_string(),
-            machine_names(Lang::De)[3].to_string(),
+            machine_names(lng)[3].into(),
+            machine_names(Lang::De)[3].into(),
             Rect {
                 x: 930.0,
                 y: 230.0,
@@ -180,7 +179,7 @@ pub(crate) fn gen_all_machines(lng: Lang) -> Vec<Machine> {
             },
             vec![
                 Trade::new(
-                    "repair_3d_printer".to_string(),
+                    "repair_3d_printer".into(),
                     300,
                     State::Broken,
                     State::Idle,
@@ -188,7 +187,7 @@ pub(crate) fn gen_all_machines(lng: Lang) -> Vec<Machine> {
                     gen_inventory(2, 0, 0, lng),
                 ),
                 Trade::new(
-                    "produce_3d_teil".to_string(),
+                    "produce_3d_teil".into(),
                     200,
                     State::Idle,
                     State::Running,
@@ -204,8 +203,8 @@ pub(crate) fn gen_all_machines(lng: Lang) -> Vec<Machine> {
         )),
         // Communication module
         Machine::new_by_const((
-            machine_names(lng)[4].to_string(),
-            machine_names(Lang::De)[4].to_string(),
+            machine_names(lng)[4].into(),
+            machine_names(Lang::De)[4].into(),
             Rect {
                 x: 1640.0,
                 y: 320.0,
@@ -214,7 +213,7 @@ pub(crate) fn gen_all_machines(lng: Lang) -> Vec<Machine> {
             },
             vec![
                 Trade::new(
-                    "Kommunikationsmodul_reparieren".to_string(),
+                    "Kommunikationsmodul_reparieren".into(),
                     400,
                     State::Broken,
                     State::Idle,
@@ -222,7 +221,7 @@ pub(crate) fn gen_all_machines(lng: Lang) -> Vec<Machine> {
                     gen_inventory(5, 0, 3, lng),
                 ),
                 Trade::new(
-                    "Notfall_signal_absetzen".to_string(),
+                    "Notfall_signal_absetzen".into(),
                     1000,
                     State::Idle,
                     State::Running,
@@ -238,8 +237,8 @@ pub(crate) fn gen_all_machines(lng: Lang) -> Vec<Machine> {
         )),
         // First hole
         Machine::new_by_const((
-            machine_names(lng)[5].to_string(),
-            machine_names(Lang::De)[5].to_string(),
+            machine_names(lng)[5].into(),
+            machine_names(Lang::De)[5].into(),
             Rect {
                 x: 780.0,
                 y: 230.0,
@@ -247,7 +246,7 @@ pub(crate) fn gen_all_machines(lng: Lang) -> Vec<Machine> {
                 h: 18.0,
             },
             vec![Trade::new(
-                "repair_Loch".to_string(),
+                "repair_Loch".into(),
                 100,
                 State::Running,
                 State::Idle,
@@ -262,8 +261,8 @@ pub(crate) fn gen_all_machines(lng: Lang) -> Vec<Machine> {
         )),
         // Second hole
         Machine::new_by_const((
-            machine_names(lng)[6].to_string(),
-            machine_names(Lang::De)[6].to_string(),
+            machine_names(lng)[6].into(),
+            machine_names(Lang::De)[6].into(),
             Rect {
                 x: 680.0,
                 y: 900.0,
@@ -271,7 +270,7 @@ pub(crate) fn gen_all_machines(lng: Lang) -> Vec<Machine> {
                 h: 18.0,
             },
             vec![Trade::new(
-                "repair_Loch".to_string(),
+                "repair_Loch".into(),
                 100,
                 State::Running,
                 State::Idle,

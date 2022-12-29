@@ -33,9 +33,7 @@ use ggez::conf::FullscreenType;
 use ggez::{event, Context};
 use std::fs::File;
 use std::sync::Mutex;
-use tracing::info;
-use tracing_subscriber::layer::SubscriberExt;
-use tracing_subscriber::util::SubscriberInitExt;
+use tracing::{info, Level};
 
 /// Our own Result Type for custom Error handling.
 pub type RLResult<T = ()> = Result<T, error::RLError>;
@@ -57,17 +55,12 @@ pub fn main() -> RLResult {
     }
     let filename = format!("logs/RL-{}.log", Local::now().format("%Y-%m-%d_%H-%M-%S"));
     let log_file = File::create(filename)?;
-    let log_file = tracing_subscriber::fmt::layer()
+    let subscriber = tracing_subscriber::fmt()
+        .with_max_level(Level::TRACE)
         .with_writer(Mutex::new(log_file))
-        .with_ansi(false);
-
-    tracing_subscriber::registry()
-        .with(tracing_subscriber::EnvFilter::from_default_env())
-        .with(log_file)
-        .with(tracing_subscriber::fmt::layer())
-        .init();
-
-    // tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
+        .with_ansi(false)
+        .finish();
+    tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
     // End logging
     info!("Starting Red Life");
     let (mut ctx, event_loop) = cb.build()?;

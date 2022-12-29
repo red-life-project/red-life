@@ -130,13 +130,13 @@ impl Player {
 /// * `gedrucktesteil` - The amount of the printed part
 pub fn gen_inventory(
     super_glue_amount: i32,
-    benzin_amount: i32,
+    petrol_amount: i32,
     printed_parts_amount: i32,
     lng: Lang,
 ) -> Vec<(Item, i32)> {
     vec![
         (Item::new(*super_glue(lng)), super_glue_amount),
-        (Item::new(*petrol(lng)), benzin_amount),
+        (Item::new(*petrol(lng)), petrol_amount),
         (Item::new(*printed_part(lng)), printed_parts_amount),
     ]
 }
@@ -149,7 +149,7 @@ mod test {
     use std::sync::mpsc::{channel, Receiver};
 
     fn setup_gamestate() -> (GameState, Receiver<StackCommand>) {
-        let mut gamestate = GameState::default();
+        let mut gamestate = GameState::new_with_lang(Lang::De);
         let channel = channel();
         gamestate.set_sender(channel.0);
         (gamestate, channel.1)
@@ -157,12 +157,12 @@ mod test {
     #[test]
     fn test_case_one_life_regeneration() {
         let (mut gamestate, _) = setup_gamestate();
-        let mut player = Player::default();
+        let mut player = Player::new(Lang::De);
         player.resources.life = u16::MAX;
         player.resources_change.life = 5;
         player.last_damage = 1000;
         player
-            .life_regeneration(&gamestate.get_screen_sender().unwrap().clone())
+            .life_regeneration(&gamestate.get_screen_sender().unwrap().clone(), Lang::De)
             .unwrap();
         assert_eq!(player.resources_change.life, 0);
         assert_eq!(player.last_damage, 0);
@@ -171,12 +171,12 @@ mod test {
     #[test]
     fn test_case_two_life_regeneration() {
         let (mut gamestate, _) = setup_gamestate();
-        let mut player = Player::default();
+        let mut player = Player::new(Lang::De);
         player.resources.life = 1000;
         player.resources_change.life = 5;
         player.last_damage = 1000;
         player
-            .life_regeneration(&gamestate.get_screen_sender().unwrap().clone())
+            .life_regeneration(&gamestate.get_screen_sender().unwrap().clone(), Lang::De)
             .unwrap();
         assert_eq!(player.last_damage, 0);
     }
@@ -184,12 +184,12 @@ mod test {
     #[test]
     fn test_case_three_life_regeneration() {
         let (mut gamestate, _receiver) = setup_gamestate();
-        let mut player = Player::default();
+        let mut player = Player::new(Lang::De);
         player.resources.life = 1000;
         player.resources_change.life = 0;
         player.last_damage = 900;
         player
-            .life_regeneration(&gamestate.get_screen_sender().unwrap().clone())
+            .life_regeneration(&gamestate.get_screen_sender().unwrap().clone(), Lang::De)
             .unwrap();
         assert_eq!(player.resources_change.life, 5);
         assert_eq!(player.last_damage, 0);
@@ -198,12 +198,12 @@ mod test {
     #[test]
     fn test_case_four_life_regeneration() {
         let (mut gamestate, _) = setup_gamestate();
-        let mut player = Player::default();
+        let mut player = Player::new(Lang::De);
         player.resources.life = 20000;
         player.last_damage = 400;
         player.resources_change.life = 0;
         player
-            .life_regeneration(&gamestate.get_screen_sender().unwrap().clone())
+            .life_regeneration(&gamestate.get_screen_sender().unwrap().clone(), Lang::De)
             .unwrap();
         assert_eq!(player.resources_change.life, 0);
         assert_eq!(player.last_damage, 401);
@@ -220,7 +220,7 @@ mod test {
                 life: -1,
                 ..Default::default()
             },
-            ..Player::default()
+            ..Player::new(Lang::De)
         };
         player
             .life_regeneration(&gamestate.get_screen_sender().unwrap().clone(), Lang::De)

@@ -25,6 +25,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
 use std::fs::read_dir;
+use std::path::{Path, PathBuf};
 use std::sync::mpsc::{channel, Receiver, Sender};
 use tracing::info;
 
@@ -48,7 +49,7 @@ pub struct GameState {
     /// Contains all the images that are needed to draw the game on the canvas
     assets: HashMap<String, Image>,
     #[serde(skip)]
-    /// Needed to send Messages to the `Screen stack` to make changes to the screen
+    /// Needed to send Messages to the `Screenstack` to make changes to the screen
     pub(crate) screen_sender: Option<Sender<StackCommand>>,
     #[serde(skip)]
     /// Needed to receive Messages from `machine` to make changes to the game
@@ -71,7 +72,7 @@ impl PartialEq for GameState {
 
 impl GameState {
     pub fn new_with_lang(lng: Lang) -> Self {
-        let state = Self {
+        Self {
             player: Player::new(lng),
             events: vec![],
             machines: vec![],
@@ -81,8 +82,7 @@ impl GameState {
             sender: None,
             handbook_invisible: false,
             lng,
-        };
-        state
+        }
     }
 
     /// Gets the screen sender
@@ -107,7 +107,7 @@ impl GameState {
     /// # Returns
     /// * `RLResult<GameState>`: The new game state initialized in a `RLResult` to handle setup errors
     pub fn new(ctx: &mut Context, lng: Lang) -> RLResult<Self> {
-        info!("Creating new game state");
+        info!("Creating new gamestate");
         let (sender, receiver) = channel();
         let mut result = GameState {
             player: Player::new(lng),
@@ -415,18 +415,25 @@ impl GameState {
     /// # Returns
     /// * `RLResult` - validates if the save was successful
     pub(crate) fn save(&self, milestone: bool) -> RLResult {
+        self.save_with_root(milestone, ".".into())
+    }
+
+    pub(crate) fn save_with_root(&self, milestone: bool, root: PathBuf) -> RLResult {
         let save_data = serde_yaml::to_string(self)?;
+        let root = root.join("saves");
+
         // Create the folder if it doesn't exist
-        fs::create_dir_all("./saves")?;
+        fs::create_dir_all(&root)?;
         if milestone {
-            fs::write("./saves/milestone.yaml", save_data)?;
+            fs::write(root.join("milestone.yaml"), save_data)?;
             info!("Saved game state as milestone");
         } else {
-            fs::write("./saves/autosave.yaml", save_data)?;
+            fs::write(root.join("autosave.yaml"), save_data)?;
             info!("Saved game state as autosave");
         }
         Ok(())
     }
+
     /// Loads a game state from a file. The boolean value "milestone" determines whether this is a milestone or an autosave.
     /// If the file doesn't exist, it will return a default game state.
     /// # Arguments
@@ -434,17 +441,22 @@ impl GameState {
     /// # Returns
     /// * `RLResult<Gamestate>` containing the loaded game state or a default game state if the file doesn't exist.
     pub fn load(milestone: bool) -> RLResult<GameState> {
+        Self::load_from_dir(milestone, Path::new(".").to_path_buf())
+    }
+
+    fn load_from_dir(milestone: bool, root: PathBuf) -> RLResult<GameState> {
         let save_data = if milestone {
             info!("Loading milestone...");
-            fs::read_to_string("./saves/milestone.yaml")
+            fs::read_to_string(root.join("saves/milestone.yaml"))
         } else {
             info!("Loading autosave...");
-            fs::read_to_string("./saves/autosave.yaml")
+            fs::read_to_string(root.join("saves/autosave.yaml"))
         }?;
         let game_state: GameState = serde_yaml::from_str(&save_data)?;
 
         Ok(game_state)
     }
+
     /// Returns the area the player needs to stand in to interact with a machine
     /// # Returns
     /// * `Option<&mut Machine>` - The machines the player can interact with if one exists or None
@@ -524,8 +536,8 @@ impl GameState {
             }
             1 => {
                 if self.check_on_milestone_machines(&[
-                    machine_names(self.lng)[0].to_string(),
-                    machine_names(self.lng)[1].to_string(),
+                    machine_names(lng)[0].to_string(),
+                    machine_names(lng)[1].to_string(),
                 ]) {
                     self.increase_milestone()?;
                 }
@@ -640,31 +652,51 @@ mod test {
 
     #[test]
     fn test_gamestate() {
-        let _gamestate = GameState::default();
+        let _gamestate = GameState::new_with_lang(Lang::De);
     }
 
     #[test]
     fn test_save_autosave() {
-        let gamestate = GameState::default();
-        gamestate.save(false).unwrap();
+        let tmp = tempdir::TempDir::new("test_save_autosave")
+            .unwrap()
+            .path()
+            .to_path_buf();
+        let gamestate = GameState::new_with_lang(Lang::De);
+        gamestate.save_with_root(false, tmp).unwrap();
     }
 
     #[test]
     fn test_save_milestone() {
-        let gamestate = GameState::default();
-        gamestate.save(true).unwrap();
+        let tmp = tempdir::TempDir::new("test_save_milestone")
+            .unwrap()
+            .path()
+            .to_path_buf();
+        let gamestate = GameState::new_with_lang(Lang::De);
+        gamestate.save_with_root(true, tmp).unwrap();
     }
 
     #[test]
     fn test_load_autosave() {
-        GameState::default().save(false).unwrap();
-        let _gamestate_loaded = GameState::load(false).unwrap();
+        let tmp = tempdir::TempDir::new("test_load_autosave")
+            .unwrap()
+            .path()
+            .to_path_buf();
+        GameState::new_with_lang(Lang::De)
+            .save_with_root(false, tmp.clone())
+            .unwrap();
+        let _gamestate_loaded = GameState::load_from_dir(false, tmp).unwrap();
     }
 
     #[test]
     fn test_load_milestone() {
-        GameState::default().save(true).unwrap();
-        let _gamestate_loaded = GameState::load(true).unwrap();
+        let tmp = tempdir::TempDir::new("test_load_milestone")
+            .unwrap()
+            .path()
+            .to_path_buf();
+        GameState::new_with_lang(Lang::De)
+            .save_with_root(true, tmp.clone())
+            .unwrap();
+        let _gamestate_loaded = GameState::load_from_dir(true, tmp.to_path_buf()).unwrap();
     }
 
     #[test]
