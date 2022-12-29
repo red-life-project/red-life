@@ -2,7 +2,7 @@
 use crate::backend::constants::{ObjectId, TradeId, PLAYER_INTERACTION_RADIUS};
 use crate::backend::gamestate::GameCommand;
 use crate::backend::rlcolor::RLColor;
-use crate::backend::screen::{Popup, StackCommand};
+use crate::backend::screen::{Popup, ScreenCommand, StackCommand};
 use crate::backend::utils::is_colliding;
 use crate::game_core::item::Item;
 use crate::game_core::player::Player;
@@ -219,7 +219,7 @@ impl Machine {
             self.screen_sender
                 .as_ref()
                 .unwrap()
-                .send(StackCommand::Popup(popup))?;
+                .send(StackCommand::Screen(ScreenCommand::Popup(popup)))?;
             return Ok(());
         }
 

@@ -1,6 +1,6 @@
 use crate::backend::constants::DESIRED_FPS;
 use crate::backend::rlcolor::RLColor;
-use crate::backend::screen::{Popup, StackCommand};
+use crate::backend::screen::{Popup, ScreenCommand, StackCommand};
 use crate::game_core::item::Item;
 use crate::game_core::resources::Resources;
 use crate::languages::{game_info, petrol, printed_part, super_glue, Lang};
@@ -86,7 +86,7 @@ impl Player {
                 self.last_damage = 0;
                 let popup = Popup::new(RLColor::GREEN, game_info(lng)[0].to_string(), 5);
                 info!("Player started healing");
-                sender.send(StackCommand::Popup(popup))?;
+                sender.send(StackCommand::Screen(ScreenCommand::Popup(popup)))?;
             }
             // If player takes damage, increase last damage point
             (change_life, _, _) if change_life < 0 => self.last_damage = 0,

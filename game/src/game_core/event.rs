@@ -1,6 +1,6 @@
 use crate::backend::constants::{ObjectId, PopupType, DESIRED_FPS, SANDSTORM_CR};
 use crate::backend::gamestate::GameState;
-use crate::backend::screen::{Popup, StackCommand};
+use crate::backend::screen::{Popup, ScreenCommand, StackCommand};
 use crate::game_core::resources::Resources;
 use crate::languages::{
     comet_strike, informations_popup_mars, informations_popup_nasa, mars_info, nasa_info,
@@ -120,7 +120,7 @@ impl Event {
             PopupType::Mars => Popup::mars(popup_message.to_string()),
             // _ => Popup::new(Color::RED, "Error".to_string(), 10),
         };
-        sender.send(StackCommand::Popup(popup))?;
+        sender.send(StackCommand::Screen(ScreenCommand::Popup(popup)))?;
         info!(
             "Event Popup sent: name: {}, Popup-Message: {}, Popup-Type: {:?}",
             event_name,

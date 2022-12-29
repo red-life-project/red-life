@@ -7,7 +7,7 @@ use crate::backend::{
 use crate::main_menu::button::Button;
 use crate::RLResult;
 
-use crate::backend::screen::Popup;
+use crate::backend::screen::{Popup, ScreenCommand};
 use crate::game_core::infoscreen::InfoScreen;
 use crate::languages::{button_text, resume_error_string, Lang};
 use ggez::{graphics, Context};
@@ -124,20 +124,23 @@ impl Screen for MainMenu {
                 Message::NewGame => {
                     GameState::delete_saves()?;
                     let cloned_sender = self.screen_sender.clone();
-                    self.screen_sender.send(StackCommand::Push(Box::new(
-                        InfoScreen::new_intro_screen(cloned_sender, lng),
-                    )))?;
+                    self.screen_sender
+                        .send(StackCommand::Screen(ScreenCommand::Push(Box::new(
+                            InfoScreen::new_intro_screen(cloned_sender, lng),
+                        ))))?;
                 }
                 Message::Resume => {
                     if let Ok(mut gamestate) = GameState::load(false) {
-                        self.screen_sender.send(StackCommand::Push(Box::new({
-                            gamestate.init(ctx)?;
-                            gamestate
-                        })))?;
+                        self.screen_sender
+                            .send(StackCommand::Screen(ScreenCommand::Push(Box::new({
+                                gamestate.init(ctx)?;
+                                gamestate
+                            }))))?;
                     } else {
-                        self.screen_sender.send(StackCommand::Popup(Popup::warning(
-                            resume_error_string(lng).into(),
-                        )))?;
+                        self.screen_sender
+                            .send(StackCommand::Screen(ScreenCommand::Popup(Popup::warning(
+                                resume_error_string(lng).into(),
+                            ))))?;
                     }
                 }
                 Message::ChangeLanguage => {
