@@ -30,7 +30,7 @@ use std::fs;
 use std::fs::read_dir;
 use std::path::Path;
 use std::sync::mpsc::{channel, Receiver, Sender};
-use tracing::info;
+use tracing::{debug, info};
 
 pub enum GameCommand {
     AddItems(Vec<(Item, i32)>),
@@ -359,11 +359,14 @@ impl GameState {
     pub(crate) fn init(&mut self, ctx: &mut Context) -> RLResult {
         info!("Loading assets");
         read_dir("assets")?.for_each(|file| {
+            debug!("Loading asset: {:?}", file);
             let file = file.unwrap();
-            let bytes = fs::read(file.path()).unwrap();
-            let name = file.file_name().into_string().unwrap();
-            self.assets
-                .insert(name, Image::from_bytes(ctx, bytes.as_slice()).unwrap());
+            if file.file_name().to_str().unwrap().ends_with(".png") {
+                let bytes = fs::read(file.path()).unwrap();
+                let name = file.file_name().into_string().unwrap();
+                self.assets
+                    .insert(name, Image::from_bytes(ctx, bytes.as_slice()).unwrap());
+            }
         });
 
         if self.assets.is_empty() {
