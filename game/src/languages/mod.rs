@@ -58,7 +58,7 @@ t!(time_name, 1, TIME_NAME);
 t!(informations_popup_mars, 2, INFORMATIONS_POPUP_MARS);
 t!(informations_popup_nasa, 2, INFORMATIONS_POPUP_NASA);
 t!(sandstorm, 2, SANDSTORM);
-t!(cometa_strike, 2, COMETA_STRIKE);
+t!(comet_strike, 2, COMET_STRIKE);
 t!(power_failure, 2, POWER_FAILURE);
 t!(resource_name, 3, RESOURCE_NAME);
 

@@ -68,7 +68,7 @@ pub const BUTTON_INFO: &str = "Bitte drücke die Leertaste!";
 pub const WINNING_TEXT: &str = "Du wurdest gerettet!";
 
 /// Constants for the events that can occur.
-pub const COMETA_STRIKE: [&str; 2] = [
+pub const COMET_STRIKE: [&str; 2] = [
     "KOMETENEINSCHLAG",
     "Ein KOMETENEINSCHLAG hat die Erde getroffen und hat ein Loch in der Wand erzeugt",
 ];

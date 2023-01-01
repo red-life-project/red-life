@@ -39,6 +39,7 @@ pub trait Screen: Debug {
 
 /// A Screenstack contains multiple `Screen`s and `Popup`s, the last one of which is drawn to the screen and
 /// updated.
+#[allow(clippy::module_name_repetitions)]
 pub struct ScreenStack {
     screens: Vec<Box<dyn Screen>>,
     popup: Vec<Popup>,

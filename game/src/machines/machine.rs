@@ -1,5 +1,5 @@
 //! This File handels everything about Machine
-use crate::backend::constants::PLAYER_INTERACTION_RADIUS;
+use crate::backend::constants::{ObjectId, TradeId, PLAYER_INTERACTION_RADIUS};
 use crate::backend::gamestate::GameCommand;
 use crate::backend::rlcolor::RLColor;
 use crate::backend::screen::{Popup, StackCommand};
@@ -7,7 +7,7 @@ use crate::backend::utils::is_colliding;
 use crate::game_core::item::Item;
 use crate::game_core::player::Player;
 use crate::game_core::resources::Resources;
-use crate::languages::*;
+use crate::languages::{trade_conflict_popup, Lang};
 use crate::machines::machine::State::{Broken, Idle, Running};
 use crate::machines::machine_sprite::MachineSprite;
 use crate::machines::trade::Trade;
@@ -50,8 +50,8 @@ impl From<State> for Color {
 /// we can reuse the same code for it
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Machine {
-    /// The name of the machine is used as a reference on which assets to load
-    pub name: String,
+    /// Information about machine type
+    pub id: ObjectId,
     /// Contains the current state
     pub state: State,
     /// The hitbox is the area the player is prevented from walking into
@@ -77,7 +77,6 @@ pub struct Machine {
     #[serde(skip)]
     /// Needed to send Messages to the `Screenstack` to make changes to the screen
     screen_sender: Option<Sender<StackCommand>>,
-    asset_name: String,
 }
 
 impl Machine {
@@ -90,15 +89,14 @@ impl Machine {
     /// # Returns
     /// * 'Machine'
     fn new(
-        name: String,
-        asset_name: String,
+        id: ObjectId,
         hit_box: Rect,
         trades: Vec<Trade>,
         running_resources: Resources<i16>,
     ) -> Self {
-        info!("Creating new machine: name: {}", name);
+        info!("Creating new machine: name: {:?}", id);
         Self {
-            name,
+            id,
             hitbox: hit_box,
             interaction_area: Rect {
                 x: hit_box.x - PLAYER_INTERACTION_RADIUS,
@@ -115,29 +113,18 @@ impl Machine {
             time_change: 0,
             sender: None,
             screen_sender: None,
-            asset_name,
         }
-    }
-
-    pub fn asset_name(&self) -> &str {
-        &self.asset_name
     }
 
     /// Alternative new constructor for the machine using one parameter Tupel
     /// # Arguments
-    /// * `(name, hit_box, trades, running_resources)` - Tupel containing the same arguments as `new()`
+    /// * `(name, hit_box, trades, running_resources)` - Tuple containing the same arguments as `new()`
     /// # Returns
     /// * 'Machine'
     pub(crate) fn new_by_const(
-        (name, asset_name, hit_box, trades, running_resources): (
-            String,
-            String,
-            Rect,
-            Vec<Trade>,
-            Resources<i16>,
-        ),
+        (id, hit_box, trades, running_resources): (ObjectId, Rect, Vec<Trade>, Resources<i16>),
     ) -> Self {
-        Self::new(name, asset_name, hit_box, trades, running_resources)
+        Self::new(id, hit_box, trades, running_resources)
     }
 
     /// initialises the Maschine with the data that is not Serialize
@@ -155,9 +142,9 @@ impl Machine {
         self.sprite = Some(images.into());
         self.sender = Some(sender);
         self.screen_sender = Some(screen_sender);
-        if self.name == "Loch" {
+        if self.id.is_hole() {
             // Constant (pos of hole)
-            if self.hitbox.x == 780. {
+            if (self.hitbox.x - 780.).abs() < f32::EPSILON {
                 self.change_state_to(&Running);
             } else {
                 self.change_state_to(&Idle);
@@ -193,7 +180,7 @@ impl Machine {
         is_colliding(pos, &self.interaction_area)
     }
 
-    /// Handel's the interaction of the Maschine and the player
+    /// Handel's the interaction of the Machine and the player
     /// # Arguments
     /// * `player` - of type `& Player` is a reference to the player
     pub(crate) fn interact(&mut self, player: &Player, lng: Lang) -> RLResult {
@@ -203,12 +190,12 @@ impl Machine {
             None => return Ok(()),
         };
 
-        if trade.name == *"no_Trade" {
+        if trade.id == TradeId::NoTrade {
             return Ok(());
         }
+
         // Check if the player has energy (and its needed)
-        if player.resources.energy == 0 && self.running_resources.energy < 0 && self.name != "Loch"
-        {
+        if player.resources.energy == 0 && self.running_resources.energy < 0 && self.id.is_hole() {
             return Ok(());
         }
         // dif = the different between items the player has and the cost of the trade
@@ -237,7 +224,7 @@ impl Machine {
         }
 
         // At this point all checks have passed and continue with executing the trade
-        info!("Executing trade:{} ", trade.name);
+        info!("Executing trade: {:?} ", trade.id);
 
         // Remove the cost of the trade from the players inventory by sending the demand to the AddItem GameCommand
         let items_cost = trade
@@ -283,7 +270,7 @@ impl Machine {
 
             if self.last_trade.return_after_timer {
                 // handel edge case for wining the game
-                if self.last_trade.name == "Notfall_signal_absetzen" {
+                if self.last_trade.id == TradeId::EmergencySignalOff {
                     return Ok(self.sender.as_ref().unwrap().send(GameCommand::Winning)?);
                 }
                 self.change_state_to(&self.last_trade.initial_state.clone());
@@ -320,7 +307,7 @@ impl Machine {
     }
     /// A helper funktion to disable every funktion in case there is no energy in the system
     pub(crate) fn no_energy(&mut self) {
-        if self.running_resources.energy < 0 && self.name != "Loch" {
+        if self.running_resources.energy < 0 && !self.id.is_hole() {
             // If there is no energy available but this machine needs some, stop this machine.
             if self.state == Running {
                 self.change_state_to(&Idle);

@@ -3,7 +3,7 @@ use crate::backend::rlcolor::RLColor;
 use crate::backend::screen::{Popup, StackCommand};
 use crate::game_core::item::Item;
 use crate::game_core::resources::Resources;
-use crate::languages::*;
+use crate::languages::{game_info, petrol, printed_part, super_glue, Lang};
 use crate::RLResult;
 use serde::{Deserialize, Serialize};
 use std::sync::mpsc::Sender;

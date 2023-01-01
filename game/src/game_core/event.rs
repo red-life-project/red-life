@@ -1,11 +1,13 @@
-use crate::backend::constants::{DESIRED_FPS, SANDSTURM_CR};
+use crate::backend::constants::{ObjectId, PopupType, DESIRED_FPS, SANDSTORM_CR};
 use crate::backend::gamestate::GameState;
 use crate::backend::screen::{Popup, StackCommand};
 use crate::game_core::resources::Resources;
-use crate::languages::*;
+use crate::languages::{
+    comet_strike, informations_popup_mars, informations_popup_nasa, mars_info, nasa_info,
+    power_failure, sandstorm, warnings, Lang,
+};
 use crate::machines::machine::State;
 use crate::RLResult;
-use ggez::graphics::Color;
 use ggez::Context;
 use serde::{Deserialize, Serialize};
 use std::sync::mpsc::Sender;
@@ -22,7 +24,7 @@ pub(crate) struct Event {
     info_text: String,
     pub(crate) resources: Option<Resources<i16>>,
     duration: u32,
-    popup_type: String,
+    popup_type: PopupType,
     popup_message: String,
 }
 
@@ -37,7 +39,7 @@ impl Event {
     pub fn new(
         event: [&str; 2],
         popup_message: &str,
-        popup_type: &str,
+        popup_type: PopupType,
         resources: Option<Resources<i16>>,
         duration: u32,
     ) -> Self {
@@ -51,48 +53,48 @@ impl Event {
             info_text: event[1].to_string(),
             resources,
             duration: duration * DESIRED_FPS,
-            popup_type: popup_type.to_string(),
+            popup_type,
             popup_message: popup_message.to_string(),
         }
     }
 
     /// if no Event is active it either chooses a random event of the Event enum or nothing every 60 seconds
+    #[allow(clippy::pedantic)]
     pub fn event_generator(lng: Lang) -> Option<Event> {
         let rng = fastrand::Rng::new();
-        let event = rng.usize(..15);
-        match event {
+        match rng.usize(..15) {
             8 => Some(Event::new(
                 *sandstorm(lng),
                 warnings(lng)[2],
-                "warning",
-                Some(SANDSTURM_CR),
+                PopupType::Warning,
+                Some(SANDSTORM_CR),
                 5,
             )),
             0 | 3 => Some(Event::new(
-                *cometa_strike(lng),
+                *comet_strike(lng),
                 warnings(lng)[0],
-                "warning",
+                PopupType::Warning,
                 None,
                 0,
             )),
             1 => Some(Event::new(
                 *informations_popup_nasa(lng),
                 nasa_info(lng)[rng.usize(..4)],
-                "nasa",
+                PopupType::Nasa,
                 None,
                 0,
             )),
             2 | 9 | 7 => Some(Event::new(
                 *power_failure(lng),
                 warnings(lng)[1],
-                "warning",
+                PopupType::Warning,
                 None,
                 0,
             )),
             4 => Some(Event::new(
                 *informations_popup_mars(lng),
                 mars_info(lng)[rng.usize(..5)],
-                "mars",
+                PopupType::Mars,
                 None,
                 0,
             )),
@@ -109,18 +111,18 @@ impl Event {
     pub fn send_popup(
         popup_message: &str,
         sender: &Sender<StackCommand>,
-        popup_type: &str,
+        popup_type: PopupType,
         event_name: &str,
     ) -> RLResult {
         let popup = match popup_type {
-            "warning" => Popup::warning(popup_message.to_string()),
-            "nasa" => Popup::nasa(popup_message.to_string()),
-            "mars" => Popup::mars(popup_message.to_string()),
-            _ => Popup::new(Color::RED, "Error".to_string(), 10),
+            PopupType::Warning => Popup::warning(popup_message.to_string()),
+            PopupType::Nasa => Popup::nasa(popup_message.to_string()),
+            PopupType::Mars => Popup::mars(popup_message.to_string()),
+            // _ => Popup::new(Color::RED, "Error".to_string(), 10),
         };
         sender.send(StackCommand::Popup(popup))?;
         info!(
-            "Event Popup sent: name: {}, Popup-Message: {}, Popup-Type: {}",
+            "Event Popup sent: name: {}, Popup-Message: {}, Popup-Type: {:?}",
             event_name,
             popup_message.to_string(),
             popup_type
@@ -139,20 +141,20 @@ impl Event {
     /// * `gamestate` - The gamestate which is used to access the player and the machines
     pub fn action(&self, restore: bool, gamestate: &mut GameState) -> RLResult {
         let lng = gamestate.lng;
-        let cometa_strike: &str = cometa_strike(lng)[0];
+        let comet_strike: &str = comet_strike(lng)[0];
         let power_failure: &str = power_failure(lng)[0];
         let sender = gamestate.get_screen_sender()?.clone();
 
         // handle event effects
         match self.name.as_str() {
-            s if cometa_strike == s => {
+            s if comet_strike == s => {
                 if let Some(one_hole) = gamestate
                     .machines
                     .iter_mut()
-                    .find(|machine| machine.name == "Loch" && machine.state != State::Running)
+                    .find(|machine| machine.id.is_hole() && machine.state != State::Running)
                 {
                     // event not triggered if both machine are already running
-                    Event::send_popup(&self.popup_message, &sender, &self.popup_type, &self.name)
+                    Event::send_popup(&self.popup_message, &sender, self.popup_type, &self.name)
                         .unwrap();
                     one_hole.change_state_to(&State::Running);
                 }
@@ -161,11 +163,11 @@ impl Event {
                 gamestate.machines.iter_mut().for_each(|machine| {
                     // if machine is running it will b use tracing::{info, Id};e stopped
                     // event not triggered if machine is broken or idling
-                    if machine.name == "Stromgenerator" && machine.state == State::Running {
+                    if machine.id == ObjectId::PowerGenerator && machine.state == State::Running {
                         Event::send_popup(
                             &self.popup_message,
                             &sender,
-                            &self.popup_type,
+                            self.popup_type,
                             &self.name,
                         )
                         .unwrap();
@@ -175,7 +177,7 @@ impl Event {
             }
             // apply direct resource changes if there are any and the event is not handled above
             _ => {
-                Event::send_popup(&self.popup_message, &sender, &self.popup_type, &self.name)?;
+                Event::send_popup(&self.popup_message, &sender, self.popup_type, &self.name)?;
                 if let Some(resources) = self.resources {
                     if restore {
                         gamestate.player.resources_change =

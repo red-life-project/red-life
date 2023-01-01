@@ -1,4 +1,5 @@
 //! This File contains the structure `Trade`
+use crate::backend::constants::TradeId;
 use crate::game_core::item::Item;
 use crate::machines::machine::State;
 use serde::{Deserialize, Serialize};
@@ -8,8 +9,9 @@ use serde::{Deserialize, Serialize};
 /// This means that repairing, starting or pausing a machine are all trades
 /// Trade itself does not contain any logic and is mostly a construct to group values
 pub struct Trade {
-    /// is used for debugging and login purposes
-    pub(crate) name: String,
+    pub id: TradeId,
+    // /// is used for debugging and login purposes
+    // pub(crate) name: String,
     /// the time it takes for the trade to conclude 0 = instant
     pub time_ticks: i16,
     /// the Machine needs to be in `initial_state` for the trade to be accessible
@@ -32,7 +34,7 @@ impl Default for Trade {
     /// default values have no meaning and should never be checked on
     fn default() -> Self {
         Self {
-            name: "no_Trade".to_string(),
+            id: TradeId::NoTrade,
             time_ticks: 0,
             initial_state: State::Broken,
             resulting_state: State::Running,
@@ -45,7 +47,7 @@ impl Default for Trade {
 impl Trade {
     ///initialises a new Trade using values passed in
     pub fn new(
-        name: String,
+        id: TradeId,
         time_ticks: i16,
         initial_state: State,
         resulting_state: State,
@@ -53,7 +55,7 @@ impl Trade {
         cost: Vec<(Item, i32)>,
     ) -> Self {
         Self {
-            name,
+            id,
             time_ticks,
             initial_state,
             resulting_state,

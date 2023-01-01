@@ -46,7 +46,7 @@ pub const NASA_INFO: [&str; 5] = [
     " NASA has over 17,000 employees",
 ];
 /// The text for the game-info-`Popup`s that appears in the top left corner.
-pub const GAME_INFO: [&'static str; 1] = ["Life regeneration started"];
+pub const GAME_INFO: [&str; 1] = ["Life regeneration started"];
 
 /// Constants for all strings used in deathscreen
 pub const AIR_STRING: &str = "too little air";
@@ -57,9 +57,10 @@ pub const ADDITIONAL_INFO_STRING: &str = "Please press ESC!";
 pub const RESUME_ERROR_STRING: &str = "You need a score first";
 
 /// Constant for all strings used in `IntroScreen`
-pub const INTRO_TEXT: &str =
-    "You are stranded on Mars and must survive.\nTo do that, you must restore \
-Hopefully, you will be able to repair the communications so you can be rescued.";
+pub const INTRO_TEXT: &str = "You are stranded on Mars and you have to survive.
+To do that, you need to restore oxygen production.
+Hopefully, you'll be able to repair communications, 
+so that you can be rescued.";
 
 pub const TUTORIAL_TEXT: &str =
     "Move around with WASD. Interact with E.\nFor reference, you have your manual on H.";
@@ -71,16 +72,16 @@ pub const BUTTON_INFO: &str = "Please press the space bar!";
 pub const WINNING_TEXT: &str = "You've been saved!";
 
 /// Constants for the events that can occur.
-pub const COMETA_STRIKE: [&str; 2] = [
-    "COMETA STRIKE",
-    "A cometa strike has hit the earth and created a hole in the wall",
+pub const COMET_STRIKE: [&str; 2] = [
+    "COMET STRIKE",
+    "A comet strike has hit the earth and created a hole in the wall",
 ];
 pub const SANDSTORM: [&str; 2] = [
-    "Sandsturm",
+    "Sandstorm",
     "A sandstorm, which leads to a malfunction of the oxygen generator",
 ];
 pub const INFORMATIONS_POPUP_NASA: [&str; 2] = [
-    "InformationspopupNASA",
+    "Informations popup NASA",
     "An information pop-up about NASA containing facts and information about NASA",
 ];
 pub const POWER_FAILURE: [&str; 2] = [
@@ -88,16 +89,19 @@ pub const POWER_FAILURE: [&str; 2] = [
     "A power failure resulting in a malfunction of the oxygen generator",
 ];
 pub const INFORMATIONS_POPUP_MARS: [&str; 2] = [
-    "InformationspopupMars",
+    "Informations popup Mars",
     "An information popup about Mars containing facts and information about Mars",
 ];
 /// Constants for the trade conflict.
 pub const TRADE_CONFLICT_POPUP: [&str; 1] =
     ["The following items are missing to execute the trade:"];
+
 /// Constants for the `time_name`.
 pub const TIME_NAME: [&str; 1] = ["Time"];
+
 /// Constants for the text of the button in the main menu
 pub const BUTTON_TEXT: [&str; 4] = ["Continue", "New Game", "Exit", "German"];
+
 /// Contains all machine names as a vec of strings.
 pub(crate) const MACHINE_NAMES: [&str; 7] = [
     "Oxygen generator",
@@ -105,9 +109,10 @@ pub(crate) const MACHINE_NAMES: [&str; 7] = [
     "work machine",
     "3D printer",
     "communication module",
-    "hole",
+    "Hole",
     "Hole",
 ];
+
 /// Contains the Messages that are displayed in the Handbook
 pub(crate) const FIRST_MILESTONE_HANDBOOK_TEXT: [&str; 10] = [
     "- Repair the oxygen generator (top left)",

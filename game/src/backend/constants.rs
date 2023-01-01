@@ -7,6 +7,53 @@ use crate::machines::machine::{Machine, State};
 use crate::machines::trade::Trade;
 use ggez::graphics::{Color, Rect};
 
+#[derive(Debug, Clone, Copy, PartialEq, serde::Serialize, serde::Deserialize)]
+pub enum PopupType {
+    Warning,
+    Nasa,
+    Mars,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, serde::Serialize, serde::Deserialize)]
+pub enum ObjectId {
+    OxygenGenerator = 0,
+    PowerGenerator = 1,
+    WorkMachine = 2,
+    Printer3D = 3,
+    CommunicationModule = 4,
+    NorthHole = 5,
+    SouthHole = 6,
+}
+
+impl ObjectId {
+    pub fn t(self, lng: Lang) -> &'static str {
+        machine_names(lng)[self as usize]
+    }
+
+    pub fn is_hole(self) -> bool {
+        matches!(self, ObjectId::NorthHole | ObjectId::SouthHole)
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub enum TradeId {
+    NoTrade = -1,
+    RepairOxygen = 0,
+    StartOxygen = 1,
+    StopOxygen = 2,
+    FuelingPowerGenerator = 3,
+    StartPowerGenerator = 4,
+    StopPowerGenerator = 5,
+    RepairWorkMachine = 6,
+    ProduceSuperglue = 7,
+    Repair3dPrinter = 8,
+    Produce3dPart = 9,
+    RepairCommunicationModule = 10,
+    EmergencySignalOff = 11,
+    RepairNorthHole = 12,
+    RepairSouthHole = 13,
+}
+
 /// Contains the screen resolution of the game.
 /// The game is designed to be played in 1920x1080.
 /// The game will be scaled to the screen resolution of the user.
@@ -37,7 +84,7 @@ pub const MOVEMENT_SPEED: usize = 10;
 pub(crate) const TIME_POSITION: (f32, f32) = (1205., 960.);
 
 /// Change rate fot the event Sandsturm
-pub(crate) const SANDSTURM_CR: Resources<i16> = Resources {
+pub(crate) const SANDSTORM_CR: Resources<i16> = Resources {
     oxygen: 10,
     energy: 0,
     life: 0,
@@ -51,8 +98,7 @@ pub(crate) fn gen_all_machines(lng: Lang) -> Vec<Machine> {
     vec![
         // Oxygen machine
         Machine::new_by_const((
-            machine_names(lng)[0].into(),
-            machine_names(Lang::De)[0].into(),
+            ObjectId::OxygenGenerator,
             Rect {
                 x: 280.0,
                 y: 230.0,
@@ -61,7 +107,7 @@ pub(crate) fn gen_all_machines(lng: Lang) -> Vec<Machine> {
             },
             vec![
                 Trade::new(
-                    "repair_Oxygen".into(),
+                    TradeId::RepairOxygen,
                     100,
                     State::Broken,
                     State::Idle,
@@ -69,7 +115,7 @@ pub(crate) fn gen_all_machines(lng: Lang) -> Vec<Machine> {
                     gen_inventory(2, 0, 0, lng),
                 ),
                 Trade::new(
-                    "start_Oxygen".into(),
+                    TradeId::StartOxygen,
                     0,
                     State::Idle,
                     State::Running,
@@ -77,7 +123,7 @@ pub(crate) fn gen_all_machines(lng: Lang) -> Vec<Machine> {
                     gen_inventory(0, 0, 0, lng),
                 ),
                 Trade::new(
-                    "stop_Oxygen".into(),
+                    TradeId::StopOxygen,
                     0,
                     State::Running,
                     State::Idle,
@@ -93,8 +139,7 @@ pub(crate) fn gen_all_machines(lng: Lang) -> Vec<Machine> {
         )),
         // Electricity machine
         Machine::new_by_const((
-            machine_names(lng)[1].into(),
-            machine_names(Lang::De)[1].into(),
+            ObjectId::PowerGenerator,
             Rect {
                 x: 282.0,
                 y: 752.0,
@@ -103,7 +148,7 @@ pub(crate) fn gen_all_machines(lng: Lang) -> Vec<Machine> {
             },
             vec![
                 Trade::new(
-                    "fueling_Stromgenerator".into(),
+                    TradeId::FuelingPowerGenerator,
                     700,
                     State::Broken,
                     State::Running,
@@ -111,7 +156,7 @@ pub(crate) fn gen_all_machines(lng: Lang) -> Vec<Machine> {
                     gen_inventory(0, 1, 0, lng),
                 ),
                 Trade::new(
-                    "start_Stromgenerator".into(),
+                    TradeId::StartPowerGenerator,
                     1,
                     State::Idle,
                     State::Running,
@@ -119,7 +164,7 @@ pub(crate) fn gen_all_machines(lng: Lang) -> Vec<Machine> {
                     gen_inventory(0, 0, 0, lng),
                 ),
                 Trade::new(
-                    "stop_Stromgenerator".into(),
+                    TradeId::StopPowerGenerator,
                     0,
                     State::Running,
                     State::Idle,
@@ -135,8 +180,7 @@ pub(crate) fn gen_all_machines(lng: Lang) -> Vec<Machine> {
         )),
         // Worker machine
         Machine::new_by_const((
-            machine_names(lng)[2].into(),
-            machine_names(Lang::De)[2].into(),
+            ObjectId::WorkMachine,
             Rect {
                 x: 1000.0,
                 y: 780.0,
@@ -145,7 +189,7 @@ pub(crate) fn gen_all_machines(lng: Lang) -> Vec<Machine> {
             },
             vec![
                 Trade::new(
-                    "repair_werkermaschine".into(),
+                    TradeId::RepairWorkMachine,
                     100,
                     State::Broken,
                     State::Idle,
@@ -153,7 +197,7 @@ pub(crate) fn gen_all_machines(lng: Lang) -> Vec<Machine> {
                     gen_inventory(0, 0, 1, lng),
                 ),
                 Trade::new(
-                    "produce_superglue".into(),
+                    TradeId::ProduceSuperglue,
                     120,
                     State::Idle,
                     State::Running,
@@ -169,8 +213,7 @@ pub(crate) fn gen_all_machines(lng: Lang) -> Vec<Machine> {
         )),
         // 3d Printer machine
         Machine::new_by_const((
-            machine_names(lng)[3].into(),
-            machine_names(Lang::De)[3].into(),
+            ObjectId::Printer3D,
             Rect {
                 x: 930.0,
                 y: 230.0,
@@ -179,7 +222,7 @@ pub(crate) fn gen_all_machines(lng: Lang) -> Vec<Machine> {
             },
             vec![
                 Trade::new(
-                    "repair_3d_printer".into(),
+                    TradeId::Repair3dPrinter,
                     300,
                     State::Broken,
                     State::Idle,
@@ -187,7 +230,7 @@ pub(crate) fn gen_all_machines(lng: Lang) -> Vec<Machine> {
                     gen_inventory(2, 0, 0, lng),
                 ),
                 Trade::new(
-                    "produce_3d_teil".into(),
+                    TradeId::Produce3dPart,
                     200,
                     State::Idle,
                     State::Running,
@@ -203,8 +246,7 @@ pub(crate) fn gen_all_machines(lng: Lang) -> Vec<Machine> {
         )),
         // Communication module
         Machine::new_by_const((
-            machine_names(lng)[4].into(),
-            machine_names(Lang::De)[4].into(),
+            ObjectId::CommunicationModule,
             Rect {
                 x: 1640.0,
                 y: 320.0,
@@ -213,7 +255,7 @@ pub(crate) fn gen_all_machines(lng: Lang) -> Vec<Machine> {
             },
             vec![
                 Trade::new(
-                    "Kommunikationsmodul_reparieren".into(),
+                    TradeId::RepairCommunicationModule,
                     400,
                     State::Broken,
                     State::Idle,
@@ -221,7 +263,7 @@ pub(crate) fn gen_all_machines(lng: Lang) -> Vec<Machine> {
                     gen_inventory(5, 0, 3, lng),
                 ),
                 Trade::new(
-                    "Notfall_signal_absetzen".into(),
+                    TradeId::EmergencySignalOff,
                     1000,
                     State::Idle,
                     State::Running,
@@ -237,8 +279,7 @@ pub(crate) fn gen_all_machines(lng: Lang) -> Vec<Machine> {
         )),
         // First hole
         Machine::new_by_const((
-            machine_names(lng)[5].into(),
-            machine_names(Lang::De)[5].into(),
+            ObjectId::NorthHole,
             Rect {
                 x: 780.0,
                 y: 230.0,
@@ -246,7 +287,7 @@ pub(crate) fn gen_all_machines(lng: Lang) -> Vec<Machine> {
                 h: 18.0,
             },
             vec![Trade::new(
-                "repair_Loch".into(),
+                TradeId::RepairNorthHole,
                 100,
                 State::Running,
                 State::Idle,
@@ -261,8 +302,7 @@ pub(crate) fn gen_all_machines(lng: Lang) -> Vec<Machine> {
         )),
         // Second hole
         Machine::new_by_const((
-            machine_names(lng)[6].into(),
-            machine_names(Lang::De)[6].into(),
+            ObjectId::SouthHole,
             Rect {
                 x: 680.0,
                 y: 900.0,
@@ -270,7 +310,7 @@ pub(crate) fn gen_all_machines(lng: Lang) -> Vec<Machine> {
                 h: 18.0,
             },
             vec![Trade::new(
-                "repair_Loch".into(),
+                TradeId::RepairSouthHole,
                 100,
                 State::Running,
                 State::Idle,

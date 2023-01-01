@@ -31,7 +31,7 @@ impl GameState {
                 y: machine.hitbox.y,
             };
             draw!(canvas, image, pos, scale);
-            if !machine.name.contains("Loch") {
+            if !machine.id.is_hole() {
                 // Draws the machine status on top of the machine
                 let status = Mesh::new_circle(
                     ctx,

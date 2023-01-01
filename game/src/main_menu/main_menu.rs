@@ -9,7 +9,7 @@ use crate::RLResult;
 
 use crate::backend::screen::Popup;
 use crate::game_core::infoscreen::InfoScreen;
-use crate::languages::*;
+use crate::languages::{button_text, resume_error_string, Lang};
 use ggez::{graphics, Context};
 use std::sync::mpsc::{channel, Receiver, Sender};
 

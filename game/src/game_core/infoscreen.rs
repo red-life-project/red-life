@@ -1,7 +1,10 @@
 use crate::backend::gamestate::{GameCommand, GameState};
 use crate::backend::screen::{Screen, StackCommand};
 use crate::backend::utils::{get_draw_params, get_scale};
-use crate::languages::*;
+use crate::languages::{
+    additional_info_string, air_and_energy_string, air_string, button_info, death_reason_string,
+    energy_string, intro_text, tutorial_text, winning_text, Lang,
+};
 use crate::main_menu::main_menu::MainMenu;
 use crate::{draw, RLResult};
 use ggez::glam::Vec2;
@@ -20,7 +23,7 @@ pub enum DeathReason {
 }
 
 impl DeathReason {
-    fn t(&self, lng: Lang) -> &'static str {
+    fn t(self, lng: Lang) -> &'static str {
         match self {
             DeathReason::Oxygen => air_string(lng),
             DeathReason::Energy => energy_string(lng),
