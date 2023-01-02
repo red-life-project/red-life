@@ -24,9 +24,10 @@ mod machines;
 mod main_menu;
 
 use crate::backend::constants::SCREEN_RESOLUTION;
-use crate::backend::{error, screen::Screenstack};
+use crate::backend::{error, screen::ScreenStack};
 use chrono::Local;
 
+use crate::languages::Lang;
 #[cfg_attr(debug_assertions, allow(unused_imports))]
 use ggez::conf::FullscreenType;
 use ggez::{event, Context};
@@ -65,7 +66,8 @@ pub fn main() -> RLResult {
     let (mut ctx, event_loop) = cb.build()?;
     info!("New Event Loop created");
     window_setup(&mut ctx)?;
-    let screen_stack = Screenstack::default();
+    let lng = Lang::En;
+    let screen_stack = ScreenStack::new_with_lang(lng);
     event::run(ctx, event_loop, screen_stack);
 }
 /// Sets the window size to resizeable in debug mode and fullscreen mode for release mode

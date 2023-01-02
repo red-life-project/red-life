@@ -10,7 +10,6 @@ use ggez::Context;
 /// let scale = get_scale(ctx);
 /// graphics::draw(ctx, &self.img, graphics::DrawParam::default().scale(scale))?;
 /// ```
-#[inline(always)]
 pub fn get_scale(ctx: &Context) -> Vec2 {
     let (width, height) = ctx.gfx.drawable_size();
     Vec2::new(width / SCREEN_RESOLUTION.0, height / SCREEN_RESOLUTION.1)
@@ -23,7 +22,6 @@ pub fn get_scale(ctx: &Context) -> Vec2 {
 /// # Returns
 /// * `true` if the player collides with an area
 /// * `false` if the player does not collide with an area
-#[inline(always)]
 pub fn is_colliding(player_pos: (usize, usize), area: &Rect) -> bool {
     area.x < player_pos.0 as f32 + PLAYER_ICON_SIZE.0 as f32
         && area.x + area.w > player_pos.0 as f32

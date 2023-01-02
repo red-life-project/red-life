@@ -2,11 +2,57 @@
 use crate::backend::rlcolor::RLColor;
 use crate::game_core::player::gen_inventory;
 use crate::game_core::resources::Resources;
-use crate::languages::german::MACHINE_NAMES;
+use crate::languages::{machine_names, Lang};
 use crate::machines::machine::{Machine, State};
 use crate::machines::trade::Trade;
 use ggez::graphics::{Color, Rect};
-use std::string::ToString;
+
+#[derive(Debug, Clone, Copy, PartialEq, serde::Serialize, serde::Deserialize)]
+pub enum PopupType {
+    Warning,
+    Nasa,
+    Mars,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, serde::Serialize, serde::Deserialize)]
+pub enum ObjectId {
+    OxygenGenerator = 0,
+    PowerGenerator = 1,
+    WorkMachine = 2,
+    Printer3D = 3,
+    CommunicationModule = 4,
+    NorthHole = 5,
+    SouthHole = 6,
+}
+
+impl ObjectId {
+    pub fn t(self, lng: Lang) -> &'static str {
+        machine_names(lng)[self as usize]
+    }
+
+    pub fn is_hole(self) -> bool {
+        matches!(self, ObjectId::NorthHole | ObjectId::SouthHole)
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub enum TradeId {
+    NoTrade = -1,
+    RepairOxygen = 0,
+    StartOxygen = 1,
+    StopOxygen = 2,
+    FuelingPowerGenerator = 3,
+    StartPowerGenerator = 4,
+    StopPowerGenerator = 5,
+    RepairWorkMachine = 6,
+    ProduceSuperglue = 7,
+    Repair3dPrinter = 8,
+    Produce3dPart = 9,
+    RepairCommunicationModule = 10,
+    EmergencySignalOff = 11,
+    RepairNorthHole = 12,
+    RepairSouthHole = 13,
+}
 
 /// Contains the screen resolution of the game.
 /// The game is designed to be played in 1920x1080.
@@ -38,7 +84,7 @@ pub const MOVEMENT_SPEED: usize = 10;
 pub(crate) const TIME_POSITION: (f32, f32) = (1205., 960.);
 
 /// Change rate fot the event Sandsturm
-pub(crate) const SANDSTURM_CR: Resources<i16> = Resources {
+pub(crate) const SANDSTORM_CR: Resources<i16> = Resources {
     oxygen: 10,
     energy: 0,
     life: 0,
@@ -48,11 +94,11 @@ pub(crate) const SANDSTURM_CR: Resources<i16> = Resources {
 /// Generates all machines with all their name, position, trades and resources.
 /// # Returns
 /// A Vector of `Machine`s
-pub(crate) fn gen_all_machines() -> Vec<Machine> {
+pub(crate) fn gen_all_machines(lng: Lang) -> Vec<Machine> {
     vec![
         // Oxygen machine
         Machine::new_by_const((
-            MACHINE_NAMES[0].to_string(),
+            ObjectId::OxygenGenerator,
             Rect {
                 x: 280.0,
                 y: 230.0,
@@ -61,28 +107,28 @@ pub(crate) fn gen_all_machines() -> Vec<Machine> {
             },
             vec![
                 Trade::new(
-                    "repair_Oxygen".to_string(),
+                    TradeId::RepairOxygen,
                     100,
                     State::Broken,
                     State::Idle,
                     false,
-                    gen_inventory(2, 0, 0),
+                    gen_inventory(2, 0, 0, lng),
                 ),
                 Trade::new(
-                    "start_Oxygen".to_string(),
+                    TradeId::StartOxygen,
                     0,
                     State::Idle,
                     State::Running,
                     true,
-                    gen_inventory(0, 0, 0),
+                    gen_inventory(0, 0, 0, lng),
                 ),
                 Trade::new(
-                    "stop_Oxygen".to_string(),
+                    TradeId::StopOxygen,
                     0,
                     State::Running,
                     State::Idle,
                     true,
-                    gen_inventory(0, 0, 0),
+                    gen_inventory(0, 0, 0, lng),
                 ),
             ],
             Resources {
@@ -93,7 +139,7 @@ pub(crate) fn gen_all_machines() -> Vec<Machine> {
         )),
         // Electricity machine
         Machine::new_by_const((
-            MACHINE_NAMES[1].to_string(),
+            ObjectId::PowerGenerator,
             Rect {
                 x: 282.0,
                 y: 752.0,
@@ -102,28 +148,28 @@ pub(crate) fn gen_all_machines() -> Vec<Machine> {
             },
             vec![
                 Trade::new(
-                    "fueling_Stromgenerator".to_string(),
+                    TradeId::FuelingPowerGenerator,
                     700,
                     State::Broken,
                     State::Running,
                     true,
-                    gen_inventory(0, 1, 0),
+                    gen_inventory(0, 1, 0, lng),
                 ),
                 Trade::new(
-                    "start_Stromgenerator".to_string(),
+                    TradeId::StartPowerGenerator,
                     1,
                     State::Idle,
                     State::Running,
                     true,
-                    gen_inventory(0, 0, 0),
+                    gen_inventory(0, 0, 0, lng),
                 ),
                 Trade::new(
-                    "stop_Stromgenerator".to_string(),
+                    TradeId::StopPowerGenerator,
                     0,
                     State::Running,
                     State::Idle,
                     true,
-                    gen_inventory(0, 0, 0),
+                    gen_inventory(0, 0, 0, lng),
                 ),
             ],
             Resources {
@@ -134,7 +180,7 @@ pub(crate) fn gen_all_machines() -> Vec<Machine> {
         )),
         // Worker machine
         Machine::new_by_const((
-            MACHINE_NAMES[2].to_string(),
+            ObjectId::WorkMachine,
             Rect {
                 x: 1000.0,
                 y: 780.0,
@@ -143,20 +189,20 @@ pub(crate) fn gen_all_machines() -> Vec<Machine> {
             },
             vec![
                 Trade::new(
-                    "repair_werkermaschine".to_string(),
+                    TradeId::RepairWorkMachine,
                     100,
                     State::Broken,
                     State::Idle,
                     false,
-                    gen_inventory(0, 0, 1),
+                    gen_inventory(0, 0, 1, lng),
                 ),
                 Trade::new(
-                    "produce_superglue".to_string(),
+                    TradeId::ProduceSuperglue,
                     120,
                     State::Idle,
                     State::Running,
                     true,
-                    gen_inventory(-1, 0, 0),
+                    gen_inventory(-1, 0, 0, lng),
                 ),
             ],
             Resources {
@@ -167,7 +213,7 @@ pub(crate) fn gen_all_machines() -> Vec<Machine> {
         )),
         // 3d Printer machine
         Machine::new_by_const((
-            MACHINE_NAMES[3].to_string(),
+            ObjectId::Printer3D,
             Rect {
                 x: 930.0,
                 y: 230.0,
@@ -176,20 +222,20 @@ pub(crate) fn gen_all_machines() -> Vec<Machine> {
             },
             vec![
                 Trade::new(
-                    "repair_3d_printer".to_string(),
+                    TradeId::Repair3dPrinter,
                     300,
                     State::Broken,
                     State::Idle,
                     false,
-                    gen_inventory(2, 0, 0),
+                    gen_inventory(2, 0, 0, lng),
                 ),
                 Trade::new(
-                    "produce_3d_teil".to_string(),
+                    TradeId::Produce3dPart,
                     200,
                     State::Idle,
                     State::Running,
                     true,
-                    gen_inventory(2, 0, -1),
+                    gen_inventory(2, 0, -1, lng),
                 ),
             ],
             Resources {
@@ -200,7 +246,7 @@ pub(crate) fn gen_all_machines() -> Vec<Machine> {
         )),
         // Communication module
         Machine::new_by_const((
-            MACHINE_NAMES[4].to_string(),
+            ObjectId::CommunicationModule,
             Rect {
                 x: 1640.0,
                 y: 320.0,
@@ -209,20 +255,20 @@ pub(crate) fn gen_all_machines() -> Vec<Machine> {
             },
             vec![
                 Trade::new(
-                    "Kommunikationsmodul_reparieren".to_string(),
+                    TradeId::RepairCommunicationModule,
                     400,
                     State::Broken,
                     State::Idle,
                     false,
-                    gen_inventory(5, 0, 3),
+                    gen_inventory(5, 0, 3, lng),
                 ),
                 Trade::new(
-                    "Notfall_signal_absetzen".to_string(),
+                    TradeId::EmergencySignalOff,
                     1000,
                     State::Idle,
                     State::Running,
                     true,
-                    gen_inventory(1, 0, 1),
+                    gen_inventory(1, 0, 1, lng),
                 ),
             ],
             Resources {
@@ -233,7 +279,7 @@ pub(crate) fn gen_all_machines() -> Vec<Machine> {
         )),
         // First hole
         Machine::new_by_const((
-            MACHINE_NAMES[5].to_string(),
+            ObjectId::NorthHole,
             Rect {
                 x: 780.0,
                 y: 230.0,
@@ -241,12 +287,12 @@ pub(crate) fn gen_all_machines() -> Vec<Machine> {
                 h: 18.0,
             },
             vec![Trade::new(
-                "repair_Loch".to_string(),
+                TradeId::RepairNorthHole,
                 100,
                 State::Running,
                 State::Idle,
                 false,
-                gen_inventory(2, 0, 0),
+                gen_inventory(2, 0, 0, lng),
             )],
             Resources {
                 oxygen: -15,
@@ -256,7 +302,7 @@ pub(crate) fn gen_all_machines() -> Vec<Machine> {
         )),
         // Second hole
         Machine::new_by_const((
-            MACHINE_NAMES[6].to_string(),
+            ObjectId::SouthHole,
             Rect {
                 x: 680.0,
                 y: 900.0,
@@ -264,12 +310,12 @@ pub(crate) fn gen_all_machines() -> Vec<Machine> {
                 h: 18.0,
             },
             vec![Trade::new(
-                "repair_Loch".to_string(),
+                TradeId::RepairSouthHole,
                 100,
                 State::Running,
                 State::Idle,
                 false,
-                gen_inventory(2, 0, 0),
+                gen_inventory(2, 0, 0, lng),
             )],
             Resources {
                 oxygen: -15,

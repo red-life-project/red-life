@@ -7,6 +7,7 @@ use tracing::error;
 
 /// All Red Life errors
 #[warn(clippy::enum_variant_names)]
+#[allow(clippy::pedantic)]
 #[derive(Debug)]
 pub enum RLError {
     /// All Errors caused by Drawing

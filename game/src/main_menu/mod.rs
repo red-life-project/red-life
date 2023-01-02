@@ -1,2 +1,3 @@
 pub(crate) mod button;
-pub(crate) mod mainmenu;
+#[allow(clippy::module_inception)]
+pub(crate) mod main_menu;

@@ -2,9 +2,10 @@
 use crate::backend::rlcolor::RLColor;
 use crate::backend::utils::{get_draw_params, get_scale};
 use crate::error::RLError;
-use crate::main_menu::mainmenu::MainMenu;
+use crate::main_menu::main_menu::MainMenu;
 use crate::{draw, RLResult};
 
+use crate::languages::Lang;
 use ggez::glam::vec2;
 use ggez::graphics::Color;
 use ggez::{event, graphics, Context};
@@ -32,11 +33,14 @@ pub trait Screen: Debug {
     /// # Arguments
     /// * `sender` - The sender of the screen.
     fn set_sender(&mut self, sender: Sender<StackCommand>);
+
+    fn lang(&self) -> Lang;
 }
 
 /// A Screenstack contains multiple `Screen`s and `Popup`s, the last one of which is drawn to the screen and
 /// updated.
-pub struct Screenstack {
+#[allow(clippy::module_name_repetitions)]
+pub struct ScreenStack {
     screens: Vec<Box<dyn Screen>>,
     popup: Vec<Popup>,
     receiver: Receiver<StackCommand>,
@@ -104,7 +108,7 @@ impl Popup {
         }
     }
 }
-impl Screenstack {
+impl ScreenStack {
     /// Draws all `Popups` at the top left of the screen with their given text and color
     /// The popups will be removed after the given duration
     /// # Arguments
@@ -190,7 +194,7 @@ pub enum StackCommand {
     Pop,
 }
 
-impl event::EventHandler<RLError> for Screenstack {
+impl event::EventHandler<RLError> for ScreenStack {
     /// Redirect the update function to the last screen and handle the returned `StackCommand`
     /// # Arguments
     /// * `ctx` - The ggez game context
@@ -198,10 +202,8 @@ impl event::EventHandler<RLError> for Screenstack {
     /// `RLResult` - Returns an `RlResult`
     fn update(&mut self, ctx: &mut Context) -> RLResult {
         self.remove_popups();
-        self.screens
-            .last_mut()
-            .expect("Failed to get a screen")
-            .update(ctx)?;
+        let screen = self.screens.last_mut().expect("Failed to get a screen");
+        screen.update(ctx)?;
         if let Ok(message) = self.receiver.try_recv() {
             self.process_command(message);
         }
@@ -230,15 +232,15 @@ impl event::EventHandler<RLError> for Screenstack {
     }
 }
 
-impl Default for Screenstack {
-    /// Creates a new `Screenstack` with a `MainMenu` screen.
+impl ScreenStack {
+    /// Creates a new `Screen stack` with a `MainMenu` screen.
     /// # Returns
-    /// `Screenstack` - Returns a new `Screenstack`.
-    fn default() -> Self {
-        info!("Default Screenstack created");
+    /// `Screen stack` - Returns a new `Screen stack`.
+    pub fn new_with_lang(lng: Lang) -> Self {
+        info!("Default Screen stack created");
         let (sender, receiver) = channel();
         Self {
-            screens: vec![Box::new(MainMenu::new(sender.clone()))],
+            screens: vec![Box::new(MainMenu::new(sender.clone(), lng))],
             popup: vec![],
             receiver,
             sender,
@@ -251,8 +253,8 @@ mod test {
     use super::*;
 
     #[test]
-    fn test_screenstack() {
-        let screenstack = Screenstack::default();
-        assert_eq!(1, screenstack.screens.len());
+    fn test_screen_stack() {
+        let screen_stack = ScreenStack::new_with_lang(Lang::De);
+        assert_eq!(1, screen_stack.screens.len());
     }
 }

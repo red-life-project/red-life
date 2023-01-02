@@ -13,7 +13,7 @@ impl GameState {
     /// Creates all Machines for initial creation and pushes them into a list
     pub fn create_machine(&mut self) {
         info!("Generating all Machines");
-        self.machines = gen_all_machines();
+        self.machines = gen_all_machines(self.lng);
     }
 
     /// Paints the machine sprites and if applicable it shows the state or time remaining
@@ -31,7 +31,7 @@ impl GameState {
                 y: machine.hitbox.y,
             };
             draw!(canvas, image, pos, scale);
-            if !machine.name.contains("Loch") {
+            if !machine.id.is_hole() {
                 // Draws the machine status on top of the machine
                 let status = Mesh::new_circle(
                     ctx,
