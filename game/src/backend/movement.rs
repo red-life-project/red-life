@@ -1,7 +1,7 @@
 //! This file contains the movement system, which is responsible for moving the player around the map and to interact with objects.
 use crate::backend::constants::MOVEMENT_SPEED;
 use crate::backend::gamestate::GameState;
-use crate::backend::screen::{ScreenCommand, Screen, StackCommand};
+use crate::backend::screen::{Screen, ScreenCommand, StackCommand};
 use crate::RLResult;
 use ggez::winit::event::VirtualKeyCode;
 use ggez::Context;

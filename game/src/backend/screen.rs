@@ -113,23 +113,24 @@ impl Popup {
 }
 
 impl ScreenStack {
-    /// Creates a new `Screenstack` with a `MainMenu` screen.
+    /// Creates a new `Screen stack` with a `MainMenu` screen.
     /// # Returns
-    /// `Screenstack` - Returns a new `Screenstack`.
-    pub fn build(ctx: &mut Context) -> Self {
+    /// `ScreenStack` - Returns a new `ScreenStack`.
+    pub fn new_with_lang(lng: Lang, ctx: &mut Context) -> Self {
+        info!("Default Screen stack created");
         let mut audio = crate::game_core::AudioState::new(ctx).unwrap();
         audio.play_main_theme(ctx);
 
-        info!("Default Screenstack created");
         let (sender, receiver) = channel();
         Self {
-            screens: vec![Box::new(MainMenu::new(sender.clone()))],
+            screens: vec![Box::new(MainMenu::new(sender.clone(), lng))],
             popup: vec![],
             receiver,
             sender,
             audio,
         }
     }
+
     /// Draws all `Popups` at the top left of the screen with their given text and color
     /// The popups will be removed after the given duration
     /// # Arguments
@@ -190,7 +191,7 @@ impl ScreenStack {
                 if self.screens.len() == 1 {
                     std::process::exit(0)
                 } else {
-                    // Clear our popups in order to not display them outside of the Gamestate
+                    // Clear our popups in order to not display them outside of the `GameState`
                     self.popup.clear();
                     self.screens.pop();
                 };
@@ -211,6 +212,7 @@ impl ScreenStack {
     }
 }
 
+#[allow(clippy::module_name_repetitions)]
 pub enum ScreenCommand {
     Push(Box<dyn Screen>),
     Popup(Popup),
@@ -269,32 +271,5 @@ impl event::EventHandler<RLError> for ScreenStack {
     /// `RLResult` - Returns an `RlResult`
     fn quit_event(&mut self, _ctx: &mut Context) -> RLResult<bool> {
         Ok(true)
-    }
-}
-
-impl ScreenStack {
-    /// Creates a new `Screen stack` with a `MainMenu` screen.
-    /// # Returns
-    /// `Screen stack` - Returns a new `Screen stack`.
-    pub fn new_with_lang(lng: Lang) -> Self {
-        info!("Default Screen stack created");
-        let (sender, receiver) = channel();
-        Self {
-            screens: vec![Box::new(MainMenu::new(sender.clone(), lng))],
-            popup: vec![],
-            receiver,
-            sender,
-        }
-    }
-}
-
-#[cfg(test)]
-mod test {
-    use super::*;
-
-    #[test]
-    fn test_screen_stack() {
-        let screen_stack = ScreenStack::new_with_lang(Lang::De);
-        assert_eq!(1, screen_stack.screens.len());
     }
 }

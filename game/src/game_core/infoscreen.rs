@@ -150,15 +150,15 @@ impl Screen for InfoScreen {
                 self.sender.send(StackCommand::Screen(ScreenCommand::Pop))?;
                 self.sender
                     .send(StackCommand::Screen(ScreenCommand::Push(Box::new({
-                        let mut gamestate = GameState::new(ctx, lng)?;
-                        gamestate.init(ctx)?;
-                        gamestate.create_machine();
-                        gamestate
+                        let mut game_state = GameState::new(ctx, lng)?;
+                        game_state.init(ctx)?;
+                        game_state.create_machine();
+                        game_state
                             .sender
                             .as_mut()
                             .unwrap()
                             .send(GameCommand::Milestone)?;
-                        gamestate
+                        game_state
                     }))))?;
             }
             (ScreenType::Death | ScreenType::Winning, Some(&VirtualKeyCode::Escape)) => {
@@ -168,9 +168,8 @@ impl Screen for InfoScreen {
                 self.sender.send(StackCommand::Screen(ScreenCommand::Pop))?;
                 self.sender
                     .send(StackCommand::Screen(ScreenCommand::Push(Box::new(
-                        MainMenu::new(self.sender.clone()),
-                    lng,
-                ))))?;
+                        MainMenu::new(self.sender.clone(), lng),
+                    ))))?;
             }
             _ => {}
         }
