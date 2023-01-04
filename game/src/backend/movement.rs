@@ -1,7 +1,7 @@
 //! This file contains the movement system, which is responsible for moving the player around the map and to interact with objects.
 use crate::backend::constants::MOVEMENT_SPEED;
 use crate::backend::gamestate::GameState;
-use crate::backend::screen::{Screen, StackCommand};
+use crate::backend::screen::{Screen, ScreenCommand, StackCommand};
 use crate::RLResult;
 use ggez::winit::event::VirtualKeyCode;
 use ggez::Context;
@@ -20,7 +20,8 @@ impl GameState {
         if ctx.keyboard.is_key_just_pressed(VirtualKeyCode::Escape) {
             info!("Exiting...");
             self.save(false)?;
-            self.get_screen_sender()?.send(StackCommand::Pop)?;
+            self.get_screen_sender()?
+                .send(StackCommand::Screen(ScreenCommand::Pop))?;
         }
         if ctx.keyboard.is_key_just_pressed(VirtualKeyCode::E) {
             info!("Interacting with Area: {:?}", self.get_interactable());

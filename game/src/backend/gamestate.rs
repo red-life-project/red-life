@@ -3,7 +3,7 @@ use crate::backend::constants::{
     ObjectId, COLORS, DESIRED_FPS, MAP_BORDER, RESOURCE_POSITION, TIME_POSITION,
 };
 use crate::backend::rlcolor::RLColor;
-use crate::backend::screen::{Popup, StackCommand};
+use crate::backend::screen::{Popup, ScreenCommand, StackCommand};
 use crate::backend::utils::get_scale;
 use crate::backend::utils::{get_draw_params, is_colliding};
 use crate::backend::{error::RLError, screen::Screen};
@@ -30,7 +30,7 @@ use std::fs;
 use std::fs::read_dir;
 use std::path::Path;
 use std::sync::mpsc::{channel, Receiver, Sender};
-use tracing::info;
+use tracing::{debug, info};
 
 pub enum GameCommand {
     AddItems(Vec<(Item, i32)>),
@@ -163,9 +163,10 @@ impl GameState {
                     GameState::load(true).unwrap_or_else(|_| GameState::new_with_lang(lng));
                 game_state.save(false)?;
                 let cloned_sender = self.get_screen_sender()?.clone();
-                self.get_screen_sender()?.send(StackCommand::Push(Box::new(
-                    InfoScreen::new_death_screen(empty_resource, cloned_sender, game_state.lng),
-                )))?;
+                self.get_screen_sender()?
+                    .send(StackCommand::Screen(ScreenCommand::Push(Box::new(
+                        InfoScreen::new_death_screen(empty_resource, cloned_sender, game_state.lng),
+                    ))))?;
             };
         } else if self.player.resources_change.life < 0 {
             self.player.resources_change.life = 0;
@@ -190,7 +191,7 @@ impl GameState {
                         let sender = self.get_screen_sender()?;
                         let popup =
                             Popup::new(RLColor::GREEN, send_msg_failure(lng).to_string(), 5);
-                        sender.send(StackCommand::Popup(popup))?;
+                        sender.send(StackCommand::Screen(ScreenCommand::Popup(popup)))?;
                     }
                     2 => {
                         self.player.milestone += 1;
@@ -358,11 +359,14 @@ impl GameState {
     pub(crate) fn init(&mut self, ctx: &mut Context) -> RLResult {
         info!("Loading assets");
         read_dir("assets")?.for_each(|file| {
+            debug!("Loading asset: {:?}", file);
             let file = file.unwrap();
-            let bytes = fs::read(file.path()).unwrap();
-            let name = file.file_name().into_string().unwrap();
-            self.assets
-                .insert(name, Image::from_bytes(ctx, bytes.as_slice()).unwrap());
+            if file.file_name().to_str().unwrap().ends_with(".png") {
+                let bytes = fs::read(file.path()).unwrap();
+                let name = file.file_name().into_string().unwrap();
+                self.assets
+                    .insert(name, Image::from_bytes(ctx, bytes.as_slice()).unwrap());
+            }
         });
 
         if self.assets.is_empty() {
@@ -552,9 +556,10 @@ impl GameState {
                 info!("Player won the Game");
                 self.player.milestone += 1;
                 let cloned_sender = self.get_screen_sender()?.clone();
-                self.get_screen_sender()?.send(StackCommand::Push(Box::new(
-                    InfoScreen::new_winning_screen(cloned_sender, lng),
-                )))?;
+                self.get_screen_sender()?
+                    .send(StackCommand::Screen(ScreenCommand::Push(Box::new(
+                        InfoScreen::new_winning_screen(cloned_sender, lng),
+                    ))))?;
             }
             _ => {}
         }

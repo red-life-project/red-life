@@ -1,5 +1,5 @@
 use crate::backend::gamestate::{GameCommand, GameState};
-use crate::backend::screen::{Screen, StackCommand};
+use crate::backend::screen::{Screen, ScreenCommand, StackCommand};
 use crate::backend::utils::{get_draw_params, get_scale};
 use crate::languages::{
     additional_info_string, air_and_energy_string, air_string, button_info, death_reason_string,
@@ -147,28 +147,29 @@ impl Screen for InfoScreen {
         // Here we only use the first pressed key, but in the info screen this is fine
         match (self.screen_type, keys.iter().next()) {
             (ScreenType::Intro, Some(&VirtualKeyCode::Space)) => {
-                self.sender.send(StackCommand::Pop)?;
-                self.sender.send(StackCommand::Push(Box::new({
-                    let mut gamestate = GameState::new(ctx, lng)?;
-                    gamestate.init(ctx)?;
-                    gamestate.create_machine();
-                    gamestate
-                        .sender
-                        .as_mut()
-                        .unwrap()
-                        .send(GameCommand::Milestone)?;
-                    gamestate
-                })))?;
+                self.sender.send(StackCommand::Screen(ScreenCommand::Pop))?;
+                self.sender
+                    .send(StackCommand::Screen(ScreenCommand::Push(Box::new({
+                        let mut game_state = GameState::new(ctx, lng)?;
+                        game_state.init(ctx)?;
+                        game_state.create_machine();
+                        game_state
+                            .sender
+                            .as_mut()
+                            .unwrap()
+                            .send(GameCommand::Milestone)?;
+                        game_state
+                    }))))?;
             }
             (ScreenType::Death | ScreenType::Winning, Some(&VirtualKeyCode::Escape)) => {
                 if self.screen_type == ScreenType::Winning {
                     GameState::delete_saves()?;
                 }
-                self.sender.send(StackCommand::Pop)?;
-                self.sender.send(StackCommand::Push(Box::new(MainMenu::new(
-                    self.sender.clone(),
-                    lng,
-                ))))?;
+                self.sender.send(StackCommand::Screen(ScreenCommand::Pop))?;
+                self.sender
+                    .send(StackCommand::Screen(ScreenCommand::Push(Box::new(
+                        MainMenu::new(self.sender.clone(), lng),
+                    ))))?;
             }
             _ => {}
         }

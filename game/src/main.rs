@@ -37,6 +37,7 @@ use tracing::{info, Level};
 
 /// Our own Result Type for custom Error handling.
 pub type RLResult<T = ()> = Result<T, error::RLError>;
+
 /// The main function, which is the entry point of our program
 /// builds the game and sets window configuration, icon and title
 pub fn main() -> RLResult {
@@ -67,7 +68,7 @@ pub fn main() -> RLResult {
     info!("New Event Loop created");
     window_setup(&mut ctx)?;
     let lng = Lang::En;
-    let screen_stack = ScreenStack::new_with_lang(lng);
+    let screen_stack = ScreenStack::new_with_lang(lng, &mut ctx);
     event::run(ctx, event_loop, screen_stack);
 }
 /// Sets the window size to resizeable in debug mode and fullscreen mode for release mode
