@@ -10,9 +10,12 @@ ggez = { git="https://github.com/ggez/ggez", branch="devel" }
 serde = "1.0.145"
 serde_yaml = "0.9.13"
 tracing = "0.1.37"
-tracing-subscriber = "0.3.16"
+tracing-subscriber = { version = "0.3.16", features = ['env-filter'] }
 fastrand = "1.8.0"
 chrono = "0.4.23"
+
+[dev-dependencies]
+tempdir = { version = "0.3.7" }
 
 [build-dependencies]
 fs_extra = "1.2.0"

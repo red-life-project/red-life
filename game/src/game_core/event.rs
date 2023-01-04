@@ -1,14 +1,13 @@
-use crate::backend::constants::{DESIRED_FPS, SANDSTURM_CR};
+use crate::backend::constants::{ObjectId, PopupType, DESIRED_FPS, SANDSTORM_CR};
 use crate::backend::gamestate::GameState;
-use crate::backend::screen::{Popup, StackCommand};
+use crate::backend::screen::{Popup, ScreenCommand, StackCommand};
 use crate::game_core::resources::Resources;
-use crate::languages::german::{
-    INFORMATIONSPOPUP_MARS, INFORMATIONSPOPUP_NASA, KOMETENEINSCHLAG, SANDSTURM, STROMAUSFALL,
+use crate::languages::{
+    comet_strike, informations_popup_mars, informations_popup_nasa, mars_info, nasa_info,
+    power_failure, sandstorm, warnings, Lang,
 };
-use crate::languages::german::{MARS_INFO, NASA_INFO, WARNINGS};
 use crate::machines::machine::State;
 use crate::RLResult;
-use ggez::graphics::Color;
 use ggez::Context;
 use serde::{Deserialize, Serialize};
 use std::sync::mpsc::Sender;
@@ -25,7 +24,7 @@ pub(crate) struct Event {
     info_text: String,
     pub(crate) resources: Option<Resources<i16>>,
     duration: u32,
-    popup_type: String,
+    popup_type: PopupType,
     popup_message: String,
 }
 
@@ -40,7 +39,7 @@ impl Event {
     pub fn new(
         event: [&str; 2],
         popup_message: &str,
-        popup_type: &str,
+        popup_type: PopupType,
         resources: Option<Resources<i16>>,
         duration: u32,
     ) -> Self {
@@ -54,42 +53,48 @@ impl Event {
             info_text: event[1].to_string(),
             resources,
             duration: duration * DESIRED_FPS,
-            popup_type: popup_type.to_string(),
+            popup_type,
             popup_message: popup_message.to_string(),
         }
     }
 
     /// if no Event is active it either chooses a random event of the Event enum or nothing every 60 seconds
-    pub fn event_generator() -> Option<Event> {
+    #[allow(clippy::pedantic)]
+    pub fn event_generator(lng: Lang) -> Option<Event> {
         let rng = fastrand::Rng::new();
-        let event = rng.usize(..15);
-        match event {
+        match rng.usize(..15) {
             8 => Some(Event::new(
-                SANDSTURM,
-                WARNINGS[2],
-                "warning",
-                Some(SANDSTURM_CR),
+                *sandstorm(lng),
+                warnings(lng)[2],
+                PopupType::Warning,
+                Some(SANDSTORM_CR),
                 5,
             )),
             0 | 3 => Some(Event::new(
-                KOMETENEINSCHLAG,
-                WARNINGS[0],
-                "warning",
+                *comet_strike(lng),
+                warnings(lng)[0],
+                PopupType::Warning,
                 None,
                 0,
             )),
             1 => Some(Event::new(
-                INFORMATIONSPOPUP_NASA,
-                NASA_INFO[rng.usize(..4)],
-                "nasa",
+                *informations_popup_nasa(lng),
+                nasa_info(lng)[rng.usize(..4)],
+                PopupType::Nasa,
                 None,
                 0,
             )),
-            2 | 9 | 7 => Some(Event::new(STROMAUSFALL, WARNINGS[1], "warning", None, 0)),
+            2 | 9 | 7 => Some(Event::new(
+                *power_failure(lng),
+                warnings(lng)[1],
+                PopupType::Warning,
+                None,
+                0,
+            )),
             4 => Some(Event::new(
-                INFORMATIONSPOPUP_MARS,
-                MARS_INFO[rng.usize(..5)],
-                "mars",
+                *informations_popup_mars(lng),
+                mars_info(lng)[rng.usize(..5)],
+                PopupType::Mars,
                 None,
                 0,
             )),
@@ -106,18 +111,18 @@ impl Event {
     pub fn send_popup(
         popup_message: &str,
         sender: &Sender<StackCommand>,
-        popup_type: &str,
+        popup_type: PopupType,
         event_name: &str,
     ) -> RLResult {
         let popup = match popup_type {
-            "warning" => Popup::warning(popup_message.to_string()),
-            "nasa" => Popup::nasa(popup_message.to_string()),
-            "mars" => Popup::mars(popup_message.to_string()),
-            _ => Popup::new(Color::RED, "Error".to_string(), 10),
+            PopupType::Warning => Popup::warning(popup_message.to_string()),
+            PopupType::Nasa => Popup::nasa(popup_message.to_string()),
+            PopupType::Mars => Popup::mars(popup_message.to_string()),
+            // _ => Popup::new(Color::RED, "Error".to_string(), 10),
         };
-        sender.send(StackCommand::Popup(popup))?;
+        sender.send(StackCommand::Screen(ScreenCommand::Popup(popup)))?;
         info!(
-            "Event Popup sent: name: {}, Popup-Message: {}, Popup-Type: {}",
+            "Event Popup sent: name: {}, Popup-Message: {}, Popup-Type: {:?}",
             event_name,
             popup_message.to_string(),
             popup_type
@@ -135,33 +140,34 @@ impl Event {
     /// * `restore` - If true the event will be deactivated and the resources will be restored
     /// * `gamestate` - The gamestate which is used to access the player and the machines
     pub fn action(&self, restore: bool, gamestate: &mut GameState) -> RLResult {
-        const KOMETENEINSCHLAG_NAME: &str = KOMETENEINSCHLAG[0];
-        const STROMAUSFALL_NAME: &str = STROMAUSFALL[0];
+        let lng = gamestate.lng;
+        let comet_strike: &str = comet_strike(lng)[0];
+        let power_failure: &str = power_failure(lng)[0];
         let sender = gamestate.get_screen_sender()?.clone();
 
         // handle event effects
         match self.name.as_str() {
-            KOMETENEINSCHLAG_NAME => {
+            s if comet_strike == s => {
                 if let Some(one_hole) = gamestate
                     .machines
                     .iter_mut()
-                    .find(|machine| machine.name == "Loch" && machine.state != State::Running)
+                    .find(|machine| machine.id.is_hole() && machine.state != State::Running)
                 {
                     // event not triggered if both machine are already running
-                    Event::send_popup(&self.popup_message, &sender, &self.popup_type, &self.name)
+                    Event::send_popup(&self.popup_message, &sender, self.popup_type, &self.name)
                         .unwrap();
                     one_hole.change_state_to(&State::Running);
                 }
             }
-            STROMAUSFALL_NAME => {
+            s if s == power_failure => {
                 gamestate.machines.iter_mut().for_each(|machine| {
                     // if machine is running it will b use tracing::{info, Id};e stopped
                     // event not triggered if machine is broken or idling
-                    if machine.name == "Stromgenerator" && machine.state == State::Running {
+                    if machine.id == ObjectId::PowerGenerator && machine.state == State::Running {
                         Event::send_popup(
                             &self.popup_message,
                             &sender,
-                            &self.popup_type,
+                            self.popup_type,
                             &self.name,
                         )
                         .unwrap();
@@ -171,7 +177,7 @@ impl Event {
             }
             // apply direct resource changes if there are any and the event is not handled above
             _ => {
-                Event::send_popup(&self.popup_message, &sender, &self.popup_type, &self.name)?;
+                Event::send_popup(&self.popup_message, &sender, self.popup_type, &self.name)?;
                 if let Some(resources) = self.resources {
                     if restore {
                         gamestate.player.resources_change =
@@ -197,6 +203,7 @@ impl Event {
     /// * `gamestate` - The gamestate which is used to access the events vector
     /// * `context` - The game context which is used to access the current tick
     pub fn update_events(ctx: &Context, gamestate: &mut GameState) -> RLResult {
+        let lng = gamestate.lng;
         if ctx.time.ticks() % 20 == 0 {
             gamestate.events.iter_mut().for_each(|event| {
                 event.duration = event.duration.saturating_sub(20);
@@ -225,7 +232,7 @@ impl Event {
         if ctx.time.ticks() >= 400 && ctx.time.ticks() % 200 == 0 {
             // generate new event
             // might not return an event
-            let gen_event = Event::event_generator();
+            let gen_event = Event::event_generator(lng);
             // if event is not none, add it to the gamestates events vector and activate apply its effect
             if let Some(event) = gen_event {
                 event.action(false, gamestate)?;

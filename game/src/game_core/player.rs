@@ -1,10 +1,9 @@
 use crate::backend::constants::DESIRED_FPS;
 use crate::backend::rlcolor::RLColor;
-use crate::backend::screen::{Popup, StackCommand};
+use crate::backend::screen::{Popup, ScreenCommand, StackCommand};
 use crate::game_core::item::Item;
 use crate::game_core::resources::Resources;
-use crate::languages::german::GAME_INFO;
-use crate::languages::german::{BENZIN, GEDRUCKTESTEIL, SUPER_GLUE};
+use crate::languages::{game_info, petrol, printed_part, super_glue, Lang};
 use crate::RLResult;
 use serde::{Deserialize, Serialize};
 use std::sync::mpsc::Sender;
@@ -28,14 +27,15 @@ pub struct Player {
     /// contains the current ingame time
     pub(crate) time: u32,
 }
-impl Default for Player {
-    fn default() -> Self {
+
+impl Player {
+    pub fn new(lng: Lang) -> Self {
         info!("Default Player created");
         Self {
             inventory: vec![
-                (Item::new(SUPER_GLUE), 0),
-                (Item::new(BENZIN), 3),
-                (Item::new(GEDRUCKTESTEIL), 1),
+                (Item::new(*super_glue(lng)), 0),
+                (Item::new(*petrol(lng)), 3),
+                (Item::new(*printed_part(lng)), 1),
             ],
             position: (600, 500),
             resources: Resources {
@@ -53,15 +53,16 @@ impl Default for Player {
             time: 0,
         }
     }
-}
-
-impl Player {
     /// Checks whether the player has taken damage in the past few seconds and if not so start the regeneration
     /// # Arguments
     /// * `sender` - The sender of the screen, needed to send a `Popup` to the screen.
     /// # Returns
     /// * `RLResult` - validates if life regeneration was started correctly
-    pub(crate) fn life_regeneration(&mut self, sender: &Sender<StackCommand>) -> RLResult {
+    pub(crate) fn life_regeneration(
+        &mut self,
+        sender: &Sender<StackCommand>,
+        lng: Lang,
+    ) -> RLResult {
         match (
             self.resources_change.life,
             self.last_damage,
@@ -83,9 +84,9 @@ impl Player {
             (0, last_damage, _) if last_damage >= 8 * DESIRED_FPS => {
                 self.resources_change.life += 5;
                 self.last_damage = 0;
-                let popup = Popup::new(RLColor::GREEN, GAME_INFO[0].to_string(), 5);
-                info!("Player startet healing");
-                sender.send(StackCommand::Popup(popup))?;
+                let popup = Popup::new(RLColor::GREEN, game_info(lng)[0].to_string(), 5);
+                info!("Player started healing");
+                sender.send(StackCommand::Screen(ScreenCommand::Popup(popup)))?;
             }
             // If player takes damage, increase last damage point
             (change_life, _, _) if change_life < 0 => self.last_damage = 0,
@@ -127,11 +128,16 @@ impl Player {
 /// * `super_glue` - The amount of super glue
 /// * `benzin` - The amount of benzin
 /// * `gedrucktesteil` - The amount of the printed part
-pub fn gen_inventory(super_glue: i32, benzin: i32, gedrucktesteil: i32) -> Vec<(Item, i32)> {
+pub fn gen_inventory(
+    super_glue_amount: i32,
+    petrol_amount: i32,
+    printed_parts_amount: i32,
+    lng: Lang,
+) -> Vec<(Item, i32)> {
     vec![
-        (Item::new(SUPER_GLUE), super_glue),
-        (Item::new(BENZIN), benzin),
-        (Item::new(GEDRUCKTESTEIL), gedrucktesteil),
+        (Item::new(*super_glue(lng)), super_glue_amount),
+        (Item::new(*petrol(lng)), petrol_amount),
+        (Item::new(*printed_part(lng)), printed_parts_amount),
     ]
 }
 
@@ -143,7 +149,7 @@ mod test {
     use std::sync::mpsc::{channel, Receiver};
 
     fn setup_gamestate() -> (GameState, Receiver<StackCommand>) {
-        let mut gamestate = GameState::default();
+        let mut gamestate = GameState::new_with_lang(Lang::De);
         let channel = channel();
         gamestate.set_sender(channel.0);
         (gamestate, channel.1)
@@ -151,12 +157,12 @@ mod test {
     #[test]
     fn test_case_one_life_regeneration() {
         let (mut gamestate, _) = setup_gamestate();
-        let mut player = Player::default();
+        let mut player = Player::new(Lang::De);
         player.resources.life = u16::MAX;
         player.resources_change.life = 5;
         player.last_damage = 1000;
         player
-            .life_regeneration(&gamestate.get_screen_sender().unwrap().clone())
+            .life_regeneration(&gamestate.get_screen_sender().unwrap().clone(), Lang::De)
             .unwrap();
         assert_eq!(player.resources_change.life, 0);
         assert_eq!(player.last_damage, 0);
@@ -165,12 +171,12 @@ mod test {
     #[test]
     fn test_case_two_life_regeneration() {
         let (mut gamestate, _) = setup_gamestate();
-        let mut player = Player::default();
+        let mut player = Player::new(Lang::De);
         player.resources.life = 1000;
         player.resources_change.life = 5;
         player.last_damage = 1000;
         player
-            .life_regeneration(&gamestate.get_screen_sender().unwrap().clone())
+            .life_regeneration(&gamestate.get_screen_sender().unwrap().clone(), Lang::De)
             .unwrap();
         assert_eq!(player.last_damage, 0);
     }
@@ -178,12 +184,12 @@ mod test {
     #[test]
     fn test_case_three_life_regeneration() {
         let (mut gamestate, _receiver) = setup_gamestate();
-        let mut player = Player::default();
+        let mut player = Player::new(Lang::De);
         player.resources.life = 1000;
         player.resources_change.life = 0;
         player.last_damage = 900;
         player
-            .life_regeneration(&gamestate.get_screen_sender().unwrap().clone())
+            .life_regeneration(&gamestate.get_screen_sender().unwrap().clone(), Lang::De)
             .unwrap();
         assert_eq!(player.resources_change.life, 5);
         assert_eq!(player.last_damage, 0);
@@ -192,12 +198,12 @@ mod test {
     #[test]
     fn test_case_four_life_regeneration() {
         let (mut gamestate, _) = setup_gamestate();
-        let mut player = Player::default();
+        let mut player = Player::new(Lang::De);
         player.resources.life = 20000;
         player.last_damage = 400;
         player.resources_change.life = 0;
         player
-            .life_regeneration(&gamestate.get_screen_sender().unwrap().clone())
+            .life_regeneration(&gamestate.get_screen_sender().unwrap().clone(), Lang::De)
             .unwrap();
         assert_eq!(player.resources_change.life, 0);
         assert_eq!(player.last_damage, 401);
@@ -214,10 +220,10 @@ mod test {
                 life: -1,
                 ..Default::default()
             },
-            ..Player::default()
+            ..Player::new(Lang::De)
         };
         player
-            .life_regeneration(&gamestate.get_screen_sender().unwrap().clone())
+            .life_regeneration(&gamestate.get_screen_sender().unwrap().clone(), Lang::De)
             .unwrap();
         assert_eq!(player.resources_change.life, -1);
         assert_eq!(player.last_damage, 0);

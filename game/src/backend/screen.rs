@@ -2,11 +2,13 @@
 use crate::backend::rlcolor::RLColor;
 use crate::backend::utils::{get_draw_params, get_scale};
 use crate::error::RLError;
-use crate::main_menu::mainmenu::MainMenu;
+use crate::main_menu::main_menu::MainMenu;
 use crate::{draw, RLResult};
 
+use crate::languages::Lang;
 use ggez::glam::vec2;
 use ggez::graphics::Color;
+use ggez::mint::Vector2;
 use ggez::{event, graphics, Context};
 use std::fmt::Debug;
 use std::sync::mpsc::{channel, Receiver, Sender};
@@ -32,15 +34,19 @@ pub trait Screen: Debug {
     /// # Arguments
     /// * `sender` - The sender of the screen.
     fn set_sender(&mut self, sender: Sender<StackCommand>);
+
+    fn lang(&self) -> Lang;
 }
 
 /// A Screenstack contains multiple `Screen`s and `Popup`s, the last one of which is drawn to the screen and
 /// updated.
-pub struct Screenstack {
+#[allow(clippy::module_name_repetitions)]
+pub struct ScreenStack {
     screens: Vec<Box<dyn Screen>>,
     popup: Vec<Popup>,
     receiver: Receiver<StackCommand>,
     sender: Sender<StackCommand>,
+    audio: crate::game_core::AudioState,
 }
 
 /// Popups are used to display information sent by the game on screen (toplevel)
@@ -51,6 +57,7 @@ pub struct Popup {
     text: String,
     expiration: Instant,
 }
+
 impl Popup {
     /// Creates a new `Popup` from the nasa template.
     /// # Arguments
@@ -104,7 +111,26 @@ impl Popup {
         }
     }
 }
-impl Screenstack {
+
+impl ScreenStack {
+    /// Creates a new `Screen stack` with a `MainMenu` screen.
+    /// # Returns
+    /// `ScreenStack` - Returns a new `ScreenStack`.
+    pub fn new_with_lang(lng: Lang, ctx: &mut Context) -> Self {
+        info!("Default Screen stack created");
+        let mut audio = crate::game_core::AudioState::new(ctx).unwrap();
+        audio.play_main_theme(ctx);
+
+        let (sender, receiver) = channel();
+        Self {
+            screens: vec![Box::new(MainMenu::new(sender.clone(), lng))],
+            popup: vec![],
+            receiver,
+            sender,
+            audio,
+        }
+    }
+
     /// Draws all `Popups` at the top left of the screen with their given text and color
     /// The popups will be removed after the given duration
     /// # Arguments
@@ -118,9 +144,7 @@ impl Screenstack {
         for popup in &self.popup {
             let mut text = graphics::Text::new(popup.text.clone());
             text.set_scale(25.);
-            let dimensions = text.measure(ctx)?;
-            let x = dimensions.x;
-            let y = dimensions.y;
+            let Vector2 { x, y } = text.measure(ctx)?;
             let rect = graphics::Mesh::new_rectangle(
                 ctx,
                 graphics::DrawMode::fill(),
@@ -147,36 +171,57 @@ impl Screenstack {
         canvas.finish(ctx)?;
         Ok(())
     }
+
     /// Handles what to do with the given commands.
     /// Possible commands are:
     /// `Push`: Pushes a new screen on the stack,
     /// `Pop`: Pops the current screen,
     /// `Popup`: Adds a new popup to the stack
+    ///
     /// # Arguments
     /// * `command` - The command to handle
-    fn process_command(&mut self, command: StackCommand) {
+    fn process_command(&mut self, ctx: &mut Context, command: StackCommand) {
         // Match the command given back by the screen
         match command {
-            StackCommand::Push(mut screen) => {
+            StackCommand::Screen(ScreenCommand::Push(mut screen)) => {
                 screen.set_sender(self.sender.clone());
                 self.screens.push(screen);
             }
-            StackCommand::Pop => {
+            StackCommand::Screen(ScreenCommand::Pop) => {
                 if self.screens.len() == 1 {
                     std::process::exit(0)
                 } else {
-                    // Clear our popups in order to not display them outside of the Gamestate
+                    // Clear our popups in order to not display them outside of the `GameState`
                     self.popup.clear();
                     self.screens.pop();
                 };
             }
-            StackCommand::Popup(popup) => self.popup.push(popup),
+            StackCommand::Screen(ScreenCommand::Popup(popup)) => self.popup.push(popup),
+            StackCommand::Audio(AudioCommand::Play) => {
+                self.audio.play_main_theme(ctx);
+            }
+            StackCommand::Audio(AudioCommand::Pause) => {
+                self.audio.pause_main_theme(ctx);
+            }
         }
     }
+
     /// Removes the expired `Popup`s
     fn remove_popups(&mut self) {
         self.popup.retain(|popup| popup.expiration > Instant::now());
     }
+}
+
+#[allow(clippy::module_name_repetitions)]
+pub enum ScreenCommand {
+    Push(Box<dyn Screen>),
+    Popup(Popup),
+    Pop,
+}
+
+pub enum AudioCommand {
+    Play,
+    Pause,
 }
 
 /// The `StackCommand` is necessary in order to send commands back to the `Screenstack`
@@ -185,12 +230,11 @@ impl Screenstack {
 /// We can tell the `Screenstack` to push the `Gamestate` screen onto the
 /// `Screenstack`
 pub enum StackCommand {
-    Push(Box<dyn Screen>),
-    Popup(Popup),
-    Pop,
+    Screen(ScreenCommand),
+    Audio(AudioCommand),
 }
 
-impl event::EventHandler<RLError> for Screenstack {
+impl event::EventHandler<RLError> for ScreenStack {
     /// Redirect the update function to the last screen and handle the returned `StackCommand`
     /// # Arguments
     /// * `ctx` - The ggez game context
@@ -198,15 +242,14 @@ impl event::EventHandler<RLError> for Screenstack {
     /// `RLResult` - Returns an `RlResult`
     fn update(&mut self, ctx: &mut Context) -> RLResult {
         self.remove_popups();
-        self.screens
-            .last_mut()
-            .expect("Failed to get a screen")
-            .update(ctx)?;
+        let screen = self.screens.last_mut().expect("Failed to get a screen");
+        screen.update(ctx)?;
         if let Ok(message) = self.receiver.try_recv() {
-            self.process_command(message);
+            self.process_command(ctx, message);
         }
         Ok(())
     }
+
     /// Redirect the draw command to the last screen.
     /// # Arguments
     /// * `ctx` - The ggez game context
@@ -220,6 +263,7 @@ impl event::EventHandler<RLError> for Screenstack {
         self.draw_popups(ctx)?;
         Ok(())
     }
+
     /// Overrides the quit event so we do nothing instead of quitting the game.
     /// # Arguments
     /// * `ctx` - The ggez game context
@@ -227,32 +271,5 @@ impl event::EventHandler<RLError> for Screenstack {
     /// `RLResult` - Returns an `RlResult`
     fn quit_event(&mut self, _ctx: &mut Context) -> RLResult<bool> {
         Ok(true)
-    }
-}
-
-impl Default for Screenstack {
-    /// Creates a new `Screenstack` with a `MainMenu` screen.
-    /// # Returns
-    /// `Screenstack` - Returns a new `Screenstack`.
-    fn default() -> Self {
-        info!("Default Screenstack created");
-        let (sender, receiver) = channel();
-        Self {
-            screens: vec![Box::new(MainMenu::new(sender.clone()))],
-            popup: vec![],
-            receiver,
-            sender,
-        }
-    }
-}
-
-#[cfg(test)]
-mod test {
-    use super::*;
-
-    #[test]
-    fn test_screenstack() {
-        let screenstack = Screenstack::default();
-        assert_eq!(1, screenstack.screens.len());
     }
 }

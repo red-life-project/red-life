@@ -1,5 +1,5 @@
 use crate::backend::utils::{get_draw_params, get_scale};
-use crate::main_menu::mainmenu::Message;
+use crate::main_menu::main_menu::Message;
 use crate::{draw, RLResult};
 use ggez::glam::f32::Vec2;
 use ggez::graphics::{Canvas, Color, Text, TextFragment};
