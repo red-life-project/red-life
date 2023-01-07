@@ -1,7 +1,7 @@
 //! Contains constants for the language "English".
 
 /// Constant for item `Gedrucktesteil`.
-pub const GEDRUCKTESTEIL: [&str; 3] = [
+pub const PRINTED_PART: [&str; 3] = [
     "3D-printed part",
     "A 3D-printed part that can be used to repair the communication module",
     "3D-gedrucktes-Teil.png",
@@ -26,9 +26,10 @@ pub(crate) const RESOURCE_NAME: [&str; 3] = ["Air", "Energy", "Life"];
 pub const WARNINGS: [&str; 4] = [
     "A comet is on its way!",
     "The power's out!",
-    "A sandstorm is on its way!",
+    "A Sandstorm is on its way!",
     "A machine is down!",
 ];
+
 /// The text for the mars-info-`Popup`s that appears in the top left corner.
 pub const MARS_INFO: [&str; 5] = [
     "Mars is the 4th planet in our solar system",
@@ -37,6 +38,7 @@ pub const MARS_INFO: [&str; 5] = [
     "The mass of Mars is about one-tenth that of Earth",
     "The distance to Mars is on average 228 million km",
 ];
+
 /// The text for the nasa-info-`Popup`s that appears in the top left corner.
 pub const NASA_INFO: [&str; 5] = [
     "NASA stands for: National Aeronautics and Space Administration",
@@ -71,26 +73,9 @@ pub const BUTTON_INFO: &str = "Please press the space bar!";
 /// Constants for all strings used in `WinningScreen`
 pub const WINNING_TEXT: &str = "You've been saved!";
 
-/// Constants for the events that can occur.
-pub const COMET_STRIKE: [&str; 2] = [
-    "COMET STRIKE",
-    "A comet strike has hit the earth and created a hole in the wall",
-];
-pub const SANDSTORM: [&str; 2] = [
-    "Sandstorm",
-    "A sandstorm, which leads to a malfunction of the oxygen generator",
-];
-pub const INFORMATIONS_POPUP_NASA: [&str; 2] = [
-    "Informations popup NASA",
-    "An information pop-up about NASA containing facts and information about NASA",
-];
 pub const POWER_FAILURE: [&str; 2] = [
     "Power failure",
     "A power failure resulting in a malfunction of the oxygen generator",
-];
-pub const INFORMATIONS_POPUP_MARS: [&str; 2] = [
-    "Informations popup Mars",
-    "An information popup about Mars containing facts and information about Mars",
 ];
 /// Constants for the trade conflict.
 pub const TRADE_CONFLICT_POPUP: [&str; 1] =

@@ -1,7 +1,7 @@
 //! Contains constants for the language "German".
 
 /// Constant for item `Gedrucktesteil`.
-pub const GEDRUCKTESTEIL: [&str; 3] = [
+pub const PRINTED_PART: [&str; 3] = [
     "3D-gedrucktes-Teil",
     "Ein 3D-gedrucktes-Teil, welches zur Reparatur des Kommunikationsmoduls verwendet werden kann",
     "3D-gedrucktes-Teil.png",
@@ -67,27 +67,11 @@ pub const BUTTON_INFO: &str = "Bitte drücke die Leertaste!";
 /// Constants for all strings used in `WinningScreen`
 pub const WINNING_TEXT: &str = "Du wurdest gerettet!";
 
-/// Constants for the events that can occur.
-pub const COMET_STRIKE: [&str; 2] = [
-    "KOMETENEINSCHLAG",
-    "Ein KOMETENEINSCHLAG hat die Erde getroffen und hat ein Loch in der Wand erzeugt",
-];
-pub const SANDSTORM: [&str; 2] = [
-    "Sandsturm",
-    "Ein Sandsturm, welcher zu einer Störung des Sauerstoffgenerators führt",
-];
-pub const INFORMATIONS_POPUP_NASA: [&str; 2] = [
-    "InformationspopupNASA",
-    "Ein Informationspopup über die NASA, welches Fakten und Informationen über die NASA enthält",
-];
 pub const POWER_FAILURE: [&str; 2] = [
     "Stromausfall",
     "Ein Stromausfall, welcher zu einer Störung des Sauerstoffgenerators führt",
 ];
-pub const INFORMATIONS_POPUP_MARS: [&str; 2] = [
-    "InformationspopupMars",
-    "Ein Informationspopup über Mars, welches Fakten und Informationen über den Mars enthält",
-];
+
 /// Constants for the trade conflict.
 pub const TRADE_CONFLICT_POPUP: [&str; 1] = ["Es fehlen folgende Items, um den Trade auszuführen:"];
 /// Constants for the `time_name`.

@@ -2,7 +2,7 @@
 use crate::backend::rlcolor::RLColor;
 use crate::game_core::player::gen_inventory;
 use crate::game_core::resources::Resources;
-use crate::languages::{machine_names, Lang};
+use crate::languages::{machine_names, Lang, power_failure, warnings, nasa_info, mars_info};
 use crate::machines::machine::{Machine, State};
 use crate::machines::trade::Trade;
 use ggez::graphics::{Color, Rect};
@@ -37,21 +37,42 @@ impl ObjectId {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub enum TradeId {
-    NoTrade = -1,
-    RepairOxygen = 0,
-    StartOxygen = 1,
-    StopOxygen = 2,
-    FuelingPowerGenerator = 3,
-    StartPowerGenerator = 4,
-    StopPowerGenerator = 5,
-    RepairWorkMachine = 6,
-    ProduceSuperglue = 7,
-    Repair3dPrinter = 8,
-    Produce3dPart = 9,
-    RepairCommunicationModule = 10,
-    EmergencySignalOff = 11,
-    RepairNorthHole = 12,
-    RepairSouthHole = 13,
+    NoTrade ,
+    RepairOxygen,
+    StartOxygen,
+    StopOxygen,
+    FuelingPowerGenerator,
+    StartPowerGenerator,
+    StopPowerGenerator,
+    RepairWorkMachine,
+    ProduceSuperglue,
+    Repair3dPrinter,
+    Produce3dPart,
+    RepairCommunicationModule ,
+    EmergencySignalOff ,
+    RepairNorthHole ,
+    RepairSouthHole ,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub enum EventId {
+    Sandstorm,
+    CometStrike,
+    PowerFailure,
+    InformationPopupMars,
+    InformationPopupNasa,
+}
+
+impl EventId {
+    pub fn warning(self, lng: Lang, message_id: usize) -> &'static str {
+        match self {
+            EventId::Sandstorm => warnings(lng)[2],
+            EventId::CometStrike => warnings(lng)[0],
+            EventId::PowerFailure => power_failure(lng)[1],
+            EventId::InformationPopupMars => nasa_info(lng)[message_id],
+            EventId::InformationPopupNasa => mars_info(lng)[message_id],
+        }
+    }
 }
 
 /// Contains the screen resolution of the game.

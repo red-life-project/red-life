@@ -35,7 +35,7 @@ macro_rules! t {
 }
 
 t!(petrol, 3, PETROL);
-t!(printed_part, 3, GEDRUCKTESTEIL);
+t!(printed_part, 3, PRINTED_PART);
 t!(super_glue, 3, SUPER_GLUE);
 t!(machine_names, 7, MACHINE_NAMES);
 t!(game_info, 1, GAME_INFO);
@@ -55,10 +55,6 @@ t!(
     SECOND_MILESTONE_HANDBOOK_TEXT
 );
 t!(time_name, 1, TIME_NAME);
-t!(informations_popup_mars, 2, INFORMATIONS_POPUP_MARS);
-t!(informations_popup_nasa, 2, INFORMATIONS_POPUP_NASA);
-t!(sandstorm, 2, SANDSTORM);
-t!(comet_strike, 2, COMET_STRIKE);
 t!(power_failure, 2, POWER_FAILURE);
 t!(resource_name, 3, RESOURCE_NAME);
 

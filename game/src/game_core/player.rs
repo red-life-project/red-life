@@ -84,7 +84,7 @@ impl Player {
             (0, last_damage, _) if last_damage >= 8 * DESIRED_FPS => {
                 self.resources_change.life += 5;
                 self.last_damage = 0;
-                let popup = Popup::new(RLColor::GREEN, game_info(lng)[0].to_string(), 5);
+                let popup = Popup::new(RLColor::GREEN, game_info(lng)[0].into(), 5);
                 info!("Player started healing");
                 sender.send(StackCommand::Screen(ScreenCommand::Popup(popup)))?;
             }
