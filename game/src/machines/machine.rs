@@ -211,7 +211,7 @@ impl Machine {
             dif.iter()
                 .map(|(item, amount)| format!("*{} {}\n", amount * -1, item.name))
                 .for_each(|x| missing_items.push_str(&x));
-            let popup = Popup::info(format!("{}\n{missing_items}", trade_conflict_popup(lng)[0]));
+            let popup = Popup::info(format!("{}\n{missing_items}", trade_conflict_popup(lng)[0]).into());
             info!(
                 "Popup for Trade conflict sent: Missing Items: {}",
                 missing_items

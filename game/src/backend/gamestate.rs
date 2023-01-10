@@ -190,7 +190,7 @@ impl GameState {
                     1 => {
                         let sender = self.get_screen_sender()?;
                         let popup =
-                            Popup::new(RLColor::GREEN, send_msg_failure(lng).to_string(), 5);
+                            Popup::new(RLColor::GREEN, send_msg_failure(lng).into(), 5);
                         sender.send(StackCommand::Screen(ScreenCommand::Popup(popup)))?;
                     }
                     2 => {

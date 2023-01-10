@@ -1,4 +1,5 @@
 //! Contains the screen system, which is responsible for managing the different screens of the game.
+use std::borrow::Cow;
 use crate::backend::rlcolor::RLColor;
 use crate::backend::utils::{get_draw_params, get_scale};
 use crate::error::RLError;
@@ -54,7 +55,7 @@ pub struct ScreenStack {
 #[derive(Debug, PartialEq, Clone)]
 pub struct Popup {
     color: Color,
-    text: String,
+    text: Cow<'static, str>,
     expiration: Instant,
 }
 
@@ -64,37 +65,41 @@ impl Popup {
     /// * `text` - The text of the `Popup`.
     /// # Returns
     /// `Popup` - Returns a new `Popup`.
-    pub fn nasa(text: String) -> Self {
+    pub fn nasa(text: Cow<'static, str>) -> Self {
         info!("New NASA popup created");
         Self::new(RLColor::LIGHT_BLUE, text, 10)
     }
+
     /// Creates a new `Popup` from the mars template.
     /// # Arguments
     /// * `text` - The text of the `Popup`.
     /// # Returns
     /// `Popup` - Returns a new `Popup`.
-    pub fn mars(text: String) -> Self {
+    pub fn mars(text: Cow<'static, str>) -> Self {
         info!("New MARS popup created");
         Self::new(RLColor::DARK_RED, text, 10)
     }
+
     /// Creates a new `popup` from the warning template.
     /// # Arguments
     /// * `text` - The text of the popup.
     /// # Returns
     /// `Popup` - Returns a new `Popup`.
-    pub fn warning(text: String) -> Self {
+    pub fn warning(text: Cow<'static, str>) -> Self {
         info!("New WARNING popup created");
         Self::new(RLColor::RED, text, 10)
     }
+
     /// Creates a new `Popup` from the info template.
     /// # Arguments
     /// * `text` - The text of the `Popup`.
     /// # Returns
     /// `Popup` - Returns a new `Popup`.
-    pub fn info(text: String) -> Self {
+    pub fn info(text: Cow<'static, str>) -> Self {
         info!("New INFO popup created");
         Self::new(RLColor::BLACK, text, 10)
     }
+
     /// Creates a new `Popup` from a color, text and a duration.
     /// # Arguments
     /// * `color` - The color of the `Popup`.
@@ -102,7 +107,7 @@ impl Popup {
     /// * `duration` - The duration of the `Popup`.
     /// # Returns
     /// `Popup` - Returns a new `Popup`.
-    pub(crate) fn new(color: Color, text: String, duration: u64) -> Self {
+    pub(crate) fn new(color: Color, text: Cow<'static, str>, duration: u64) -> Self {
         info!("New popup created: text: {}, duration: {}", text, duration);
         Self {
             color,
